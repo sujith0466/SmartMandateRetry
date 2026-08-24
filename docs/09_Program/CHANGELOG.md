@@ -4,15 +4,28 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 
 ---
 
+## [Phase 3 Complete] - 2026-08-24
+### Added
+- **Webhook Ingress Route:** Implemented `POST /api/v1/webhooks/razorpay` endpoint capturing raw unparsed request bytes prior to JSON decoding.
+- **Constant-Time Signature Verifier:** Implemented `RazorpaySignatureVerifier` with constant-time `hmac.compare_digest` for HMAC-SHA256 verification.
+- **Pydantic Webhook Schemas:** Implemented strict models (`RazorpayWebhookEnvelope`, `RazorpayPaymentEntity`, `RazorpaySubscriptionEntity`, `RazorpayPaymentLinkEntity`).
+- **Database Idempotency Integration:** Wired `WebhookIngestionService` with `WebhookEventRepository.insert_if_not_exists` to acknowledge duplicate gateway deliveries safely with HTTP 200 without duplicate execution.
+- **Normalization Adapter:** Created `RazorpayWebhookAdapter` converting raw payloads into standardized `NormalizedWebhookEvent` dataclasses with paise-to-INR conversions.
+- **Ingress Event Router:** Implemented `IngressEventRouter` routing events to Stage 1 observation, Stage 2 recovery, failure intelligence, outcome verification, or ignored queues.
+- **Synthetic Webhook Simulator:** Built CLI simulator `app.infrastructure.webhook_simulator` for local developer testing and automated integration testing.
+- **Observability & Logging Redaction:** Upgraded structured logger adapter with automatic secret and credential redaction.
+- **Webhook Test Suite:** Authored 16 new unit and integration tests across verifier, adapter, router, and HTTP endpoints (**37 total passing backend tests**).
+- **Phase Documentation:** Created `docs/09_Program/PHASE_03_COMPLETION_REPORT.md`.
+
+---
+
 ## [Phase 2 Complete] - 2026-08-24
 ### Added
-- **SQLAlchemy 2.0 ORM Models:** Implemented declarative type-annotated models for all 11 tables (`merchants`, `recovery_policies`, `webhook_events`, `customers`, `subscriptions`, `recovery_cases`, `recovery_decisions`, `recovery_actions`, `audit_events`, `evaluation_runs`, `evaluation_scenario_results`).
-- **Alembic Baseline Migration:** Initialized Alembic migration infrastructure with `001_initial_schema.py` verified bidirectionally (`upgrade head` -> `downgrade base` -> `upgrade head`).
-- **Repositories & Unit of Work:** Implemented `UnitOfWork` context manager with atomic transaction management and specialized repositories (`RecoveryCaseRepository` with OCC, `WebhookEventRepository`, `AuditEventRepository`, `MerchantRepository`, `RecoveryPolicyRepository`, etc.).
-- **Optimistic Concurrency Control:** Implemented `OptimisticLockError` and version-increment state transitions preventing race conditions during concurrent webhook/recovery processing.
+- **SQLAlchemy 2.0 ORM Models:** Implemented declarative type-annotated models for all 11 tables.
+- **Alembic Baseline Migration:** Initialized Alembic migration infrastructure with `001_initial_schema.py`.
+- **Repositories & Unit of Work:** Implemented `UnitOfWork` and repositories with optimistic concurrency control.
 - **Seed Data Factory:** Created deterministic synthetic seed CLI (`python -m app.infrastructure.seed`).
-- **Database Test Suite:** Created 12 new database tests covering schema constraints, FK cascades, unique keys, OCC race conditions, UoW commit/rollback, and seed data execution (21 total passing tests).
-- **Phase Documentation:** Added `docs/09_Program/PHASE_02_COMPLETION_REPORT.md`.
+- **Database Test Suite:** Created 12 database tests covering schema constraints and OCC race conditions.
 
 ---
 
