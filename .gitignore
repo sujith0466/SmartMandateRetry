@@ -1,3 +1,17 @@
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+credentials.json
+service-account*.json
+secrets*.json
+
 # Python
 __pycache__/
 *.py[cod]
@@ -23,6 +37,7 @@ wheels/
 .pytest_cache/
 .coverage
 htmlcov/
+coverage/
 .mypy_cache/
 .ruff_cache/
 
@@ -40,19 +55,19 @@ pnpm-debug.log*
 .pnpm-debug.log*
 frontend/dist/
 frontend/dist-ssr/
+.vite/
 *.local
 
-# Environment Variables & Secrets
-.env
-.env.local
-.env.*.local
-*.pem
-*.key
-
-# Database / Volumes
+# Database / Volumes / Local Data
 pgdata/
+*.sqlite
 *.sqlite3
 *.db
+
+# Logs & Temporary Files
+*.log
+tmp/
+temp/
 
 # IDE & OS
 .idea/

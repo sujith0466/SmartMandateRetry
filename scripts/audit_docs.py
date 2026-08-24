@@ -1,7 +1,6 @@
 """Documentation consistency, integrity, and link audit script."""
 
 import os
-import re
 import sys
 
 REQUIRED_DOCS = [
@@ -42,6 +41,9 @@ REQUIRED_DOCS = [
     "docs/09_Program/PREFREEZE_AUDIT.md",
     "docs/09_Program/REPOSITORY_BASELINE.md",
     "docs/09_Program/BASELINE_FREEZE.md",
+    "docs/09_Program/GIT_SECURITY_AUDIT.md",
+    "docs/09_Program/GIT_RELEASE_CHECKLIST.md",
+    "docs/09_Program/GIT_RELEASE_REPORT.md",
 ]
 
 
