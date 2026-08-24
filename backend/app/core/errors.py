@@ -51,6 +51,28 @@ class ResourceNotFoundError(AppError):
         )
 
 
+class OptimisticLockError(AppError):
+    """Raised when a concurrent state update violates optimistic concurrency control (OCC)."""
+
+    def __init__(self, message: str = "Concurrent update conflict detected") -> None:
+        super().__init__(
+            message=message,
+            status_code=409,
+            error_code="OPTIMISTIC_LOCK_CONFLICT"
+        )
+
+
+class IdempotencyConflictError(AppError):
+    """Raised when an operation conflicts with an existing idempotent record."""
+
+    def __init__(self, message: str = "Idempotency key collision detected") -> None:
+        super().__init__(
+            message=message,
+            status_code=409,
+            error_code="IDEMPOTENCY_CONFLICT"
+        )
+
+
 def register_error_handlers(app: Flask) -> None:
     """Attach global error handlers to the Flask application."""
 

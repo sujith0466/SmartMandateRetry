@@ -1,7 +1,7 @@
 """Database engine and session management."""
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 from app.core.config import get_settings
 from app.domain.models import Base
 
@@ -20,9 +20,14 @@ SessionLocal = scoped_session(
 )
 
 
+def get_session() -> Session:
+    """Return a new database session."""
+    return SessionLocal()
+
+
 def get_db():
-    """Context manager / dependency for DB session."""
-    db = SessionLocal()
+    """Context manager / generator dependency for DB session."""
+    db = get_session()
     try:
         yield db
     finally:
@@ -30,5 +35,5 @@ def get_db():
 
 
 def init_db():
-    """Create all tables (used in dev/test setups)."""
+    """Create all tables directly via metadata (used in quick dev/test setups)."""
     Base.metadata.create_all(bind=engine)

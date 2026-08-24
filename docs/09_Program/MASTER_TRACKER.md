@@ -1,8 +1,8 @@
 # SmartMandateRetry — Master Implementation Tracker & Traceability Matrix
 
 > **Document ID:** DOC-PROG-002  
-> **Version:** 1.1.0  
-> **Status:** APPROVED BASELINE (Phase 0 & Foundation Scaffolding Tracked; Phase 2 Granular Breakdown Added)  
+> **Version:** 1.2.0  
+> **Status:** APPROVED BASELINE (Phase 0, Phase 1, and Phase 2 COMPLETED)  
 
 ---
 
@@ -16,15 +16,15 @@
 | `TSK-004` | Phase 1 | Foundation | Backend Shell | Flask App Factory, config, health (`/healthz`, `/readyz`) | TSK-002 | P0 | **COMPLETED** | NFR-PERF-001 | App boots, `/healthz` returns 200 | `pytest tests/test_health.py` | `SYSTEM_ARCHITECTURE.md` |
 | `TSK-005` | Phase 1 | Foundation | Frontend Shell | React 18, Vite, TypeScript, Tailwind app shell & routing stubs | TSK-002 | P0 | **COMPLETED** | NFR-PERF-001 | `npm run build` compiles with 0 TS errors | TS compilation check | `PPD.md` |
 | `TSK-006` | Phase 1 | Foundation | Tooling | Setup Makefile, .env.example, .gitignore, README, CONTRIBUTING | TSK-002 | P1 | **COMPLETED** | SEC-001 | Development tools & docs ready | Git status check | `README.md` |
-| `TSK-007` | Phase 2 | Domain Data | Database Foundation | Master task: Core Domain Models & Database Foundation | TSK-004 | P0 | **NOT_STARTED** | FR-ING-003, FR-POL-001 | Complete persistent schema, migrations, and repositories | DB Test Suite | `PHASE_02_IMPLEMENTATION_PLAN.md` |
-| `TSK-007-01` | Phase 2 | Domain Data | Models | Implement SQLAlchemy 2.0 ORM models for all 11 tables | TSK-004 | P0 | **NOT_STARTED** | FR-ING-003, FR-POL-001 | Models compile with type hints and declarative Base | Model unit tests | `DATABASE_DESIGN.md` |
-| `TSK-007-02` | Phase 2 | Domain Data | Alembic | Initialize Alembic environment & write baseline migration | TSK-007-01 | P0 | **NOT_STARTED** | FR-ING-003 | `alembic upgrade head` and `downgrade base` execute cleanly | Migration test | `DATABASE_DESIGN.md` |
-| `TSK-007-03` | Phase 2 | Domain Data | Data Access | Implement `UnitOfWork` context manager and `BaseRepository` | TSK-007-01 | P0 | **NOT_STARTED** | NFR-REL-001 | Context manager handles commit/rollback atomically | UoW unit tests | `PHASE_02_IMPLEMENTATION_PLAN.md` |
-| `TSK-007-04` | Phase 2 | Domain Data | Repositories | Implement `RecoveryCaseRepository` with optimistic locking | TSK-007-03 | P0 | **NOT_STARTED** | FR-OUT-003 | Queries, state filters, and version lock checks verified | Case repo tests | `RECOVERY_STATE_MACHINE.md` |
-| `TSK-007-05` | Phase 2 | Domain Data | Repositories | Implement `WebhookEventRepository` & `AuditEventRepository` | TSK-007-03 | P0 | **NOT_STARTED** | FR-ING-003, NFR-AUD-001 | Idempotent insertion and append-only logging verified | Audit repo tests | `OBSERVABILITY.md` |
-| `TSK-007-06` | Phase 2 | Domain Data | Repositories | Implement `MerchantRepository`, `CustomerRepository`, `PolicyRepo`| TSK-007-03 | P1 | **NOT_STARTED** | FR-POL-001..007 | Tenant isolation and policy retrieval verified | Policy repo tests | `POLICY_ENGINE.md` |
-| `TSK-007-07` | Phase 2 | Domain Data | Seeding | Implement deterministic seed data generator CLI script | TSK-007-06 | P1 | **NOT_STARTED** | FR-UI-001 | Seeds default merchant, policies, customers, and cases | Seed CLI tests | `PHASE_02_IMPLEMENTATION_PLAN.md` |
-| `TSK-007-08` | Phase 2 | Domain Data | Testing | Implement comprehensive database schema & repository unit tests | TSK-007-04..07 | P0 | **NOT_STARTED** | All Phase 2 FRs | 100% of schema constraints and repository methods tested | Full DB test suite | `TEST_PLAN.md` |
+| `TSK-007` | Phase 2 | Domain Data | Database Foundation | Master task: Core Domain Models & Database Foundation | TSK-004 | P0 | **COMPLETED** | FR-ING-003, FR-POL-001 | Complete persistent schema, migrations, and repositories | DB Test Suite | `PHASE_02_COMPLETION_REPORT.md` |
+| `TSK-007-01` | Phase 2 | Domain Data | Models | Implement SQLAlchemy 2.0 ORM models for all 11 tables | TSK-004 | P0 | **COMPLETED** | FR-ING-003, FR-POL-001 | Models compile with type hints and declarative Base | `test_schema_constraints.py` | `DATABASE_DESIGN.md` |
+| `TSK-007-02` | Phase 2 | Domain Data | Alembic | Initialize Alembic environment & write baseline migration | TSK-007-01 | P0 | **COMPLETED** | FR-ING-003 | `alembic upgrade head` and `downgrade base` execute cleanly | Migration test | `DATABASE_DESIGN.md` |
+| `TSK-007-03` | Phase 2 | Domain Data | Data Access | Implement `UnitOfWork` context manager and `BaseRepository` | TSK-007-01 | P0 | **COMPLETED** | NFR-REL-001 | Context manager handles commit/rollback atomically | `test_unit_of_work.py` | `PHASE_02_IMPLEMENTATION_PLAN.md` |
+| `TSK-007-04` | Phase 2 | Domain Data | Repositories | Implement `RecoveryCaseRepository` with optimistic locking | TSK-007-03 | P0 | **COMPLETED** | FR-OUT-003 | Queries, state filters, and version lock checks verified | `test_concurrency.py` | `RECOVERY_STATE_MACHINE.md` |
+| `TSK-007-05` | Phase 2 | Domain Data | Repositories | Implement `WebhookEventRepository` & `AuditEventRepository` | TSK-007-03 | P0 | **COMPLETED** | FR-ING-003, NFR-AUD-001 | Idempotent insertion and append-only logging verified | `test_repositories.py` | `OBSERVABILITY.md` |
+| `TSK-007-06` | Phase 2 | Domain Data | Repositories | Implement `MerchantRepository`, `CustomerRepository`, `PolicyRepo`| TSK-007-03 | P1 | **COMPLETED** | FR-POL-001..007 | Tenant isolation and policy retrieval verified | `test_repositories.py` | `POLICY_ENGINE.md` |
+| `TSK-007-07` | Phase 2 | Domain Data | Seeding | Implement deterministic seed data generator CLI script | TSK-007-06 | P1 | **COMPLETED** | FR-UI-001 | Seeds default merchant, policies, customers, and cases | `test_seed.py` | `PHASE_02_IMPLEMENTATION_PLAN.md` |
+| `TSK-007-08` | Phase 2 | Domain Data | Testing | Implement comprehensive database schema & repository unit tests | TSK-007-04..07 | P0 | **COMPLETED** | All Phase 2 FRs | 100% of schema constraints and repository methods tested | Full DB test suite (21 passed) | `TEST_PLAN.md` |
 | `TSK-008` | Phase 3 | Ingestion | Webhooks | Flask `/api/v1/webhooks/razorpay` endpoint with HMAC-SHA256 | TSK-007 | P0 | **NOT_STARTED** | FR-ING-001, FR-ING-002 | Valid signature returns 200, invalid returns 400 | `TS-INT-WH` test suite | `WEBHOOK_SPECIFICATION.md` |
 | `TSK-009` | Phase 3 | Ingestion | Deduplication | Idempotent event persistence in `webhook_events` | TSK-008 | P0 | **NOT_STARTED** | FR-ING-003, NFR-REL-001 | Replayed webhook triggers 0 duplicate tasks | Idempotency test | `INTEGRATION_ARCHITECTURE.md` |
 | `TSK-010` | Phase 4 | Intelligence | Error Mapping | Deterministic gateway error reason mapper | TSK-007 | P0 | **NOT_STARTED** | FR-INT-001, FR-INT-002 | Known codes mapped to TEMPORARY, ACTION_REQUIRED, PERMANENT | Mapper unit tests (100%) | `RECOVERY_STRATEGIES.md` |

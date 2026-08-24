@@ -1,17 +1,24 @@
-# SmartMandateRetry — Project Changelog
+# SmartMandateRetry — Changelog & Revision History
 
-> **Document ID:** DOC-PROG-004  
-> **Version:** 1.0.0  
-> **Status:** APPROVED BASELINE  
+All notable changes to the SmartMandateRetry codebase, specifications, and architecture are documented in this file.
 
 ---
 
-## Version History
+## [Phase 2 Complete] - 2026-08-24
+### Added
+- **SQLAlchemy 2.0 ORM Models:** Implemented declarative type-annotated models for all 11 tables (`merchants`, `recovery_policies`, `webhook_events`, `customers`, `subscriptions`, `recovery_cases`, `recovery_decisions`, `recovery_actions`, `audit_events`, `evaluation_runs`, `evaluation_scenario_results`).
+- **Alembic Baseline Migration:** Initialized Alembic migration infrastructure with `001_initial_schema.py` verified bidirectionally (`upgrade head` -> `downgrade base` -> `upgrade head`).
+- **Repositories & Unit of Work:** Implemented `UnitOfWork` context manager with atomic transaction management and specialized repositories (`RecoveryCaseRepository` with OCC, `WebhookEventRepository`, `AuditEventRepository`, `MerchantRepository`, `RecoveryPolicyRepository`, etc.).
+- **Optimistic Concurrency Control:** Implemented `OptimisticLockError` and version-increment state transitions preventing race conditions during concurrent webhook/recovery processing.
+- **Seed Data Factory:** Created deterministic synthetic seed CLI (`python -m app.infrastructure.seed`).
+- **Database Test Suite:** Created 12 new database tests covering schema constraints, FK cascades, unique keys, OCC race conditions, UoW commit/rollback, and seed data execution (21 total passing tests).
+- **Phase Documentation:** Added `docs/09_Program/PHASE_02_COMPLETION_REPORT.md`.
 
-### [1.0.0] — 2026-08-23
-#### Added
-- Formal Master Product Definition and Planning Baseline v0.2.
-- Authoritative documentation suite covering Product (PRD, PPD, Scope, Journeys), Architecture (System, AI, Workflow, Integration, Security, ADRs), Domain (Domain Model, FSM, Policy Engine, Strategies), Technical Contracts (API, Webhooks, DB, Dictionary), AI & Evaluation (AI Spec, AI Eval, Eval Plan), QA & Operations (QA Strategy, Test Plan, Failure Scenarios, Observability, Deployment), and Program (Roadmap, Master Tracker, Milestones).
-- Fully validated Razorpay API integration facts (dual-stage pending/halted orchestration, payment links out-of-band recovery, error code taxonomy).
-- Architectural principle frozen: AI proposes, Deterministic Policy Engine decides, Action Executor executes.
-- Immutability and fail-closed safety gate specifications defined.
+---
+
+## [v1.0.0-FROZEN] - 2026-08-24
+### Baseline Freeze & Foundation Scaffolding
+- Initialized repository foundation across `backend/`, `frontend/`, `docker/`, and `shared/`.
+- Finalized and froze 37 specifications across product, architecture, domain, API, data, AI, QA, operations, and program management.
+- Implemented OpenRouter AI Gateway integration abstraction.
+- Built initial health check endpoints, structured logging, and frontend React console shell.
