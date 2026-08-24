@@ -1,0 +1,16 @@
+services:
+  backend:
+    command: python -m app.main
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/tests:/app/tests
+    environment:
+      - APP_DEBUG=true
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules

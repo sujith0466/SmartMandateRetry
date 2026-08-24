@@ -1,0 +1,43 @@
+# SmartMandateRetry — Master Implementation Tracker & Traceability Matrix
+
+> **Document ID:** DOC-PROG-002  
+> **Version:** 1.0.0  
+> **Status:** APPROVED BASELINE (Phase 0 & Foundation Scaffolding Tracked)  
+
+---
+
+## 1. Master Task Tracker
+
+| ID | Phase | Epic | Feature | Task | Dependencies | Priority | Status | Requirement IDs | Acceptance Criteria | Test Requirement | Doc Reference |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| `TSK-001` | Phase 0 | Planning | Governance | Complete baseline documentation suite & audit | None | P0 | **COMPLETED** | All | 33 documents authored, cross-audited, 0 critical/high issues | Doc consistency test | `BASELINE_FREEZE.md` |
+| `TSK-002` | Phase 1 | Foundation | Scaffolding | Monorepo directory & package structure setup | TSK-001 | P0 | **COMPLETED** | NFR-PERF-001 | `backend/`, `frontend/`, `docker/`, `shared/` directories created | Directory audit | `REPOSITORY_BASELINE.md` |
+| `TSK-003` | Phase 1 | Foundation | Docker | Docker Compose topology (Postgres, Redis, Backend, Frontend) | TSK-002 | P0 | **COMPLETED** | NFR-REL-001 | `docker compose config` validates cleanly | Config validation | `DEPLOYMENT.md` |
+| `TSK-004` | Phase 1 | Foundation | Backend Shell | Flask App Factory, config, health (`/healthz`, `/readyz`) | TSK-002 | P0 | **COMPLETED** | NFR-PERF-001 | App boots, `/healthz` returns 200 | `pytest tests/test_health.py` | `SYSTEM_ARCHITECTURE.md` |
+| `TSK-005` | Phase 1 | Foundation | Frontend Shell | React 18, Vite, TypeScript, Tailwind app shell & routing stubs | TSK-002 | P0 | **COMPLETED** | NFR-PERF-001 | `npm run build` compiles with 0 TS errors | TS compilation check | `PPD.md` |
+| `TSK-006` | Phase 1 | Foundation | Tooling | Setup Makefile, .env.example, .gitignore, README, CONTRIBUTING | TSK-002 | P1 | **COMPLETED** | SEC-001 | Development tools & docs ready | Git status check | `README.md` |
+| `TSK-007` | Phase 2 | Domain Data | Database | Implement SQLAlchemy 2.0 models & Alembic migrations | TSK-004 | P0 | NOT_STARTED | FR-ING-003, FR-POL-001 | PostgreSQL tables created with constraints & indexes | Migration test suite | `DATABASE_DESIGN.md` |
+| `TSK-008` | Phase 3 | Ingestion | Webhooks | Flask `/api/v1/webhooks/razorpay` endpoint with HMAC-SHA256 | TSK-007 | P0 | NOT_STARTED | FR-ING-001, FR-ING-002 | Valid signature returns 200, invalid returns 400 | `TS-INT-WH` test suite | `WEBHOOK_SPECIFICATION.md` |
+| `TSK-009` | Phase 3 | Ingestion | Deduplication | Idempotent event persistence in `webhook_events` | TSK-008 | P0 | NOT_STARTED | FR-ING-003, NFR-REL-001 | Replayed webhook triggers 0 duplicate tasks | Idempotency test | `INTEGRATION_ARCHITECTURE.md` |
+| `TSK-010` | Phase 4 | Intelligence | Error Mapping | Deterministic gateway error reason mapper | TSK-007 | P0 | NOT_STARTED | FR-INT-001, FR-INT-002 | Known codes mapped to TEMPORARY, ACTION_REQUIRED, PERMANENT | Mapper unit tests (100%) | `RECOVERY_STRATEGIES.md` |
+| `TSK-011` | Phase 4 | Intelligence | Ambiguity AI | OpenRouter fallback classifier for unknown error descriptions | TSK-010 | P1 | NOT_STARTED | FR-INT-003 | Ambiguous text categorized with confidence score | Mock AI unit tests | `OPENROUTER_INTEGRATION.md` |
+| `TSK-012` | Phase 5 | Context | Aggregator | Customer Profile & Subscription context aggregator service | TSK-008 | P1 | NOT_STARTED | FR-CTX-001 | Assembles tenure, success rate, retry history | Context builder tests | `PRD.md` |
+| `TSK-013` | Phase 6 | AI Decision | Provider | `OpenRouterProvider` client with JSON mode & healing plugin | TSK-011, TSK-012 | P0 | NOT_STARTED | FR-AI-001, FR-AI-002 | Generates valid JSON adhering to schema | Schema validation tests | `OPENROUTER_INTEGRATION.md` |
+| `TSK-014` | Phase 6 | AI Decision | Confidence | Confidence evaluator & low-confidence fallback routing | TSK-013 | P0 | NOT_STARTED | FR-AI-004 | Confidence < 0.75 routes to `MANUAL_ESCALATION` | Confidence routing tests | `AI_DECISION_SPEC.md` |
+| `TSK-015` | Phase 7 | Safety Gate | Rules Engine | Deterministic Policy Engine (8 hard merchant rules) | TSK-014 | P0 | NOT_STARTED | FR-POL-001..007, SEC-002| Zero LLM dependencies, fail-closed enforcement | `TS-UNIT-POL` (100% branch) | `POLICY_ENGINE.md` |
+| `TSK-016` | Phase 8 | Execution | Payment Links | Razorpay `POST /v1/payment_links` integration with idempotency | TSK-015 | P0 | NOT_STARTED | FR-ACT-001, FR-ACT-002 | Creates link with customer pre-fill & invoice ref | Razorpay mock client tests | `RAZORPAY_CAPABILITY_MATRIX.md` |
+| `TSK-017` | Phase 8 | Execution | Celery Tasks | Async task dispatcher for `SCHEDULE_RECOVERY_CHECK` | TSK-015 | P0 | NOT_STARTED | FR-ACT-003 | Delayed countdown jobs registered in Redis | Worker execution tests | `SYSTEM_ARCHITECTURE.md` |
+| `TSK-018` | Phase 9 | Verification | Reconciler | Inbound settlement webhook reconciliation & revenue attribution| TSK-016 | P0 | NOT_STARTED | FR-OUT-001, FR-OUT-002 | `payment.captured` transitions case to `RECOVERED` | Settlement E2E tests | `WORKFLOW_ARCHITECTURE.md` |
+| `TSK-019` | Phase 10 | Lifecycle | State Machine | `RecoveryCase` FSM engine with optimistic concurrency locking | TSK-018 | P0 | NOT_STARTED | FR-OUT-003 | Invalid transitions raise exception, locks prevent race | `TS-UNIT-FSM` test suite | `RECOVERY_STATE_MACHINE.md` |
+| `TSK-020` | Phase 11 | Observability | Audit Trail | Append-only `audit_events` logger with correlation ID tracking | TSK-019 | P0 | NOT_STARTED | NFR-AUD-001 | Every mutation creates immutable audit record | Immutability DB tests | `OBSERVABILITY.md` |
+| `TSK-021` | Phase 12 | Merchant API | Cases & Policy | REST endpoints (`/api/v1/cases`, `/policies`, `/audit`) | TSK-020 | P0 | NOT_STARTED | FR-UI-002, FR-UI-004 | REST endpoints return valid JSON with pagination | API integration tests | `API_SPECIFICATION.md` |
+| `TSK-022` | Phase 13 | Console UI | Dashboard | React Dashboard KPI cards & Recovery Cases Inbox | TSK-021, TSK-005 | P0 | NOT_STARTED | FR-UI-001, FR-UI-002 | Displays At-Risk, Recovered Revenue, Case table | React testing library | `PPD.md` |
+| `TSK-023` | Phase 14 | Console UI | Case Detail | Case Detail view with timeline & Policy validation breakdown | TSK-022 | P0 | NOT_STARTED | FR-UI-003 | Timeline and policy checklist render accurately | Component tests | `PPD.md` |
+| `TSK-024` | Phase 15 | Console UI | Governance | Policy configuration form & append-only Audit log viewer | TSK-022 | P1 | NOT_STARTED | FR-UI-004 | Merchant can update safety rules | Form validation tests | `PPD.md` |
+| `TSK-025` | Phase 16 | Evaluation | Synthetic Gen | 5,000 scenario synthetic generator with train/dev/test split | TSK-010 | P1 | NOT_STARTED | OBJ-02 | Generates realistic scenario files with ground truth | Data distribution test | `EVALUATION_PLAN.md` |
+| `TSK-026` | Phase 17 | Evaluation | Runner | Comparative Benchmark Runner (Baseline A vs B vs Smart) | TSK-025, TSK-021 | P0 | NOT_STARTED | OBJ-02 | Computes recovery uplift, efficiency, confusion matrix | Benchmark calculation test | `AI_EVALUATION.md` |
+| `TSK-027` | Phase 18 | Console UI | Evaluation Lab | Evaluation Lab React page with benchmark runner & charts | TSK-026, TSK-024 | P0 | NOT_STARTED | FR-UI-005 | Merchant can execute benchmark & export audit report | UI interaction tests | `PPD.md` |
+| `TSK-028` | Phase 19 | QA | E2E Suite | Automated validation of 7 core user journeys | TSK-027 | P0 | NOT_STARTED | All FRs | All 7 journeys pass cleanly | `TS-E2E-J1..7` | `USER_JOURNEYS.md` |
+| `TSK-029` | Phase 19 | QA | Chaos & Faults | Chaos test suite (duplicate webhooks, API timeouts, AI error) | TSK-028 | P1 | NOT_STARTED | NFR-REL-001 | System handles all 5 chaos scenarios cleanly | `FAILURE_SCENARIOS.md` | `FAILURE_SCENARIOS.md` |
+| `TSK-030` | Phase 20 | Security | Hardening | Rate limiting, header security, secret scanning | TSK-028 | P1 | NOT_STARTED | SEC-001, SEC-003 | Zero secrets exposed; TLS & rate limits enforced | Security audit check | `SECURITY_ARCHITECTURE.md` |
+| `TSK-031` | Phase 21 | Submission | Demo Build | Razorpay Test Mode seed data & live walkthrough scenarios | TSK-030 | P0 | NOT_STARTED | OBJ-01..04 | Scenario A (recovery) & B (policy veto) demo ready | Demo validation check | `MILESTONES.md` |
