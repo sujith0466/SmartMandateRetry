@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Search,
   Bell,
+  Globe,
 } from 'lucide-react';
 import { getActiveMerchantId, setActiveMerchantId } from '../services/api';
 
@@ -221,7 +222,16 @@ export const Layout: React.FC = () => {
           </form>
 
           {/* Header Controls & Status */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3.5">
+            {/* View Product Landing Page Link */}
+            <Link
+              to="/landing"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#F7F9FC] border border-[#E5E7EB] text-xs font-bold text-[#475569] hover:text-[#111827] transition-colors shadow-2xs"
+            >
+              <Globe className="w-3.5 h-3.5 text-[#3B5BDB]" />
+              <span>Product Overview</span>
+            </Link>
+
             {/* Live Webhook Status Chip (Aqua Theme) */}
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#ECFEFF] border border-[#A5F3FC] text-xs">
               <span className="w-2 h-2 rounded-full bg-[#0891B2] animate-pulse" />

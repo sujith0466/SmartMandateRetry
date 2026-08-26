@@ -8,10 +8,15 @@ import { AnalyticsPage } from '../features/analytics/AnalyticsPage';
 import { PoliciesPage } from '../features/policies/PoliciesPage';
 import { AuditPage } from '../features/audit/AuditPage';
 import { EvaluationPage } from '../features/evaluation/EvaluationPage';
+import { LandingPage } from '../features/landing/LandingPage';
 
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
+      {/* Public Enterprise Landing Page Route */}
+      <Route path="/landing" element={<LandingPage />} />
+
+      {/* Merchant Console Operational App Shell */}
       <Route path="/" element={<Layout />}>
         <Route index element={<DashboardPage />} />
         <Route path="dashboard" element={<Navigate to="/" replace />} />
