@@ -1,23 +1,38 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { FlaskConical } from 'lucide-react';
 
 export const EvaluationPage: React.FC = () => {
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className="space-y-6"
+    >
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Evaluation Lab</h1>
-        <p className="text-sm text-gray-500">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-black text-white tracking-tight">Evaluation Lab</h1>
+          <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-800/60">
+            BENCHMARK READY
+          </span>
+        </div>
+        <p className="text-xs text-slate-400 mt-1">
           Empirical benchmarking environment comparing SmartMandateRetry against Razorpay native and rule-based baselines across 5,000 synthetic failure scenarios.
         </p>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
-        <FlaskConical className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-        <h3 className="text-sm font-bold text-gray-900">Benchmark Lab Initialized</h3>
-        <p className="text-xs text-gray-500 max-w-md mx-auto mt-1">
-          Synthetic dataset runner and comparative uplift measurement pipelines will be fully connected in Phase 18 per the evaluation plan.
-        </p>
+      <div className="glass-card rounded-2xl p-12 text-center border border-slate-800/80 shadow-2xl space-y-4">
+        <div className="w-14 h-14 rounded-2xl bg-indigo-950/80 border border-indigo-800/60 flex items-center justify-center mx-auto text-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+          <FlaskConical className="w-7 h-7" />
+        </div>
+        <div>
+          <h3 className="text-base font-bold text-white">Comparative Benchmark Lab</h3>
+          <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
+            Synthetic dataset runner, recovery uplift calculator, and confusion matrix visualizer will execute in Phase 16–18 per the evaluation plan.
+          </p>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 };

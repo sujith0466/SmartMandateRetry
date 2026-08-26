@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   RefreshCw,
@@ -7,9 +8,13 @@ import {
   Activity,
   User,
   FileCheck,
+  Copy,
 } from 'lucide-react';
 import { fetchCaseActions, fetchCaseDetail, fetchCaseReconciliation } from '../../services/api';
 import { CaseDetailResponse, ReconciliationStatusInfo, RecoveryActionItem } from '../../types';
+import { Badge } from '../../components/ui/Badge';
+import { Skeleton } from '../../components/ui/SkeletonLoader';
+import { ToastContainer, ToastMessage } from '../../components/ui/Toast';
 
 export const CaseDetailPage: React.FC = () => {
   const { caseId } = useParams<{ caseId: string }>();
@@ -18,6 +23,20 @@ export const CaseDetailPage: React.FC = () => {
   const [reconciliation, setReconciliation] = useState<ReconciliationStatusInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 2500);
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    showToast(`Copied ${label} to clipboard!`);
+  };
 
   const loadData = async () => {
     if (!caseId) return;
@@ -45,9 +64,13 @@ export const CaseDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-6 h-6 text-green-600 animate-spin" />
-        <span className="ml-2 text-sm text-gray-500 font-medium">Loading case details...</span>
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-28 w-full rounded-2xl" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Skeleton className="h-64 rounded-2xl" />
+          <Skeleton className="h-64 rounded-2xl" />
+        </div>
       </div>
     );
   }
@@ -55,11 +78,11 @@ export const CaseDetailPage: React.FC = () => {
   if (error || !detail) {
     return (
       <div className="space-y-4">
-        <Link to="/cases" className="inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-900">
+        <Link to="/cases" className="inline-flex items-center text-xs font-bold text-slate-400 hover:text-white">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Cases
         </Link>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-xs text-red-700">
-          <p className="font-semibold text-sm text-red-800">Case Details Error</p>
+        <div className="glass-panel border-rose-800/80 rounded-2xl p-6 text-xs text-rose-300 bg-rose-950/20">
+          <p className="font-bold text-sm text-rose-200">Case Investigation Error</p>
           <p className="mt-1">{error || 'Case not found'}</p>
         </div>
       </div>
@@ -79,7 +102,7 @@ export const CaseDetailPage: React.FC = () => {
       active: !['DETECTED', 'ANALYZING', 'DECISION_PENDING', 'POLICY_REVIEW'].includes(c.state),
     },
     {
-      label: 'Action In Progress',
+      label: 'Action In Flight',
       active: ['ACTION_PENDING', 'IN_PROGRESS', 'WAITING_FOR_OUTCOME', 'RECOVERED', 'FAILED'].includes(c.state),
     },
     {
@@ -89,138 +112,168 @@ export const CaseDetailPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex items-center justify-between">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className="space-y-6"
+    >
+      <ToastContainer toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
+
+      {/* Top Breadcrumb & Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
-          <Link to="/cases" className="p-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-gray-600">
+          <Link
+            to="/cases"
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+          >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
-            <div className="flex items-center space-x-2">
-              <h1 className="text-xl font-bold text-gray-900 tracking-tight">{c.id}</h1>
-              <span
-                className={`px-2.5 py-0.5 rounded text-xs font-bold ${
-                  c.state === 'RECOVERED'
-                    ? 'bg-green-100 text-green-800'
-                    : c.state === 'ESCALATED'
-                    ? 'bg-purple-100 text-purple-800'
-                    : c.state === 'FAILED'
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-blue-100 text-blue-800'
-                }`}
-              >
-                {c.state}
-              </span>
+            <div className="flex items-center space-x-3">
+              <h1 className="text-2xl font-black text-white font-mono tracking-tight">{c.id}</h1>
+              <Badge state={c.state} />
             </div>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Subscription: <span className="font-mono text-gray-700">{c.subscription_id}</span> | Stage:{' '}
-              <span className="font-medium text-gray-700">{c.stage}</span>
+            <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+              <span>
+                Subscription: <strong className="font-mono text-slate-300">{c.subscription_id}</strong>
+              </span>
+              <span>•</span>
+              <span>
+                Stage: <strong className="text-slate-300">{c.stage}</strong>
+              </span>
             </p>
           </div>
         </div>
 
-        <button
-          onClick={loadData}
-          className="flex items-center px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
-        >
-          <RefreshCw className="w-3.5 h-3.5 mr-1 text-gray-500" />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => copyToClipboard(c.id, 'Case ID')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-bold transition-colors"
+          >
+            <Copy className="w-3.5 h-3.5" />
+            Copy ID
+          </button>
+          <button
+            onClick={loadData}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-bold transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Refresh
+          </button>
+        </div>
       </div>
 
-      {/* Visual Recovery Lifecycle Progression */}
-      <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Recovery State Progression</h3>
-        <div className="flex items-center justify-between overflow-x-auto py-2">
+      {/* Visual Recovery Lifecycle Progression Track */}
+      <div className="glass-card p-6 rounded-2xl space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Recovery Lifecycle Track</h3>
+          <span className="text-[11px] font-mono text-indigo-400">Deterministic Progression</span>
+        </div>
+        <div className="flex items-center justify-between overflow-x-auto py-3">
           {lifecycleSteps.map((step, idx) => (
             <React.Fragment key={step.label}>
               <div className="flex flex-col items-center min-w-[90px] text-center">
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                    step.active ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-400 border border-gray-200'
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                    step.active
+                      ? 'bg-emerald-500 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.5)]'
+                      : 'bg-slate-800 text-slate-500 border border-slate-700'
                   }`}
                 >
                   {step.active ? <CheckCircle2 className="w-4 h-4" /> : idx + 1}
                 </div>
-                <span className={`text-xs mt-1.5 font-medium ${step.active ? 'text-gray-900' : 'text-gray-400'}`}>
+                <span
+                  className={`text-[11px] mt-2 font-bold tracking-tight ${
+                    step.active ? 'text-white' : 'text-slate-500'
+                  }`}
+                >
                   {step.label}
                 </span>
               </div>
               {idx < lifecycleSteps.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-1 ${step.active ? 'bg-green-500' : 'bg-gray-200'}`} />
+                <div
+                  className={`flex-1 h-0.5 mx-1 transition-all ${
+                    step.active ? 'bg-emerald-500 shadow-[0_0_8px_#10B981]' : 'bg-slate-800'
+                  }`}
+                />
               )}
             </React.Fragment>
           ))}
         </div>
       </div>
 
-      {/* Grid: Context & Settlement Cards */}
+      {/* Grid: Customer Context & Settlement Reconciliation */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Customer & Subscription Context (Sanitized) */}
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-3">
-          <div className="flex items-center space-x-2 border-b border-gray-100 pb-3">
-            <User className="w-4 h-4 text-gray-500" />
-            <h3 className="text-sm font-semibold text-gray-900">Sanitized Customer Context</h3>
+        {/* Customer Context (Sanitized) */}
+        <div className="glass-card p-6 rounded-2xl space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-bold text-white">Customer & Subscription Profile</h3>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">SANITIZED</span>
           </div>
-          <div className="text-xs space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-500">Customer ID:</span>
-              <span className="font-mono text-gray-800">{customer?.id || '—'}</span>
+          <div className="text-xs space-y-3">
+            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
+              <span className="text-slate-400">Customer ID:</span>
+              <span className="font-mono font-bold text-slate-200">{customer?.id || '—'}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Sanitized Email:</span>
-              <span className="font-medium text-gray-800">{customer?.email || '—'}</span>
+            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
+              <span className="text-slate-400">Masked Email:</span>
+              <span className="font-mono font-bold text-slate-200">{customer?.email || '—'}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Sanitized Contact:</span>
-              <span className="font-medium text-gray-800">{customer?.contact || '—'}</span>
+            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
+              <span className="text-slate-400">Masked Contact:</span>
+              <span className="font-mono font-bold text-slate-200">{customer?.contact || '—'}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Subscription Plan:</span>
-              <span className="font-medium text-gray-800">{subscription?.plan_id || '—'}</span>
+            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
+              <span className="text-slate-400">Subscription Plan:</span>
+              <span className="font-bold text-slate-200">{subscription?.plan_id || '—'}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Current Cycle:</span>
-              <span className="font-medium text-gray-800">{subscription?.current_cycle || 1}</span>
+            <div className="flex justify-between items-center py-1">
+              <span className="text-slate-400">Subscription Cycle:</span>
+              <span className="font-mono font-bold text-slate-200">{subscription?.current_cycle || 1}</span>
             </div>
           </div>
         </div>
 
         {/* Settlement Reconciliation Status */}
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-3">
-          <div className="flex items-center space-x-2 border-b border-gray-100 pb-3">
-            <FileCheck className="w-4 h-4 text-gray-500" />
-            <h3 className="text-sm font-semibold text-gray-900">Settlement Reconciliation</h3>
-          </div>
-          <div className="text-xs space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500">Settlement Status:</span>
-              <span
-                className={`px-2 py-0.5 rounded font-bold ${
-                  reconciliation?.is_settled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                }`}
-              >
-                {reconciliation?.is_settled ? 'RECONCILED (PAID)' : 'UNRECONCILED'}
-              </span>
+        <div className="glass-card p-6 rounded-2xl space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <FileCheck className="w-4 h-4 text-emerald-400" />
+              <h3 className="text-sm font-bold text-white">Settlement Reconciliation</h3>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Recovered Amount:</span>
-              <span className="font-bold text-green-700">
+            <Badge
+              state={reconciliation?.is_settled ? 'RECOVERED' : 'WAITING_FOR_OUTCOME'}
+              variant={reconciliation?.is_settled ? 'emerald' : 'slate'}
+            >
+              {reconciliation?.is_settled ? 'RECONCILED (PAID)' : 'UNRECONCILED'}
+            </Badge>
+          </div>
+          <div className="text-xs space-y-3">
+            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
+              <span className="text-slate-400">Recovered Amount:</span>
+              <span className="text-base font-extrabold text-emerald-400 font-mono">
                 ₹{reconciliation?.recovered_amount_inr?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) || '0.00'}
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Reconciled Action ID:</span>
-              <span className="font-mono text-gray-800">{reconciliation?.reconciled_action_id || '—'}</span>
+            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
+              <span className="text-slate-400">Reconciled Action:</span>
+              <span className="font-mono font-bold text-slate-200">
+                {reconciliation?.reconciled_action_id || '—'}
+              </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Payment Reference:</span>
-              <span className="font-mono text-gray-800">{reconciliation?.external_reference_id || '—'}</span>
+            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
+              <span className="text-slate-400">Gateway Reference:</span>
+              <span className="font-mono font-bold text-indigo-300">
+                {reconciliation?.external_reference_id || '—'}
+              </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Resolved Timestamp:</span>
-              <span className="text-gray-800">
+            <div className="flex justify-between items-center py-1">
+              <span className="text-slate-400">Resolution Timestamp:</span>
+              <span className="text-slate-300">
                 {reconciliation?.resolved_at ? new Date(reconciliation.resolved_at).toLocaleString() : '—'}
               </span>
             </div>
@@ -228,54 +281,44 @@ export const CaseDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Execution Actions List */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Activity className="w-4 h-4 text-gray-500" />
-            <h3 className="text-sm font-semibold text-gray-900">Execution Actions History</h3>
+      {/* Execution Actions History */}
+      <div className="glass-card rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl">
+        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4 text-indigo-400" />
+            <h3 className="text-sm font-bold text-white">Execution Actions History</h3>
           </div>
-          <span className="text-xs text-gray-500">{actions.length} action(s) executed</span>
+          <span className="text-xs font-mono text-slate-400">{actions.length} Action(s)</span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-left text-xs">
-            <thead className="bg-gray-50 text-gray-500 font-semibold uppercase tracking-wider">
+          <table className="min-w-full divide-y divide-slate-800/80 text-left text-xs">
+            <thead className="bg-[#090E1A] text-slate-400 font-bold uppercase tracking-wider text-[10px]">
               <tr>
-                <th className="px-4 py-2.5">Action ID</th>
-                <th className="px-4 py-2.5">Type</th>
-                <th className="px-4 py-2.5">Status</th>
-                <th className="px-4 py-2.5">External Reference</th>
-                <th className="px-4 py-2.5">Executed At</th>
+                <th className="px-5 py-3.5">Action ID</th>
+                <th className="px-5 py-3.5">Type</th>
+                <th className="px-5 py-3.5">Status</th>
+                <th className="px-5 py-3.5">External Reference</th>
+                <th className="px-5 py-3.5">Executed At</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 text-gray-700">
+            <tbody className="divide-y divide-slate-800/60 text-slate-300 font-medium">
               {actions.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-gray-400">
-                    No recovery actions recorded for this case yet.
+                  <td colSpan={5} className="py-12 text-center text-slate-500">
+                    No execution actions recorded for this recovery case yet.
                   </td>
                 </tr>
               ) : (
                 actions.map((a) => (
-                  <tr key={a.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2.5 font-mono text-gray-900">{a.id}</td>
-                    <td className="px-4 py-2.5 font-semibold text-gray-800">{a.action_type}</td>
-                    <td className="px-4 py-2.5">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${
-                          a.status === 'RECONCILED'
-                            ? 'bg-green-100 text-green-800'
-                            : a.status === 'FAILED'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-blue-100 text-blue-800'
-                        }`}
-                      >
-                        {a.status}
-                      </span>
+                  <tr key={a.id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="px-5 py-3.5 font-mono font-bold text-white">{a.id}</td>
+                    <td className="px-5 py-3.5 font-bold text-indigo-300">{a.action_type}</td>
+                    <td className="px-5 py-3.5">
+                      <Badge state={a.status} />
                     </td>
-                    <td className="px-4 py-2.5 font-mono text-gray-600">{a.external_reference_id || '—'}</td>
-                    <td className="px-4 py-2.5 text-gray-500">
+                    <td className="px-5 py-3.5 font-mono text-slate-400">{a.external_reference_id || '—'}</td>
+                    <td className="px-5 py-3.5 text-slate-400 text-[11px]">
                       {a.executed_at ? new Date(a.executed_at).toLocaleString() : '—'}
                     </td>
                   </tr>
@@ -285,6 +328,6 @@ export const CaseDetailPage: React.FC = () => {
           </table>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
