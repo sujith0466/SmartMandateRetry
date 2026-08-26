@@ -54,7 +54,7 @@ def run_browser_qa():
         record_result("Landing 2.0", "Page Load & Title", "PASS", f"Title: {title}")
 
         # Hero Headline and Trust Pill
-        hero_h1 = page.locator("h1:has-text('Turn Failed Recurring Payments')")
+        hero_h1 = page.locator("h1:has-text('Every Failed Mandate')")
         assert hero_h1.count() > 0, "Hero headline missing on /"
         record_result("Landing 2.0", "Hero Headline & Trust Pill", "PASS", "Hero headline and +17.1 pp uplift trust badge verified")
 
