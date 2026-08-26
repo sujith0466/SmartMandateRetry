@@ -1,8 +1,8 @@
 # SmartMandateRetry — Master Implementation Tracker & Traceability Matrix
 
 > **Document ID:** DOC-PROG-002  
-> **Version:** 1.10.0  
-> **Status:** APPROVED BASELINE (Phase 0, 1, 2, 3, 4, 5, and 6 COMPLETED)  
+> **Version:** 1.11.0  
+> **Status:** APPROVED BASELINE (Phase 0-6 COMPLETED; Phase 7 Granular Breakdown Added)  
 
 ---
 
@@ -87,7 +87,22 @@
 | `TSK-013-14` | Phase 6 | AI Decision | Integration | Integration tests saving `RecoveryDecision` and `AuditEvent` to DB | `TSK-013-09, 10` | P0 | **COMPLETED** | All Phase 6 FRs | Verifies end-to-end DB persistence and audit trail | `test_decision_service.py` | `TEST_PLAN.md` |
 | `TSK-013-15` | Phase 6 | AI Decision | Resilience | Chaos tests (OpenRouter timeout, 429 rate limit, 500 error, malformed) | `TSK-013-07, 14` | P0 | **COMPLETED** | NFR-REL-001 | Safe degradation to deterministic fallback under faults | `test_engine.py` | `FAILURE_SCENARIOS.md` |
 | `TSK-014` | Phase 6 | AI Decision | Confidence | Confidence evaluator & low-confidence fallback routing | TSK-013 | P0 | **COMPLETED** | FR-AI-004 | Confidence < 0.75 routes to `MANUAL_ESCALATION` | `test_engine.py` | `AI_DECISION_SPEC.md` |
-| `TSK-015` | Phase 7 | Safety Gate | Rules Engine | Deterministic Policy Engine (8 hard merchant rules) | TSK-014 | P0 | **NOT_STARTED** | FR-POL-001..007, SEC-002| Zero LLM dependencies, fail-closed enforcement | `TS-UNIT-POL` (100% branch) | `POLICY_ENGINE.md` |
+| `TSK-015` | Phase 7 | Safety Gate | Policy Engine | Master task: Policy Engine & Deterministic Safety Gate | TSK-013, TSK-014 | P0 | **NOT_STARTED** | FR-POL-001..007, SEC-002| Zero LLM dependencies, fail-closed enforcement | Policy test suite | `PHASE_07_IMPLEMENTATION_PLAN.md` |
+| `TSK-015-01` | Phase 7 | Safety Gate | Policy Contract | Define `PolicyDecision`, `PolicyStatusEnum`, and serialization models | Phase 6 | P0 | **NOT_STARTED** | FR-POL-001 | Immutable typed dataclasses with complete serialization | Contract unit tests | `DOMAIN_MODEL.md` |
+| `TSK-015-02` | Phase 7 | Safety Gate | Rule Registry | Implement `PolicyRuleRegistry` with strict priority ordering | `TSK-015-01` | P0 | **NOT_STARTED** | FR-POL-001 | Declarative rules ordered from P0 (safety) to P3 (interval) | Registry tests | `POLICY_ENGINE.md` |
+| `TSK-015-03` | Phase 7 | Safety Gate | Hard Decline Veto| Implement `HardDeclineSafetyRule` (POL-RULE-001) | `TSK-015-02` | P0 | **NOT_STARTED** | FR-POL-001 | Hard decline errors veto automated recovery and force STOP | Rule unit tests | `POLICY_ENGINE.md` |
+| `TSK-015-04` | Phase 7 | Safety Gate | Terminal Gate | Implement `TerminalCaseSafetyRule` (POL-RULE-004) | `TSK-015-02` | P0 | **NOT_STARTED** | FR-POL-004 | Disallows recovery on already recovered/expired/stopped cases | Rule unit tests | `RECOVERY_STATE_MACHINE.md` |
+| `TSK-015-05` | Phase 7 | Safety Gate | Max Retries Cap | Implement `MaxRetriesCapRule` (POL-RULE-002) | `TSK-015-02` | P0 | **NOT_STARTED** | FR-POL-002 | Caps retry attempts at merchant configured limit (default 3) | Rule unit tests | `POLICY_ENGINE.md` |
+| `TSK-015-06` | Phase 7 | Safety Gate | High Value Gate | Implement `HighValueReviewRule` (POL-RULE-006, 10,000 INR cap) | `TSK-015-02` | P0 | **NOT_STARTED** | FR-POL-006 | Modifies automated retry to MANUAL_ESCALATION for high value | Rule unit tests | `POLICY_ENGINE.md` |
+| `TSK-015-07` | Phase 7 | Safety Gate | Confidence Gate | Implement `LowConfidenceVetoRule` (POL-RULE-005, 0.75 threshold) | `TSK-015-02` | P0 | **NOT_STARTED** | FR-POL-005 | Blocks/modifies low confidence decisions to manual review | Rule unit tests | `AI_DECISION_SPEC.md` |
+| `TSK-015-08` | Phase 7 | Safety Gate | Contact Cap | Implement `ContactFrequencyCapRule` (POL-RULE-007, 3 contacts) | `TSK-015-02` | P0 | **NOT_STARTED** | FR-POL-007 | Prevents customer spamming when contact limit reached | Rule unit tests | `POLICY_ENGINE.md` |
+| `TSK-015-09` | Phase 7 | Safety Gate | Strategy Stage | Implement `StrategyStageCompatibilityRule` (POL-RULE-008) | `TSK-015-02` | P0 | **NOT_STARTED** | FR-POL-008 | Ensures strategy is valid for current stage & failure class | Rule unit tests | `RECOVERY_STRATEGIES.md` |
+| `TSK-015-10` | Phase 7 | Safety Gate | Interval Enforcer| Implement `MinRetryIntervalRule` (POL-RULE-003, 24h floor) | `TSK-015-02` | P0 | **NOT_STARTED** | FR-POL-003 | Enforces minimum interval between automated retry checks | Rule unit tests | `POLICY_ENGINE.md` |
+| `TSK-015-11` | Phase 7 | Safety Gate | Evaluator Engine | Implement `PolicyEvaluationEngine` orchestrating rule pipeline | `TSK-015-03..10`| P0 | **NOT_STARTED** | FR-POL-001..007 | Produces explainable `PolicyDecision` from context & decision | Evaluator tests | `PHASE_07_IMPLEMENTATION_PLAN.md` |
+| `TSK-015-12` | Phase 7 | Safety Gate | Service Layer | Implement `PolicyEngineService` with UnitOfWork & audit logging | `TSK-015-11` | P0 | **NOT_STARTED** | NFR-AUD-001 | Records `POLICY_DECISION_EVALUATED` in PostgreSQL | Service DB tests | `OBSERVABILITY.md` |
+| `TSK-015-13` | Phase 7 | Safety Gate | Unit Tests | Unit tests for every individual policy rule (100% branch) | `TSK-015-03..11`| P0 | **NOT_STARTED** | All Phase 7 FRs | 100% branch coverage across all policy safety rules | Policy unit test suite | `TEST_PLAN.md` |
+| `TSK-015-14` | Phase 7 | Safety Gate | Integration | Integration tests querying PostgreSQL policies & logging audit | `TSK-015-12` | P0 | **NOT_STARTED** | All Phase 7 FRs | Verifies end-to-end policy evaluation and DB persistence | Integration tests | `TEST_PLAN.md` |
+| `TSK-015-15` | Phase 7 | Safety Gate | Idempotency & QA | Tests for duplicate evaluation, corrupted inputs, fail-closed | `TSK-015-12` | P0 | **NOT_STARTED** | NFR-REL-001 | Verifies idempotent evaluation and fail-closed safety | QA tests | `FAILURE_SCENARIOS.md` |
 | `TSK-016` | Phase 8 | Execution | Payment Links | Razorpay `POST /v1/payment_links` integration with idempotency | TSK-015 | P0 | **NOT_STARTED** | FR-ACT-001, FR-ACT-002 | Creates link with customer pre-fill & invoice ref | Razorpay mock client tests | `RAZORPAY_CAPABILITY_MATRIX.md` |
 | `TSK-017` | Phase 8 | Execution | Celery Tasks | Async task dispatcher for `SCHEDULE_RECOVERY_CHECK` | TSK-015 | P0 | **NOT_STARTED** | FR-ACT-003 | Delayed countdown jobs registered in Redis | Worker execution tests | `SYSTEM_ARCHITECTURE.md` |
 | `TSK-018` | Phase 9 | Verification | Reconciler | Inbound settlement webhook reconciliation & revenue attribution| TSK-016 | P0 | **NOT_STARTED** | FR-OUT-001, FR-OUT-002 | `payment.captured` transitions case to `RECOVERED` | Settlement E2E tests | `WORKFLOW_ARCHITECTURE.md` |
