@@ -20,9 +20,13 @@ import { ObservabilitySummary, OverviewMetrics } from '../../types';
 import { StatCard } from '../../components/ui/StatCard';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
 import { formatState } from '../../utils/terminology';
+import { RecoveryNetworkVisualizer } from './RecoveryNetworkVisualizer';
+import { useReducedMotion } from '../../motion/useReducedMotion';
+import { staggerContainer, staggerItem } from '../../motion/motionTokens';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
+  const reducedMotion = useReducedMotion();
   const [metrics, setMetrics] = useState<OverviewMetrics | null>(null);
   const [obsSummary, setObsSummary] = useState<ObservabilitySummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -105,13 +109,16 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
       className="space-y-6"
     >
       {/* Top Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+      <motion.div
+        variants={staggerItem}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1"
+      >
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-black text-[#111827] tracking-tight font-sans">
@@ -145,19 +152,23 @@ export const DashboardPage: React.FC = () => {
             ))}
           </div>
 
-          <button
+          <motion.button
+            whileTap={reducedMotion ? {} : { scale: 0.95 }}
             onClick={loadData}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-[#475569] bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] shadow-2xs transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5 text-[#64748B]" />
             Refresh
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Operator Action Alert (Amber Theme) */}
       {escalatedCases > 0 && (
-        <div className="p-4.5 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+        <motion.div
+          variants={staggerItem}
+          className="p-4.5 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs"
+        >
           <div className="flex items-center gap-3.5">
             <div className="p-2.5 rounded-xl bg-[#D97706] text-white shadow-2xs">
               <ShieldAlert className="w-5 h-5" />
@@ -171,22 +182,27 @@ export const DashboardPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <button
+          <motion.button
+            whileHover={reducedMotion ? {} : { scale: 1.02 }}
+            whileTap={reducedMotion ? {} : { scale: 0.98 }}
             onClick={() => navigate('/cases?tab=escalations')}
             className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#D97706] hover:bg-[#B45309] text-white font-bold text-xs shadow-2xs transition-colors shrink-0"
           >
             Open Escalation Queue
             <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       )}
 
-      {/* Hero KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Hero KPI Cards Grid with Count-Up Animations */}
+      <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div onClick={() => navigate('/cases?tab=recovered')} className="cursor-pointer">
           <StatCard
             title="Recovered Revenue"
-            value={`₹${recoveredAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
+            numericValue={recoveredAmount}
+            prefix="₹"
+            formatIndianRupee={true}
+            decimals={2}
             subtitle={`${recoveryRate.toFixed(1)}% recovery success (+17.1 pp uplift)`}
             icon={IndianRupee}
             variant="emerald"
@@ -197,7 +213,7 @@ export const DashboardPage: React.FC = () => {
         <div onClick={() => navigate('/cases')} className="cursor-pointer">
           <StatCard
             title="Total Ingested Failures"
-            value={totalCases}
+            numericValue={totalCases}
             subtitle={`${recoveredCases} settled • ${totalCases - recoveredCases} open/failed`}
             icon={Clock}
             variant="sapphire"
@@ -207,7 +223,7 @@ export const DashboardPage: React.FC = () => {
         <div onClick={() => navigate('/cases?tab=active')} className="cursor-pointer">
           <StatCard
             title="Active Interventions"
-            value={activeCases}
+            numericValue={activeCases}
             subtitle="Smart retry & WhatsApp link active"
             icon={TrendingUp}
             variant="aqua"
@@ -217,18 +233,23 @@ export const DashboardPage: React.FC = () => {
         <div onClick={() => navigate('/cases?tab=escalations')} className="cursor-pointer">
           <StatCard
             title="Needs Manual Review"
-            value={escalatedCases}
+            numericValue={escalatedCases}
             subtitle="High-value holds / low-confidence"
             icon={ShieldAlert}
             variant="amber"
             delay={0.2}
           />
         </div>
-      </div>
+      </motion.div>
+
+      {/* Hero Recovery Pipeline Network Visualizer */}
+      <motion.div variants={staggerItem}>
+        <RecoveryNetworkVisualizer />
+      </motion.div>
 
       {/* Main Grid: Lifecycle Pipeline Distribution & Governance Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Case Lifecycle Pipeline */}
+      <motion.div variants={staggerItem} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Case Lifecycle Pipeline with Animated Bar Widths */}
         <div className="lg:col-span-2 bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm space-y-5">
           <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
             <div className="flex items-center gap-2">
@@ -239,7 +260,7 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <div className="space-y-3.5">
-            {Object.entries(states).map(([stateName, count]) => {
+            {Object.entries(states).map(([stateName, count], index) => {
               const stateInfo = formatState(stateName);
               const pct = totalCases > 0 ? (count / totalCases) * 100 : 0;
               let barColor = 'bg-[#94A3B8]';
@@ -265,7 +286,12 @@ export const DashboardPage: React.FC = () => {
                     </span>
                   </div>
                   <div className="w-full bg-[#F1F5F9] rounded-full h-2 overflow-hidden border border-[#E5E7EB]">
-                    <div className={`h-2 rounded-full ${barColor} transition-all duration-300`} style={{ width: `${Math.max(pct, 2)}%` }} />
+                    <motion.div
+                      initial={reducedMotion ? { width: `${Math.max(pct, 2)}%` } : { width: 0 }}
+                      animate={{ width: `${Math.max(pct, 2)}%` }}
+                      transition={{ duration: 0.6, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                      className={`h-2 rounded-full ${barColor}`}
+                    />
                   </div>
                 </div>
               );
@@ -320,11 +346,12 @@ export const DashboardPage: React.FC = () => {
             </span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Quick Action Control Strip */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div
+      {/* Quick Action Control Strip with Hover Lift */}
+      <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <motion.div
+          whileHover={reducedMotion ? {} : { y: -2, transition: { duration: 0.15 } }}
           onClick={() => navigate('/policies')}
           className="p-4 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all flex items-center justify-between group"
         >
@@ -338,9 +365,10 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
           <ArrowRight className="w-4 h-4 text-[#64748B] group-hover:text-[#3B5BDB] group-hover:translate-x-0.5 transition-all" />
-        </div>
+        </motion.div>
 
-        <div
+        <motion.div
+          whileHover={reducedMotion ? {} : { y: -2, transition: { duration: 0.15 } }}
           onClick={() => navigate('/cases?tab=escalations')}
           className="p-4 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all flex items-center justify-between group"
         >
@@ -354,9 +382,10 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
           <ArrowRight className="w-4 h-4 text-[#64748B] group-hover:text-[#3B5BDB] group-hover:translate-x-0.5 transition-all" />
-        </div>
+        </motion.div>
 
-        <div
+        <motion.div
+          whileHover={reducedMotion ? {} : { y: -2, transition: { duration: 0.15 } }}
           onClick={() => navigate('/audit')}
           className="p-4 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all flex items-center justify-between group"
         >
@@ -370,8 +399,8 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
           <ArrowRight className="w-4 h-4 text-[#64748B] group-hover:text-[#3B5BDB] group-hover:translate-x-0.5 transition-all" />
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </motion.div>
   );
 };

@@ -176,7 +176,7 @@ def run_browser_qa():
         record_result("Evaluation Lab", "Sidebar Navigation", "PASS", f"Navigated to {page.url}")
 
         # Overview Header Cards
-        overview_card = page.locator("h1:has-text('Recovery Intelligence Benchmark')")
+        overview_card = page.locator("h1:has-text('Evaluation')")
         assert overview_card.count() > 0, "Evaluation Lab header missing"
         record_result("Evaluation Lab", "Overview & Split Selector", "PASS", "Dataset manifest metrics and run controls rendered")
 

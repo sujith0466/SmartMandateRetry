@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Scale,
   ShieldCheck,
@@ -9,6 +9,7 @@ import {
   Search,
   AlertTriangle,
   Activity,
+  FlaskConical,
 } from 'lucide-react';
 import {
   fetchEvaluationSummary,
@@ -33,6 +34,8 @@ import { RunHistoryDrawer } from './components/RunHistoryDrawer';
 import { ScenarioResultTable, ScenarioFilters } from './components/ScenarioResultTable';
 import { ScenarioExplorerModal } from './components/ScenarioExplorerModal';
 import { LongitudinalTrendView } from './components/LongitudinalTrendView';
+import { useReducedMotion } from '../../motion/useReducedMotion';
+import { staggerContainer, staggerItem } from '../../motion/motionTokens';
 
 type ActiveTab =
   | 'COMPARATIVE'
@@ -44,6 +47,7 @@ type ActiveTab =
   | 'SCENARIO_EXPLORER';
 
 export const EvaluationPage: React.FC = () => {
+  const reducedMotion = useReducedMotion();
   const [activeTab, setActiveTab] = useState<ActiveTab>('COMPARATIVE');
   const [selectedSplit, setSelectedSplit] = useState<'TEST' | 'VALIDATION' | 'TRAIN' | 'ALL'>('TEST');
   const [selectedMode, setSelectedMode] = useState<string>('SMART_MANDATE');
@@ -187,23 +191,24 @@ export const EvaluationPage: React.FC = () => {
   };
 
   const modeMetrics = comparativeData?.mode_metrics || {};
-  const baselineRecoveryRate = comparativeData?.baseline_recovery_rate || 0.2921;
+  const baselineRecoveryRate = modeMetrics['RAZORPAY_NATIVE']?.simulated_recovery_rate || 0.3125;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
       className="space-y-6"
     >
-      {/* Page Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Header */}
+      <motion.div variants={staggerItem} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-black text-[#111827] tracking-tight font-sans">
-              Recovery Intelligence Benchmark
+              Evaluation & Benchmarking Lab
             </h1>
-            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE]">
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#F5F3FF] text-[#7C3AED] border border-[#DDD6FE] flex items-center gap-1 font-mono">
+              <FlaskConical className="w-3.5 h-3.5 text-[#7C3AED]" />
               5,000 SCENARIOS
             </span>
           </div>
@@ -236,169 +241,131 @@ export const EvaluationPage: React.FC = () => {
             <option value="AI_UNGUARDED">AI Unguarded (Ablation Control)</option>
           </select>
         </div>
-      </div>
+      </motion.div>
 
       {/* Error Alert */}
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-[#FFF1F2] border border-[#FECDD3] text-[#9F1239] text-xs flex items-center gap-3">
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-4 rounded-xl bg-[#FFF1F2] border border-[#FECDD3] text-[#9F1239] text-xs flex items-center gap-3 shadow-sm"
+        >
           <AlertTriangle className="w-5 h-5 flex-shrink-0 text-[#E11D48]" />
           <span>{errorMessage}</span>
-        </div>
+        </motion.div>
       )}
 
       {/* Overview & Action Bar */}
-      <EvaluationOverview
-        summary={summary}
-        activeRun={activeRun}
-        activeMetrics={activeMetrics}
-        selectedSplit={selectedSplit}
-        onSplitChange={setSelectedSplit}
-        isRunningBenchmark={isRunningBenchmark}
-        onRunBenchmark={handleRunBenchmark}
-        onRefresh={loadInitialData}
-        onOpenHistory={() => setIsHistoryOpen(true)}
-      />
+      <motion.div variants={staggerItem}>
+        <EvaluationOverview
+          summary={summary}
+          activeRun={activeRun}
+          activeMetrics={activeMetrics}
+          selectedSplit={selectedSplit}
+          onSplitChange={setSelectedSplit}
+          isRunningBenchmark={isRunningBenchmark}
+          onRunBenchmark={handleRunBenchmark}
+          onRefresh={loadInitialData}
+          onOpenHistory={() => setIsHistoryOpen(true)}
+        />
+      </motion.div>
 
       {/* Navigation Sub-Tabs (Sapphire Active Treatment) */}
-      <div className="flex items-center gap-1 border-b border-[#E5E7EB] pb-px overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('COMPARATIVE')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'COMPARATIVE'
-              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
-          }`}
+      <motion.div variants={staggerItem} className="flex items-center gap-1 border-b border-[#E5E7EB] pb-px overflow-x-auto">
+        {[
+          { id: 'COMPARATIVE', label: 'Comparative Benchmark', icon: Scale, color: 'text-[#3B5BDB]' },
+          { id: 'SAFETY', label: 'Safety & Governance', icon: ShieldCheck, color: 'text-[#059669]' },
+          { id: 'CONFUSION_MATRIX', label: 'Confusion Matrix & F1', icon: Target, color: 'text-[#0891B2]' },
+          { id: 'FINANCIAL', label: 'Recovery & Financials', icon: IndianRupee, color: 'text-[#D97706]' },
+          { id: 'DIMENSIONAL', label: 'Dimensional Breakdowns', icon: Layers, color: 'text-[#7C3AED]' },
+          { id: 'TRENDS', label: 'Longitudinal Trends & Drift', icon: Activity, color: 'text-[#059669]' },
+          { id: 'SCENARIO_EXPLORER', label: 'Scenario Results Explorer', icon: Search, color: 'text-[#7C3AED]' },
+        ].map((t) => {
+          const Icon = t.icon;
+          const isActive = activeTab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id as ActiveTab)}
+              className={`relative flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition-all whitespace-nowrap z-0 ${
+                isActive ? 'text-[#3B5BDB]' : 'text-[#64748B] hover:text-[#111827]'
+              }`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="evalActiveSubTabPill"
+                  className="absolute inset-0 bg-white border-b-2 border-[#3B5BDB] rounded-t-xl -z-10 shadow-2xs"
+                  transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                />
+              )}
+              <Icon className={`w-4 h-4 ${isActive ? 'text-[#3B5BDB]' : t.color}`} />
+              <span>{t.label}</span>
+            </button>
+          );
+        })}
+      </motion.div>
+
+      {/* Tab Panels with AnimatePresence */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={reducedMotion ? {} : { opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reducedMotion ? {} : { opacity: 0, y: -4 }}
+          transition={{ duration: 0.16 }}
         >
-          <Scale className="w-4 h-4 text-[#3B5BDB]" />
-          Comparative Benchmark
-        </button>
+          {activeTab === 'COMPARATIVE' && (
+            <ComparativeBenchmarkView
+              modeMetrics={modeMetrics}
+              baselineRecoveryRate={baselineRecoveryRate}
+            />
+          )}
 
-        <button
-          onClick={() => setActiveTab('SAFETY')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'SAFETY'
-              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
-          }`}
-        >
-          <ShieldCheck className="w-4 h-4 text-[#059669]" />
-          Safety & Governance
-        </button>
+          {activeTab === 'SAFETY' && activeMetrics && (
+            <SafetyGovernanceDashboard
+              safetyMetrics={activeMetrics.safety_metrics}
+              modeName={selectedMode}
+            />
+          )}
 
-        <button
-          onClick={() => setActiveTab('CONFUSION_MATRIX')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'CONFUSION_MATRIX'
-              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
-          }`}
-        >
-          <Target className="w-4 h-4 text-[#0891B2]" />
-          Confusion Matrix & F1
-        </button>
+          {activeTab === 'CONFUSION_MATRIX' && activeMetrics && (
+            <ConfusionMatrixView
+              metrics={activeMetrics}
+              modeName={selectedMode}
+            />
+          )}
 
-        <button
-          onClick={() => setActiveTab('FINANCIAL')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'FINANCIAL'
-              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
-          }`}
-        >
-          <IndianRupee className="w-4 h-4 text-[#D97706]" />
-          Recovery & Financials
-        </button>
+          {activeTab === 'FINANCIAL' && activeMetrics && (
+            <RecoveryFinancialAnalytics
+              metrics={activeMetrics}
+              modeName={selectedMode}
+            />
+          )}
 
-        <button
-          onClick={() => setActiveTab('DIMENSIONAL')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'DIMENSIONAL'
-              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
-          }`}
-        >
-          <Layers className="w-4 h-4 text-[#7C3AED]" />
-          Dimensional Breakdowns
-        </button>
+          {activeTab === 'DIMENSIONAL' && activeMetrics && (
+            <DimensionalBreakdownView
+              metrics={activeMetrics}
+              modeName={selectedMode}
+            />
+          )}
 
-        <button
-          onClick={() => setActiveTab('TRENDS')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'TRENDS'
-              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
-          }`}
-        >
-          <Activity className="w-4 h-4 text-[#059669]" />
-          Longitudinal Trends & Drift
-        </button>
+          {activeTab === 'TRENDS' && (
+            <LongitudinalTrendView />
+          )}
 
-        <button
-          onClick={() => setActiveTab('SCENARIO_EXPLORER')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'SCENARIO_EXPLORER'
-              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
-          }`}
-        >
-          <Search className="w-4 h-4 text-[#7C3AED]" />
-          Scenario Results Explorer
-        </button>
-      </div>
-
-      {/* Tab Panels */}
-      <div>
-        {activeTab === 'COMPARATIVE' && (
-          <ComparativeBenchmarkView
-            modeMetrics={modeMetrics}
-            baselineRecoveryRate={baselineRecoveryRate}
-          />
-        )}
-
-        {activeTab === 'SAFETY' && activeMetrics && (
-          <SafetyGovernanceDashboard
-            safetyMetrics={activeMetrics.safety_metrics}
-            modeName={selectedMode}
-          />
-        )}
-
-        {activeTab === 'CONFUSION_MATRIX' && activeMetrics && (
-          <ConfusionMatrixView
-            metrics={activeMetrics}
-            modeName={selectedMode}
-          />
-        )}
-
-        {activeTab === 'FINANCIAL' && activeMetrics && (
-          <RecoveryFinancialAnalytics
-            metrics={activeMetrics}
-            modeName={selectedMode}
-          />
-        )}
-
-        {activeTab === 'DIMENSIONAL' && activeMetrics && (
-          <DimensionalBreakdownView
-            metrics={activeMetrics}
-            modeName={selectedMode}
-          />
-        )}
-
-        {activeTab === 'TRENDS' && (
-          <LongitudinalTrendView />
-        )}
-
-        {activeTab === 'SCENARIO_EXPLORER' && (
-          <ScenarioResultTable
-            results={scenarioResults}
-            isLoading={isScenarioLoading}
-            onSelectScenario={setSelectedScenario}
-            page={scenarioPage}
-            totalPages={scenarioTotalPages}
-            onPageChange={handlePageChange}
-            onFilterChange={handleFilterChange}
-          />
-        )}
-      </div>
+          {activeTab === 'SCENARIO_EXPLORER' && (
+            <ScenarioResultTable
+              results={scenarioResults}
+              isLoading={isScenarioLoading}
+              onSelectScenario={setSelectedScenario}
+              page={scenarioPage}
+              totalPages={scenarioTotalPages}
+              onPageChange={handlePageChange}
+              onFilterChange={handleFilterChange}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       {/* Scenario Explorer Inspector Modal */}
       <ScenarioExplorerModal

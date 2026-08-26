@@ -1,53 +1,57 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
   RefreshCw,
+  Search,
+  Download,
+  AlertCircle,
+  Copy,
   ChevronLeft,
   ChevronRight,
   Eye,
-  AlertCircle,
-  Copy,
-  Search,
-  Download,
   ShieldCheck,
 } from 'lucide-react';
 import { exportAuditCsv, fetchAuditEvents } from '../../services/api';
 import { AuditEventItem, PaginationInfo } from '../../types';
-import { PayloadModal } from '../../components/ui/PayloadModal';
 import { TableSkeleton } from '../../components/ui/SkeletonLoader';
+import { PayloadModal } from '../../components/ui/PayloadModal';
 import { ToastContainer, ToastMessage } from '../../components/ui/Toast';
 import { formatAuditEventType } from '../../utils/terminology';
+import { useReducedMotion } from '../../motion/useReducedMotion';
+import { staggerContainer, staggerItem } from '../../motion/motionTokens';
 
 const AUDIT_EVENT_TYPES = [
-  'PAYMENT_FAILURE_CLASSIFIED',
-  'CUSTOMER_CONTEXT_AGGREGATED',
-  'AI_DECISION_PRODUCED',
-  'POLICY_DECISION_EVALUATED',
-  'RECOVERY_ACTION_EXECUTED',
-  'RECOVERY_ACTION_SCHEDULED',
-  'PAYMENT_OUTCOME_RECONCILED',
-  'RECOVERY_STATE_TRANSITIONED',
-  'POLICY_CONFIG_UPDATED',
-  'CASE_MANUALLY_ESCALATED',
-  'CASE_HUMAN_INTERVENTION_RESOLVED',
+  'CASE_CREATED',
+  'AI_DECISION_PROPOSED',
+  'POLICY_VALIDATION_PASSED',
+  'POLICY_VALIDATION_VIOLATION',
+  'ACTION_EXECUTED',
+  'RECOVERY_SUCCEEDED',
+  'RECOVERY_FAILED',
+  'STATE_TRANSITION',
+  'OPERATOR_OVERRIDE',
+  'POLICY_UPDATED',
 ];
 
 export const AuditPage: React.FC = () => {
+  const reducedMotion = useReducedMotion();
   const [events, setEvents] = useState<AuditEventItem[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({ page: 1, limit: 20, total: 0, pages: 1 });
   const [selectedEventType, setSelectedEventType] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedPayload, setSelectedPayload] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPayload, setSelectedPayload] = useState<any | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const showToast = (message: string) => {
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, message, type: 'success' }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 2500);
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 2500);
   };
 
   const copyToClipboard = (text: string, label: string) => {
@@ -59,11 +63,11 @@ export const AuditPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchAuditEvents(page, 20, undefined, selectedEventType || undefined);
-      setEvents(res.data);
-      setPagination(res.pagination);
+      const response = await fetchAuditEvents(page, 20, selectedEventType || undefined);
+      setEvents(response.data);
+      setPagination(response.pagination);
     } catch (err: any) {
-      setError(err.message || 'Failed to load audit events');
+      setError(err.message || 'Failed to load audit logs');
     } finally {
       setLoading(false);
     }
@@ -76,54 +80,61 @@ export const AuditPage: React.FC = () => {
   const handleExportCsv = async () => {
     try {
       setIsExporting(true);
-      const blob = await exportAuditCsv(undefined, selectedEventType || undefined);
+      const blob = await exportAuditCsv(selectedEventType || undefined);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `audit_trail_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `compliance_audit_ledger_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (err: any) {
-      showToast(err.message || 'Failed to export audit CSV');
+      showToast(err.message || 'Failed to export CSV', 'error');
     } finally {
       setIsExporting(false);
     }
   };
 
-  const filteredEvents = events.filter(
-    (ev) =>
-      ev.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (ev.recovery_case_id && ev.recovery_case_id.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (ev.correlation_id && ev.correlation_id.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      ev.actor.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredEvents = events.filter((e) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      e.id.toLowerCase().includes(q) ||
+      (e.recovery_case_id && e.recovery_case_id.toLowerCase().includes(q)) ||
+      (e.correlation_id && e.correlation_id.toLowerCase().includes(q)) ||
+      e.event_type.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
       className="space-y-6"
     >
       <ToastContainer toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
-      <PayloadModal data={selectedPayload} onClose={() => setSelectedPayload(null)} />
+
+      <PayloadModal
+        title="Event State Transition Payload & Cryptographic Context"
+        data={selectedPayload}
+        onClose={() => setSelectedPayload(null)}
+      />
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <motion.div variants={staggerItem} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-black text-[#111827] tracking-tight font-sans">
-              Immutable Compliance Audit Trail
+              Compliance & Safety Audit Trail
             </h1>
-            <span className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] font-mono">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#059669]" />
-              Append-Only Ledger
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] font-bold flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5" /> Immutable Append-Only Ledger
             </span>
           </div>
           <p className="text-xs text-[#64748B] mt-1">
-            Verifiable compliance log of state transitions, AI decisions, safety policy evaluations & settlement reconciliation
+            Complete cryptographic audit trail for every AI decision proposal, policy gate verification & settlement event
           </p>
         </div>
 
@@ -153,7 +164,8 @@ export const AuditPage: React.FC = () => {
             ))}
           </select>
 
-          <button
+          <motion.button
+            whileTap={reducedMotion ? {} : { scale: 0.95 }}
             onClick={handleExportCsv}
             disabled={isExporting}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#475569] text-xs font-bold transition-colors shadow-2xs disabled:opacity-50"
@@ -161,20 +173,25 @@ export const AuditPage: React.FC = () => {
           >
             <Download className="w-3.5 h-3.5 text-[#3B5BDB]" />
             <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
+            whileTap={reducedMotion ? {} : { scale: 0.95 }}
             onClick={() => loadAudit(pagination.page)}
             className="p-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#64748B] hover:text-[#111827] transition-colors shadow-2xs"
             title="Refresh"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#3B5BDB]' : ''}`} />
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {error && (
-        <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-4 flex items-center justify-between text-xs text-[#9F1239] shadow-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-4 flex items-center justify-between text-xs text-[#9F1239] shadow-sm"
+        >
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-[#E11D48] shrink-0" />
             <span>{error}</span>
@@ -182,11 +199,11 @@ export const AuditPage: React.FC = () => {
           <button onClick={() => loadAudit(pagination.page)} className="font-bold text-[#BE123C] underline">
             Retry
           </button>
-        </div>
+        </motion.div>
       )}
 
       {/* Audit Events Table */}
-      <div className="bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] shadow-sm">
+      <motion.div variants={staggerItem} className="bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[#E5E7EB] text-left text-xs">
             <thead className="bg-[#F7F9FC] text-[#64748B] font-extrabold uppercase tracking-wider text-[10px]">
@@ -216,46 +233,56 @@ export const AuditPage: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredEvents.map((ev) => (
-                  <tr key={ev.id} className="hover:bg-[#F7F9FC] transition-colors group">
-                    <td className="px-5 py-4 font-mono font-bold text-[#111827]">{ev.id.slice(0, 16)}...</td>
-                    <td className="px-5 py-4">
-                      <div className="font-bold text-[#111827]">{formatAuditEventType(ev.event_type)}</div>
-                      <div className="text-[10px] font-mono text-[#64748B]">{ev.event_type}</div>
-                    </td>
-                    <td className="px-5 py-4 font-mono text-[#3B5BDB] font-bold">{ev.recovery_case_id || '—'}</td>
-                    <td className="px-5 py-4">
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#F1F5F9] text-[#475569] border border-[#E5E7EB] font-mono">
-                        {ev.actor}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 font-mono text-[#64748B] text-[11px]">
-                      {ev.correlation_id ? (
-                        <button
-                          onClick={() => copyToClipboard(ev.correlation_id!, 'Correlation ID')}
-                          className="hover:text-[#3B5BDB] transition-colors flex items-center gap-1"
+                <AnimatePresence mode="popLayout">
+                  {filteredEvents.map((ev, index) => (
+                    <motion.tr
+                      key={ev.id}
+                      initial={reducedMotion ? {} : { opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.15, delay: index * 0.02 }}
+                      className="hover:bg-[#F7F9FC] transition-colors group"
+                    >
+                      <td className="px-5 py-4 font-mono font-bold text-[#111827]">{ev.id.slice(0, 16)}...</td>
+                      <td className="px-5 py-4">
+                        <div className="font-bold text-[#111827]">{formatAuditEventType(ev.event_type)}</div>
+                        <div className="text-[10px] font-mono text-[#64748B]">{ev.event_type}</div>
+                      </td>
+                      <td className="px-5 py-4 font-mono text-[#3B5BDB] font-bold">{ev.recovery_case_id || '—'}</td>
+                      <td className="px-5 py-4">
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#F1F5F9] text-[#475569] border border-[#E5E7EB] font-mono">
+                          {ev.actor}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 font-mono text-[#64748B] text-[11px]">
+                        {ev.correlation_id ? (
+                          <button
+                            onClick={() => copyToClipboard(ev.correlation_id!, 'Correlation ID')}
+                            className="hover:text-[#3B5BDB] transition-colors flex items-center gap-1"
+                          >
+                            {ev.correlation_id}
+                            <Copy className="w-3 h-3 opacity-60" />
+                          </button>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td className="px-5 py-4 text-[#64748B] text-[11px]">
+                        {ev.created_at ? new Date(ev.created_at).toLocaleString() : '—'}
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <motion.button
+                          whileHover={reducedMotion ? {} : { scale: 1.05 }}
+                          whileTap={reducedMotion ? {} : { scale: 0.95 }}
+                          onClick={() => setSelectedPayload(ev.payload)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#111827] hover:bg-[#3B5BDB] text-white font-bold text-xs transition-all shadow-2xs"
                         >
-                          {ev.correlation_id}
-                          <Copy className="w-3 h-3 opacity-60" />
-                        </button>
-                      ) : (
-                        '—'
-                      )}
-                    </td>
-                    <td className="px-5 py-4 text-[#64748B] text-[11px]">
-                      {ev.created_at ? new Date(ev.created_at).toLocaleString() : '—'}
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <button
-                        onClick={() => setSelectedPayload(ev.payload)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#111827] hover:bg-[#3B5BDB] text-white font-bold text-xs transition-all shadow-2xs"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        Inspect
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                          <Eye className="w-3.5 h-3.5" />
+                          Inspect
+                        </motion.button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
               )}
             </tbody>
           </table>
@@ -268,23 +295,25 @@ export const AuditPage: React.FC = () => {
             <span className="font-bold text-[#111827]">{pagination.pages || 1}</span> ({pagination.total} total events)
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <motion.button
+              whileTap={reducedMotion ? {} : { scale: 0.95 }}
               onClick={() => loadAudit(pagination.page - 1)}
               disabled={pagination.page <= 1}
               className="p-1.5 rounded-xl border border-[#E5E7EB] bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F1F5F9] text-[#475569] transition-colors shadow-2xs"
             >
               <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileTap={reducedMotion ? {} : { scale: 0.95 }}
               onClick={() => loadAudit(pagination.page + 1)}
               disabled={pagination.page >= pagination.pages}
               className="p-1.5 rounded-xl border border-[#E5E7EB] bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F1F5F9] text-[#475569] transition-colors shadow-2xs"
             >
               <ChevronRight className="w-4 h-4" />
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };

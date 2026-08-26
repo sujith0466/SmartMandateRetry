@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
   RefreshCw,
@@ -25,9 +25,12 @@ import { Skeleton } from '../../components/ui/SkeletonLoader';
 import { ToastContainer, ToastMessage } from '../../components/ui/Toast';
 import { DecisionAttributionCard } from './DecisionAttributionCard';
 import { formatActionType, formatFailureCategory } from '../../utils/terminology';
+import { useReducedMotion } from '../../motion/useReducedMotion';
+import { modalVariants, backdropVariants, staggerContainer, staggerItem } from '../../motion/motionTokens';
 
 export const CaseDetailPage: React.FC = () => {
   const { caseId } = useParams<{ caseId: string }>();
+  const reducedMotion = useReducedMotion();
   const [detail, setDetail] = useState<CaseDetailResponse | null>(null);
   const [actions, setActions] = useState<RecoveryActionItem[]>([]);
   const [reconciliation, setReconciliation] = useState<ReconciliationStatusInfo | null>(null);
@@ -146,22 +149,24 @@ export const CaseDetailPage: React.FC = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
       className="space-y-6"
     >
       <ToastContainer toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
 
       {/* Top Breadcrumb & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div variants={staggerItem} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
-          <Link
-            to="/cases"
-            className="p-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#475569] hover:text-[#111827] transition-colors shadow-2xs"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
+          <motion.div whileHover={reducedMotion ? {} : { scale: 1.05 }} whileTap={reducedMotion ? {} : { scale: 0.95 }}>
+            <Link
+              to="/cases"
+              className="p-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#475569] hover:text-[#111827] transition-colors shadow-2xs block"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+          </motion.div>
           <div>
             <div className="flex items-center space-x-3">
               <h1 className="text-2xl font-black text-[#111827] font-mono tracking-tight">{c.invoice_id}</h1>
@@ -180,26 +185,31 @@ export const CaseDetailPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <motion.button
+            whileTap={reducedMotion ? {} : { scale: 0.95 }}
             onClick={() => copyToClipboard(c.id, 'Case ID')}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#475569] text-xs font-bold transition-colors shadow-2xs"
           >
             <Copy className="w-3.5 h-3.5 text-[#64748B]" />
             Copy ID
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileTap={reducedMotion ? {} : { scale: 0.95 }}
             onClick={loadData}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#475569] text-xs font-bold transition-colors shadow-2xs"
           >
             <RefreshCw className="w-3.5 h-3.5 text-[#64748B]" />
             Refresh
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Operator Intervention Action Bar (Sapphire Theme) */}
       {canIntervene && (
-        <div className="p-5 rounded-2xl bg-[#EEF2FF] border border-[#C7D2FE] flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+        <motion.div
+          variants={staggerItem}
+          className="p-5 rounded-2xl bg-[#EEF2FF] border border-[#C7D2FE] flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs"
+        >
           <div className="flex items-center gap-3.5">
             <div className="p-2.5 rounded-xl bg-[#3B5BDB] text-white shadow-2xs">
               <Sparkles className="w-5 h-5" />
@@ -213,77 +223,97 @@ export const CaseDetailPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button
+            <motion.button
+              whileHover={reducedMotion ? {} : { scale: 1.02 }}
+              whileTap={reducedMotion ? {} : { scale: 0.98 }}
               onClick={() => setInterventionAction('SEND_PAYMENT_LINK')}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#3B5BDB] hover:bg-[#3048B8] text-white text-xs font-bold transition-colors shadow-xs"
             >
               <Send className="w-3.5 h-3.5" />
               Dispatch Payment Link
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={reducedMotion ? {} : { scale: 1.02 }}
+              whileTap={reducedMotion ? {} : { scale: 0.98 }}
               onClick={() => setInterventionAction('APPROVE_RETRY')}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-colors shadow-xs"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               Approve Mandate Retry
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={reducedMotion ? {} : { scale: 1.02 }}
+              whileTap={reducedMotion ? {} : { scale: 0.98 }}
               onClick={() => setInterventionAction('DISMISS')}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-[#FFF1F2] text-[#475569] hover:text-[#E11D48] text-xs font-bold transition-colors border border-[#E5E7EB] hover:border-[#FECDD3] shadow-2xs"
             >
               <XCircle className="w-3.5 h-3.5" />
               Close Case
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Intervention Confirmation Dialog Modal */}
-      {interventionAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 max-w-md w-full shadow-fintech-modal space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE]">
-                <Sparkles className="w-5 h-5" />
+      <AnimatePresence>
+        {interventionAction && (
+          <motion.div
+            variants={backdropVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              variants={modalVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="bg-white border border-[#E5E7EB] rounded-2xl p-6 max-w-md w-full shadow-fintech-modal space-y-4"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE]">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-[#111827]">Confirm Operator Intervention</h3>
               </div>
-              <h3 className="text-base font-bold text-[#111827]">Confirm Operator Intervention</h3>
-            </div>
-            <p className="text-xs text-[#475569]">
-              Apply action <strong className="text-[#3B5BDB] font-bold">{formatActionType(interventionAction)}</strong> to case{' '}
-              <strong className="font-mono text-[#111827] font-bold">{c.invoice_id}</strong>.
-            </p>
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Operator Notes</label>
-              <textarea
-                value={interventionNotes}
-                onChange={(e) => setInterventionNotes(e.target.value)}
-                placeholder="Reason for manual override..."
-                rows={3}
-                className="w-full text-xs p-3 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] focus:outline-none focus:border-[#3B5BDB] focus:bg-white transition-colors"
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2 border-t border-[#E5E7EB]">
-              <button
-                onClick={() => setInterventionAction(null)}
-                className="px-4 py-2 rounded-xl bg-[#F1F5F9] hover:bg-[#E5E7EB] text-[#475569] text-xs font-bold transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleExecuteIntervention}
-                disabled={actionLoading}
-                className="px-4 py-2 rounded-xl bg-[#3B5BDB] hover:bg-[#3048B8] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
-              >
-                {actionLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                Confirm & Log Audit
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <p className="text-xs text-[#475569]">
+                Apply action <strong className="text-[#3B5BDB] font-bold">{formatActionType(interventionAction)}</strong> to case{' '}
+                <strong className="font-mono text-[#111827] font-bold">{c.invoice_id}</strong>.
+              </p>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">Operator Notes</label>
+                <textarea
+                  value={interventionNotes}
+                  onChange={(e) => setInterventionNotes(e.target.value)}
+                  placeholder="Reason for manual override..."
+                  rows={3}
+                  className="w-full text-xs p-3 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] focus:outline-none focus:border-[#3B5BDB] focus:bg-white transition-colors"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#E5E7EB]">
+                <button
+                  onClick={() => setInterventionAction(null)}
+                  className="px-4 py-2 rounded-xl bg-[#F1F5F9] hover:bg-[#E5E7EB] text-[#475569] text-xs font-bold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleExecuteIntervention}
+                  disabled={actionLoading}
+                  className="px-4 py-2 rounded-xl bg-[#3B5BDB] hover:bg-[#3048B8] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
+                >
+                  {actionLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  Confirm & Log Audit
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Visual Recovery Lifecycle Progression Track */}
-      <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm space-y-4">
+      {/* Visual Recovery Lifecycle Progression Track with Motion */}
+      <motion.div variants={staggerItem} className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm space-y-4">
         <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
           <h3 className="text-xs font-bold text-[#64748B] uppercase tracking-wider">Recovery Lifecycle Track</h3>
           <span className="text-[11px] font-mono font-bold text-[#3B5BDB]">Deterministic State Machine</span>
@@ -292,15 +322,18 @@ export const CaseDetailPage: React.FC = () => {
           {lifecycleSteps.map((step, idx) => (
             <React.Fragment key={step.label}>
               <div className="flex flex-col items-center min-w-[90px] text-center">
-                <div
+                <motion.div
+                  initial={reducedMotion ? {} : { scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.2, delay: idx * 0.05 }}
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                     step.active
-                      ? 'bg-[#059669] text-white shadow-2xs'
+                      ? 'bg-[#059669] text-white shadow-2xs ring-2 ring-[#ECFDF5]'
                       : 'bg-[#F1F5F9] text-[#94A3B8] border border-[#E5E7EB]'
                   }`}
                 >
                   {step.active ? <CheckCircle2 className="w-4 h-4" /> : idx + 1}
-                </div>
+                </motion.div>
                 <span
                   className={`text-[11px] mt-2 font-bold tracking-tight ${
                     step.active ? 'text-[#111827]' : 'text-[#94A3B8]'
@@ -310,22 +343,31 @@ export const CaseDetailPage: React.FC = () => {
                 </span>
               </div>
               {idx < lifecycleSteps.length - 1 && (
-                <div
-                  className={`flex-1 h-0.5 mx-1 transition-all ${
-                    step.active ? 'bg-[#059669]' : 'bg-[#E5E7EB]'
-                  }`}
-                />
+                <div className="flex-1 h-0.5 mx-1 relative overflow-hidden bg-[#E5E7EB]">
+                  {step.active && lifecycleSteps[idx + 1].active && (
+                    <motion.div
+                      initial={reducedMotion ? { width: '100%' } : { width: 0 }}
+                      animate={{ width: '100%' }}
+                      transition={{ duration: 0.4, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                      className="h-full bg-[#059669]"
+                    />
+                  )}
+                </div>
               )}
             </React.Fragment>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Decision Explainability & Attribution */}
-      {caseId && <DecisionAttributionCard caseId={caseId} />}
+      {caseId && (
+        <motion.div variants={staggerItem}>
+          <DecisionAttributionCard caseId={caseId} />
+        </motion.div>
+      )}
 
       {/* Grid: Customer Context & Settlement Reconciliation */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Customer Context (Sanitized) */}
         <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
@@ -404,10 +446,10 @@ export const CaseDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Execution Actions History */}
-      <div className="bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] shadow-sm">
+      <motion.div variants={staggerItem} className="bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] shadow-sm">
         <div className="p-5 border-b border-[#E5E7EB] flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-[#3B5BDB]" />
@@ -452,7 +494,7 @@ export const CaseDetailPage: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };

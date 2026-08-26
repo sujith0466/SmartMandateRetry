@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Inbox,
   RefreshCw,
@@ -20,12 +20,15 @@ import { CaseState, PaginationInfo, RecoveryCase } from '../../types';
 import { Badge } from '../../components/ui/Badge';
 import { TableSkeleton } from '../../components/ui/SkeletonLoader';
 import { formatFailureCategory, formatState } from '../../utils/terminology';
+import { useReducedMotion } from '../../motion/useReducedMotion';
+import { staggerContainer, staggerItem } from '../../motion/motionTokens';
 
 type TabType = 'all' | 'active' | 'escalations' | 'recovered';
 
 export const CasesPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTabParam = (searchParams.get('tab') as TabType) || 'all';
+  const reducedMotion = useReducedMotion();
 
   const [activeTab, setActiveTab] = useState<TabType>(activeTabParam);
   const [cases, setCases] = useState<RecoveryCase[]>([]);
@@ -131,13 +134,16 @@ export const CasesPage: React.FC = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
       className="space-y-6"
     >
       {/* Header & Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <motion.div
+        variants={staggerItem}
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+      >
         <div>
           <h1 className="text-2xl font-black text-[#111827] tracking-tight font-sans">
             Recovery Cases Workspace
@@ -175,7 +181,8 @@ export const CasesPage: React.FC = () => {
           </select>
 
           {/* Export CSV Button */}
-          <button
+          <motion.button
+            whileTap={reducedMotion ? {} : { scale: 0.95 }}
             onClick={handleExportCsv}
             disabled={isExporting}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#475569] text-xs font-bold transition-colors shadow-2xs disabled:opacity-50"
@@ -183,21 +190,22 @@ export const CasesPage: React.FC = () => {
           >
             <Download className="w-3.5 h-3.5 text-[#3B5BDB]" />
             <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
-          </button>
+          </motion.button>
 
           {/* Refresh Button */}
-          <button
+          <motion.button
+            whileTap={reducedMotion ? {} : { scale: 0.95 }}
             onClick={() => loadCases(pagination.page)}
             className="p-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#64748B] hover:text-[#111827] transition-colors shadow-2xs"
             title="Refresh"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#3B5BDB]' : ''}`} />
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Filter Tabs Navigation (Sapphire Theme) */}
-      <div className="flex items-center border-b border-[#E5E7EB] space-x-1">
+      {/* Filter Tabs Navigation with Fluid Active Pill */}
+      <motion.div variants={staggerItem} className="flex items-center border-b border-[#E5E7EB] space-x-1">
         {[
           { id: 'all', label: 'All Ingested Cases', icon: Layers },
           { id: 'active', label: 'Active Pipeline', icon: Clock },
@@ -210,22 +218,31 @@ export const CasesPage: React.FC = () => {
             <button
               key={t.id}
               onClick={() => handleTabChange(t.id as TabType)}
-              className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition-all ${
-                isActive
-                  ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white shadow-2xs rounded-t-xl'
-                  : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
+              className={`relative flex items-center gap-2 px-4 py-3 text-xs font-bold transition-colors z-0 ${
+                isActive ? 'text-[#3B5BDB]' : 'text-[#64748B] hover:text-[#111827]'
               }`}
             >
+              {isActive && (
+                <motion.div
+                  layoutId="casesActiveTabPill"
+                  className="absolute inset-0 bg-white border-b-2 border-[#3B5BDB] rounded-t-xl -z-10 shadow-2xs"
+                  transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                />
+              )}
               <Icon className={`w-4 h-4 ${isActive ? 'text-[#3B5BDB]' : 'text-[#64748B]'}`} />
               <span>{t.label}</span>
             </button>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* Error Alert */}
       {error && (
-        <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-4 flex items-center justify-between text-xs text-[#9F1239] shadow-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-4 flex items-center justify-between text-xs text-[#9F1239] shadow-sm"
+        >
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-[#E11D48] shrink-0" />
             <span>{error}</span>
@@ -233,11 +250,11 @@ export const CasesPage: React.FC = () => {
           <button onClick={() => loadCases(pagination.page)} className="font-bold text-[#BE123C] underline">
             Retry
           </button>
-        </div>
+        </motion.div>
       )}
 
       {/* Cases Table Container */}
-      <div className="bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] shadow-sm">
+      <motion.div variants={staggerItem} className="bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[#E5E7EB] text-left text-xs">
             <thead className="bg-[#F7F9FC] text-[#64748B] font-extrabold uppercase tracking-wider text-[10px]">
@@ -268,56 +285,64 @@ export const CasesPage: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                cases.map((c) => {
-                  const stateInfo = formatState(c.state);
-                  const catInfo = formatFailureCategory(c.failure_category);
+                <AnimatePresence mode="popLayout">
+                  {cases.map((c, index) => {
+                    const stateInfo = formatState(c.state);
+                    const catInfo = formatFailureCategory(c.failure_category);
 
-                  return (
-                    <tr key={c.id} className="hover:bg-[#F7F9FC] transition-colors group">
-                      <td className="px-5 py-4">
-                        <div className="font-mono font-bold text-[#111827] group-hover:text-[#3B5BDB] transition-colors">
-                          {c.invoice_id}
-                        </div>
-                        <div className="text-[11px] text-[#64748B] font-mono">{c.id.slice(0, 16)}...</div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <Badge state={c.state} />
-                        <p className="text-[10px] text-[#64748B] font-medium mt-1">{stateInfo.label}</p>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className="text-xs font-bold text-[#111827]">{catInfo.label}</span>
-                        <p className="text-[10px] font-mono text-[#64748B]">{c.failure_code}</p>
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="font-black text-[#111827] text-sm font-sans">
-                          ₹{c.amount_inr?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                        </div>
-                        {(c.recovered_amount_inr ?? 0) > 0 && (
-                          <div className="text-[11px] text-[#059669] font-bold font-mono mt-0.5">
-                            ✓ Settled ₹{(c.recovered_amount_inr ?? 0).toLocaleString('en-IN')}
+                    return (
+                      <motion.tr
+                        key={c.id}
+                        initial={reducedMotion ? {} : { opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.15, delay: index * 0.02 }}
+                        className="hover:bg-[#F7F9FC] transition-colors group"
+                      >
+                        <td className="px-5 py-4">
+                          <div className="font-mono font-bold text-[#111827] group-hover:text-[#3B5BDB] transition-colors">
+                            {c.invoice_id}
                           </div>
-                        )}
-                      </td>
-                      <td className="px-5 py-4 text-[#475569]">
-                        <span className="font-mono font-bold text-[#111827]">{c.attempt_count}</span> retries •{' '}
-                        <span className="font-mono font-bold text-[#111827]">{c.contacts_count}</span> contacts
-                      </td>
-                      <td className="px-5 py-4">{getDerivedPriority(c.amount_inr, c.state)}</td>
-                      <td className="px-5 py-4 text-[#64748B] text-[11px]">
-                        {c.created_at ? new Date(c.created_at).toLocaleDateString() : '—'}
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <Link
-                          to={`/cases/${c.id}`}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#111827] hover:bg-[#3B5BDB] text-white font-bold text-xs transition-all shadow-2xs"
-                        >
-                          Inspect
-                          <ArrowUpRight className="w-3.5 h-3.5" />
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })
+                          <div className="text-[11px] text-[#64748B] font-mono">{c.id.slice(0, 16)}...</div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <Badge state={c.state} />
+                          <p className="text-[10px] text-[#64748B] font-medium mt-1">{stateInfo.label}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="text-xs font-bold text-[#111827]">{catInfo.label}</span>
+                          <p className="text-[10px] font-mono text-[#64748B]">{c.failure_code}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="font-black text-[#111827] text-sm font-sans">
+                            ₹{c.amount_inr?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </div>
+                          {(c.recovered_amount_inr ?? 0) > 0 && (
+                            <div className="text-[11px] text-[#059669] font-bold font-mono mt-0.5">
+                              ✓ Settled ₹{(c.recovered_amount_inr ?? 0).toLocaleString('en-IN')}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-[#475569]">
+                          <span className="font-mono font-bold text-[#111827]">{c.attempt_count}</span> retries •{' '}
+                          <span className="font-mono font-bold text-[#111827]">{c.contacts_count}</span> contacts
+                        </td>
+                        <td className="px-5 py-4">{getDerivedPriority(c.amount_inr, c.state)}</td>
+                        <td className="px-5 py-4 text-[#64748B] text-[11px]">
+                          {c.created_at ? new Date(c.created_at).toLocaleDateString() : '—'}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <Link
+                            to={`/cases/${c.id}`}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#111827] hover:bg-[#3B5BDB] text-white font-bold text-xs transition-all shadow-2xs group-hover:shadow-xs"
+                          >
+                            Inspect
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </AnimatePresence>
               )}
             </tbody>
           </table>
@@ -330,23 +355,25 @@ export const CasesPage: React.FC = () => {
             <span className="font-bold text-[#111827]">{pagination.pages || 1}</span> ({pagination.total} total cases)
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <motion.button
+              whileTap={reducedMotion ? {} : { scale: 0.95 }}
               onClick={() => loadCases(pagination.page - 1)}
               disabled={pagination.page <= 1}
               className="p-1.5 rounded-xl border border-[#E5E7EB] bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F1F5F9] text-[#475569] transition-colors shadow-2xs"
             >
               <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileTap={reducedMotion ? {} : { scale: 0.95 }}
               onClick={() => loadCases(pagination.page + 1)}
               disabled={pagination.page >= pagination.pages}
               className="p-1.5 rounded-xl border border-[#E5E7EB] bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F1F5F9] text-[#475569] transition-colors shadow-2xs"
             >
               <ChevronRight className="w-4 h-4" />
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };

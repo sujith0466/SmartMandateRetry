@@ -18,11 +18,14 @@ import { fetchOverviewMetrics } from '../../services/api';
 import { OverviewMetrics } from '../../types';
 import { StatCard } from '../../components/ui/StatCard';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
+import { useReducedMotion } from '../../motion/useReducedMotion';
+import { staggerContainer, staggerItem } from '../../motion/motionTokens';
 
 export const AnalyticsPage: React.FC = () => {
   const [metrics, setMetrics] = useState<OverviewMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const reducedMotion = useReducedMotion();
 
   const loadData = async () => {
     setLoading(true);
@@ -65,13 +68,13 @@ export const AnalyticsPage: React.FC = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
       className="space-y-6"
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div variants={staggerItem} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-black text-[#111827] tracking-tight font-sans">
@@ -85,17 +88,22 @@ export const AnalyticsPage: React.FC = () => {
             Deep recovery conversion intelligence, channel effectiveness & safety guardrail attribution
           </p>
         </div>
-        <button
+        <motion.button
+          whileTap={reducedMotion ? {} : { scale: 0.95 }}
           onClick={loadData}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#475569] text-xs font-bold transition-colors shadow-2xs"
         >
           <RefreshCw className="w-3.5 h-3.5 text-[#64748B]" />
           Refresh
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {error && (
-        <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-4 flex items-center justify-between text-xs text-[#9F1239] shadow-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-4 flex items-center justify-between text-xs text-[#9F1239] shadow-sm"
+        >
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-[#E11D48] shrink-0" />
             <span>{error}</span>
@@ -103,14 +111,17 @@ export const AnalyticsPage: React.FC = () => {
           <button onClick={loadData} className="font-bold text-[#BE123C] underline">
             Retry
           </button>
-        </div>
+        </motion.div>
       )}
 
-      {/* 4 Macro Recovery KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 4 Macro Recovery KPIs with Animated Numbers */}
+      <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Recovered Revenue"
-          value={`₹${recoveredAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
+          numericValue={recoveredAmount}
+          prefix="₹"
+          formatIndianRupee={true}
+          decimals={2}
           subtitle="Direct settled subscription income"
           icon={IndianRupee}
           variant="emerald"
@@ -118,7 +129,9 @@ export const AnalyticsPage: React.FC = () => {
         />
         <StatCard
           title="Recovery Success Rate"
-          value={`${recoveryRate.toFixed(1)}%`}
+          numericValue={recoveryRate}
+          suffix="%"
+          decimals={1}
           subtitle={`${recoveredCases} settled of ${totalCases} mandate failures`}
           icon={Percent}
           variant="sapphire"
@@ -140,10 +153,10 @@ export const AnalyticsPage: React.FC = () => {
           variant="aqua"
           delay={0.15}
         />
-      </div>
+      </motion.div>
 
       {/* Section 1: Recovery Channel Effectiveness & Method Conversion */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <motion.div variants={staggerItem} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Method Breakdown */}
         <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm space-y-5">
           <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
@@ -229,15 +242,23 @@ export const AnalyticsPage: React.FC = () => {
 
           <div className="space-y-3">
             {[
-              { label: 'Insufficient Funds (Soft Decline)', total: 6, rec: 3, amt: '₹13,498', rate: '50.0%' },
-              { label: 'Card Expired / Mandate Update', total: 3, rec: 1, amt: '₹12,000', rate: '33.3%' },
-              { label: 'Bank Server Downtime / Network Limit', total: 3, rec: 1, amt: '₹4,999', rate: '33.3%' },
-              { label: 'Hard Decline (Account Closed / Stolen)', total: 2, rec: 0, amt: '₹0', rate: '0% (Auto-Stopped)' },
-            ].map((cat) => (
+              { label: 'Insufficient Funds (Soft Decline)', total: 6, rec: 3, amt: '₹13,498', rate: '50.0%', pct: 50 },
+              { label: 'Card Expired / Mandate Update', total: 3, rec: 1, amt: '₹12,000', rate: '33.3%', pct: 33.3 },
+              { label: 'Bank Server Downtime / Network Limit', total: 3, rec: 1, amt: '₹4,999', rate: '33.3%', pct: 33.3 },
+              { label: 'Hard Decline (Account Closed / Stolen)', total: 2, rec: 0, amt: '₹0', rate: '0% (Auto-Stopped)', pct: 0 },
+            ].map((cat, index) => (
               <div key={cat.label} className="p-3.5 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] space-y-1.5 shadow-2xs">
                 <div className="flex justify-between text-xs font-bold">
                   <span className="text-[#111827]">{cat.label}</span>
                   <span className="text-[#059669] font-mono font-black">{cat.amt}</span>
+                </div>
+                <div className="w-full bg-[#E5E7EB] rounded-full h-1.5 overflow-hidden">
+                  <motion.div
+                    initial={reducedMotion ? { width: `${cat.pct}%` } : { width: 0 }}
+                    animate={{ width: `${cat.pct}%` }}
+                    transition={{ duration: 0.5, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                    className="h-full bg-[#059669] rounded-full"
+                  />
                 </div>
                 <div className="flex justify-between text-[11px] text-[#64748B] font-medium">
                   <span>{cat.rec} of {cat.total} cases recovered</span>
@@ -247,10 +268,10 @@ export const AnalyticsPage: React.FC = () => {
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Section 2: Amount Tier Segmentation & Policy Safety Impact */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <motion.div variants={staggerItem} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Ticket Size Segmentation */}
         <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
@@ -318,7 +339,7 @@ export const AnalyticsPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };

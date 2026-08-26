@@ -1,10 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
+import { AnimatedNumber } from '../../motion/AnimatedNumber';
 
 interface StatCardProps {
   title: string;
-  value: string | number;
+  value?: string | number;
+  numericValue?: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  formatIndianRupee?: boolean;
   subtitle?: string;
   icon: LucideIcon;
   variant?: 'emerald' | 'sapphire' | 'aqua' | 'violet' | 'amber' | 'slate' | 'rose' | 'blue' | 'indigo';
@@ -15,6 +21,11 @@ interface StatCardProps {
 export const StatCard: React.FC<StatCardProps> = ({
   title,
   value,
+  numericValue,
+  prefix = '',
+  suffix = '',
+  decimals = 0,
+  formatIndianRupee = false,
   subtitle,
   icon: Icon,
   variant = 'sapphire',
@@ -41,15 +52,28 @@ export const StatCard: React.FC<StatCardProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, delay, ease: [0.16, 1, 0.3, 1] }}
-      className={`bg-white border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-150 relative overflow-hidden group ${
+      whileHover={{ y: -2, transition: { duration: 0.15, ease: [0.16, 1, 0.3, 1] } }}
+      transition={{ duration: 0.22, delay, ease: [0.16, 1, 0.3, 1] }}
+      className={`bg-white border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-150 relative overflow-hidden group ${
         highlight ? 'border-[#C7D2FE] ring-2 ring-[#EEF2FF]' : 'border-[#E5E7EB]'
       }`}
     >
       <div className="flex justify-between items-start">
         <div className="space-y-1">
           <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">{title}</p>
-          <div className="text-2xl font-black tracking-tight text-[#111827] font-sans">{value}</div>
+          <div className="text-2xl font-black tracking-tight text-[#111827] font-sans">
+            {numericValue !== undefined ? (
+              <AnimatedNumber
+                value={numericValue}
+                prefix={prefix}
+                suffix={suffix}
+                decimals={decimals}
+                formatIndianRupee={formatIndianRupee}
+              />
+            ) : (
+              value
+            )}
+          </div>
         </div>
         <div className={`p-2.5 rounded-xl border ${themeClass} transition-transform group-hover:scale-105 duration-150 shrink-0 shadow-2xs`}>
           <Icon className="w-5 h-5" />
