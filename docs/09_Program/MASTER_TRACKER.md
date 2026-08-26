@@ -1,8 +1,8 @@
 # SmartMandateRetry — Master Implementation Tracker & Traceability Matrix
 
 > **Document ID:** DOC-PROG-002  
-> **Version:** 1.4.0  
-> **Status:** APPROVED BASELINE (Phase 0, 1, 2, and 3 COMPLETED)  
+> **Version:** 1.5.0  
+> **Status:** APPROVED BASELINE (Phase 0, 1, 2, 3 COMPLETED; Phase 4 Granular Breakdown Added)  
 
 ---
 
@@ -37,7 +37,22 @@
 | `TSK-008-09` | Phase 3 | Ingestion | Observability | Instrument webhook handler with structured logging & latency metrics | TSK-008-01 | P1 | **COMPLETED** | NFR-AUD-001 | Logs JSON metadata per event; redacts secrets and credentials | Logging tests | `OBSERVABILITY.md` |
 | `TSK-008-10` | Phase 3 | Ingestion | Testing | Comprehensive integration test suite (`tests/test_webhooks/`) | TSK-008-01..09 | P0 | **COMPLETED** | All Ingestion FRs | 16 automated tests passing with 100% verifier branch coverage | Full webhook test suite | `TEST_PLAN.md` |
 | `TSK-009` | Phase 3 | Ingestion | Deduplication | Master task: Idempotent event persistence in `webhook_events` | TSK-008 | P0 | **COMPLETED** | FR-ING-003, NFR-REL-001 | Replayed webhook triggers 0 duplicate tasks | Idempotency test | `INTEGRATION_ARCHITECTURE.md` |
-| `TSK-010` | Phase 4 | Intelligence | Error Mapping | Deterministic gateway error reason mapper | TSK-007 | P0 | **NOT_STARTED** | FR-INT-001, FR-INT-002 | Known codes mapped to TEMPORARY, ACTION_REQUIRED, PERMANENT | Mapper unit tests (100%) | `RECOVERY_STRATEGIES.md` |
+| `TSK-010` | Phase 4 | Intelligence | Failure Classification | Master task: Failure Intelligence & Categorization Engine | TSK-008 | P0 | **NOT_STARTED** | FR-INT-001, FR-INT-002 | Deterministic error mapper, recoverability, confidence calculation | Intelligence Test Suite | `PHASE_04_IMPLEMENTATION_PLAN.md` |
+| `TSK-010-01` | Phase 4 | Intelligence | Extractor | Implement `FailureEvidenceExtractor` parsing normalized webhook metadata | Phase 3 | P0 | **NOT_STARTED** | FR-INT-001 | Extracts sanitized fields with zero missing-key crashes | Extractor unit tests | `PHASE_04_IMPLEMENTATION_PLAN.md` |
+| `TSK-010-02` | Phase 4 | Intelligence | Taxonomy | Define `FailureCategory`, `Recoverability`, and `Severity` domain enums | TSK-010-01 | P0 | **NOT_STARTED** | FR-INT-001 | Strict typing matching frozen architecture taxonomy | Taxonomy unit tests | `DOMAIN_MODEL.md` |
+| `TSK-010-03` | Phase 4 | Intelligence | Rule Registry | Implement declarative `FailureRuleRegistry` with exact code mappings | TSK-010-02 | P0 | **NOT_STARTED** | FR-INT-001 | Maps 20+ Razorpay error codes deterministically | Registry unit tests | `RECOVERY_STRATEGIES.md` |
+| `TSK-010-04` | Phase 4 | Intelligence | Description Matcher| Implement keyword pattern matcher for fallback descriptions | TSK-010-03 | P1 | **NOT_STARTED** | FR-INT-001 | Classifies descriptive bank errors when reason is blank | Pattern matcher tests | `PHASE_04_IMPLEMENTATION_PLAN.md` |
+| `TSK-010-05` | Phase 4 | Intelligence | Confidence | Implement deterministic confidence scoring engine (0.00-1.00) | TSK-010-03 | P0 | **NOT_STARTED** | FR-INT-002 | Produces exact confidence scores based on match specificity | Confidence tests | `AI_DECISION_SPEC.md` |
+| `TSK-010-06` | Phase 4 | Intelligence | Domain Contract | Implement `FailureAssessment` dataclass with full serialization | TSK-010-02, 05 | P0 | **NOT_STARTED** | FR-INT-001 | Immutable, versioned assessment contract | Contract unit tests | `DOMAIN_MODEL.md` |
+| `TSK-010-07` | Phase 4 | Intelligence | Engine | Implement `FailureClassificationEngine` orchestrating the pipeline | TSK-010-01..06 | P0 | **NOT_STARTED** | FR-INT-001 | Generates explainable `FailureAssessment` from event | Engine unit tests | `PHASE_04_IMPLEMENTATION_PLAN.md` |
+| `TSK-010-08` | Phase 4 | Intelligence | Fallback | Implement `UnknownFailureHandler` for unmapped/ambiguous codes | TSK-010-07 | P0 | **NOT_STARTED** | FR-INT-003 | Gracefully outputs `UNKNOWN_AMBIGUOUS` with 0.50 confidence | Fallback tests | `PHASE_04_IMPLEMENTATION_PLAN.md` |
+| `TSK-010-09` | Phase 4 | Intelligence | Case Update | Integrate classification result with `RecoveryCase` repository | TSK-010-07 | P0 | **NOT_STARTED** | FR-OUT-003 | Updates `failure_category` and `failure_code` on active case | Case update tests | `DATABASE_DESIGN.md` |
+| `TSK-010-10` | Phase 4 | Intelligence | Audit Logging | Record `AuditEvent` (`PAYMENT_FAILURE_CLASSIFIED`) via UoW | TSK-010-09 | P0 | **NOT_STARTED** | NFR-AUD-001 | Immutable audit trail recorded with explainable evidence | Audit DB tests | `OBSERVABILITY.md` |
+| `TSK-010-11` | Phase 4 | Intelligence | Ingress Router | Wire `failure_intelligence` queue in `IngressEventRouter` to engine | TSK-010-07 | P0 | **NOT_STARTED** | FR-ING-002 | Inbound `PAYMENT_FAILED` events trigger classification | Router integration tests | `PHASE_04_IMPLEMENTATION_PLAN.md` |
+| `TSK-010-12` | Phase 4 | Intelligence | Observability | Instrument engine with structured JSON metrics & latency tracking | TSK-010-07 | P1 | **NOT_STARTED** | NFR-AUD-001 | Logs classification metrics with zero secret exposure | Logging tests | `OBSERVABILITY.md` |
+| `TSK-010-13` | Phase 4 | Intelligence | Test Fixtures | Build synthetic fixture catalog for all 20+ error code scenarios | TSK-010-03 | P0 | **NOT_STARTED** | All Phase 4 FRs | Synthetic payloads covering every branch and taxonomy class | Fixture validation tests | `TEST_PLAN.md` |
+| `TSK-010-14` | Phase 4 | Intelligence | Unit Tests | Comprehensive unit tests for classifier rules & confidence logic | TSK-010-07, 13 | P0 | **NOT_STARTED** | All Phase 4 FRs | 100% branch coverage across all classification rules | Classification unit tests | `TEST_PLAN.md` |
+| `TSK-010-15` | Phase 4 | Intelligence | Integration | End-to-end webhook-to-classification integration tests | TSK-010-10, 11 | P0 | **NOT_STARTED** | All Phase 4 FRs | Webhook POST triggers classification & audit log cleanly | E2E integration tests | `TEST_PLAN.md` |
 | `TSK-011` | Phase 4 | Intelligence | Ambiguity AI | OpenRouter fallback classifier for unknown error descriptions | TSK-010 | P1 | **NOT_STARTED** | FR-INT-003 | Ambiguous text categorized with confidence score | Mock AI unit tests | `OPENROUTER_INTEGRATION.md` |
 | `TSK-012` | Phase 5 | Context | Aggregator | Customer Profile & Subscription context aggregator service | TSK-008 | P1 | **NOT_STARTED** | FR-CTX-001 | Assembles tenure, success rate, retry history | Context builder tests | `PRD.md` |
 | `TSK-013` | Phase 6 | AI Decision | Provider | `OpenRouterProvider` client with JSON mode & healing plugin | TSK-011, TSK-012 | P0 | **NOT_STARTED** | FR-AI-001, FR-AI-002 | Generates valid JSON adhering to schema | Schema validation tests | `OPENROUTER_INTEGRATION.md` |
