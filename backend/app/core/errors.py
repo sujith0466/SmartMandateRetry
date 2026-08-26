@@ -51,6 +51,10 @@ class ResourceNotFoundError(AppError):
         )
 
 
+# Alias for domain/service layer
+EntityNotFoundError = ResourceNotFoundError
+
+
 class OptimisticLockError(AppError):
     """Raised when a concurrent state update violates optimistic concurrency control (OCC)."""
 

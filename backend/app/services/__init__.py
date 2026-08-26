@@ -1,5 +1,6 @@
 """Services package exports."""
 
+from app.services.customer_context_service import CustomerContextService
 from app.services.event_router import IngressEventRouter, IngressRoutingResult
 from app.services.failure_intelligence_service import FailureIntelligenceService
 from app.services.webhook_service import WebhookIngestionService
@@ -9,4 +10,5 @@ __all__ = [
     "IngressEventRouter",
     "IngressRoutingResult",
     "FailureIntelligenceService",
+    "CustomerContextService",
 ]
