@@ -27,6 +27,20 @@ class RazorpayClient:
         response.raise_for_status()
         return response.json()
 
+    def fetch_payment(self, payment_id: str) -> Dict[str, Any]:
+        """Fetch payment details (GET /v1/payments/:id)."""
+        url = f"{self.base_url}/payments/{payment_id}"
+        response = requests.get(url, auth=self.auth, timeout=5.0)
+        response.raise_for_status()
+        return response.json()
+
+    def fetch_payment_link(self, payment_link_id: str) -> Dict[str, Any]:
+        """Fetch payment link details (GET /v1/payment_links/:id)."""
+        url = f"{self.base_url}/payment_links/{payment_link_id}"
+        response = requests.get(url, auth=self.auth, timeout=5.0)
+        response.raise_for_status()
+        return response.json()
+
     def create_payment_link(
         self,
         amount_paise: int,

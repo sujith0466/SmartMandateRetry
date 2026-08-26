@@ -4,6 +4,18 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 
 ---
 
+## [Phase 9 Complete] - 2026-08-26
+### Added
+- **Reconciliation Domain Schemas:** Defined `PaymentOutcome` (`PAYMENT_SUCCEEDED`, `PAYMENT_FAILED`, `PAYMENT_PENDING`, `PAYMENT_NOT_FOUND`, `PAYMENT_CANCELLED`, `UNKNOWN`), `ReconciliationStatus` (`RECONCILED`, `PENDING_VERIFICATION`, `MISMATCH`, `FAILED`, `DUPLICATE_IGNORED`, `UNKNOWN`), `ReconciliationEvidence`, and `ReconciliationResult` typed domain contracts with serialization.
+- **Correlation Engine:** Built `CorrelationEngine` with prioritized multi-key matching (`plink_id` > `invoice_id` > `subscription_id` > `payment_id`).
+- **Reconciliation Engine:** Built `ReconciliationEngine` enforcing exact Decimal amount matching, currency matching, duplicate ignoring, and late-failure rejection on `RECOVERED` cases.
+- **Reconciliation Service:** Implemented `ReconciliationService` orchestrating UnitOfWork transactions, transitioning `RecoveryCase` to `RECOVERED` (`recovered_amount_inr`, `resolved_at`), updating `RecoveryAction` to `RECONCILED`, and recording append-only `AuditEvent` (`PAYMENT_OUTCOME_RECONCILED`, `PAYMENT_OUTCOME_FAILED`, `PAYMENT_OUTCOME_MISMATCH`, `PAYMENT_OUTCOME_UNKNOWN`).
+- **Direct Gateway Polling Fallback:** Enhanced `RazorpayClient` with `fetch_payment` and `fetch_payment_link` providing direct status check fallbacks with timeout and error protection.
+- **Phase 9 Test Suite:** Created 19 unit, integration, and idempotency tests across schemas, outcome mapping, correlation hierarchy, and database persistence (**128 total passing backend tests** with 91% overall coverage).
+- **Phase Documentation:** Authored `docs/09_Program/PHASE_09_COMPLETION_REPORT.md`.
+
+---
+
 ## [Phase 8 Complete] - 2026-08-26
 ### Added
 - **Action Execution Domain Contracts:** Defined `ActionExecutionRequest`, `ActionExecutionResult`, and `ActionExecutionStatus` (`PENDING`, `EXECUTED`, `SCHEDULED`, `BLOCKED`, `FAILED`, `NOT_SUPPORTED`, `SKIPPED`) domain contracts.
@@ -15,7 +27,7 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 - **Stop Recovery Adapter:** Implemented `StopRecoveryAdapter` terminating recovery cycles without re-scheduling.
 - **Action Dispatcher:** Built `ActionDispatcher` with a fail-closed guard preventing any external call when `execution_allowed == False`.
 - **Recovery Execution Service & Audit Trail:** Implemented `RecoveryExecutionService` with UnitOfWork isolation, database idempotency cache checks (`phase8:{case_id}:{policy_decision_id}:{action}`), and `AuditEvent` recording (`RECOVERY_ACTION_EXECUTED`, `RECOVERY_ACTION_SCHEDULED`, `RECOVERY_ACTION_BLOCKED`, `RECOVERY_ACTION_FAILED`).
-- **Phase 8 Test Suite:** Built 11 unit, integration, and idempotency tests across adapters, dispatcher, and database persistence (**109 total passing backend tests** with 91% overall coverage).
+- **Phase 8 Test Suite:** Built 11 unit, integration, and idempotency tests across adapters, dispatcher, and database persistence (109 total passing backend tests with 91% overall coverage).
 - **Phase Documentation:** Authored `docs/09_Program/PHASE_08_COMPLETION_REPORT.md`.
 
 ---

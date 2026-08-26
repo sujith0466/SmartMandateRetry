@@ -77,6 +77,10 @@ class RecoveryActionRepository(BaseRepository[RecoveryAction]):
         stmt = select(RecoveryAction).where(RecoveryAction.idempotency_key == idempotency_key)
         return self.session.scalars(stmt).first()
 
+    def find_by_external_reference_id(self, external_reference_id: str) -> Optional[RecoveryAction]:
+        stmt = select(RecoveryAction).where(RecoveryAction.external_reference_id == external_reference_id)
+        return self.session.scalars(stmt).first()
+
     def list_by_case_id(self, recovery_case_id: str) -> List[RecoveryAction]:
         stmt = (
             select(RecoveryAction)
