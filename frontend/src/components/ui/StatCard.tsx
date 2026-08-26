@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon, ArrowUpRight } from 'lucide-react';
 import { AnimatedNumber } from '../../motion/AnimatedNumber';
+import { InsightTooltip } from './InsightTooltip';
 
 interface StatCardProps {
   title: string;
@@ -16,6 +17,9 @@ interface StatCardProps {
   variant?: 'emerald' | 'sapphire' | 'aqua' | 'violet' | 'amber' | 'slate' | 'rose' | 'blue' | 'indigo';
   delay?: number;
   highlight?: boolean;
+  tooltip?: string;
+  isInspectable?: boolean;
+  onClick?: () => void;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -31,6 +35,9 @@ export const StatCard: React.FC<StatCardProps> = ({
   variant = 'sapphire',
   delay = 0,
   highlight = false,
+  tooltip,
+  isInspectable = false,
+  onClick,
 }) => {
   let resolvedVariant = variant;
   if (resolvedVariant === 'blue') resolvedVariant = 'sapphire';
@@ -52,15 +59,25 @@ export const StatCard: React.FC<StatCardProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2, transition: { duration: 0.15, ease: [0.16, 1, 0.3, 1] } }}
+      whileHover={onClick || isInspectable ? { y: -2, transition: { duration: 0.15, ease: [0.16, 1, 0.3, 1] } } : {}}
+      whileTap={onClick || isInspectable ? { scale: 0.99 } : {}}
       transition={{ duration: 0.22, delay, ease: [0.16, 1, 0.3, 1] }}
-      className={`bg-white border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-150 relative overflow-hidden group ${
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      className={`bg-white border rounded-2xl p-5 shadow-sm transition-all duration-150 relative overflow-hidden group text-left ${
+        onClick ? 'cursor-pointer hover:shadow-md' : ''
+      } ${
         highlight ? 'border-[#C7D2FE] ring-2 ring-[#EEF2FF]' : 'border-[#E5E7EB]'
       }`}
     >
       <div className="flex justify-between items-start">
         <div className="space-y-1">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">{title}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">{title}</p>
+            {tooltip && <InsightTooltip content={tooltip} title={title} />}
+          </div>
+
           <div className="text-2xl font-black tracking-tight text-[#111827] font-sans">
             {numericValue !== undefined ? (
               <AnimatedNumber
@@ -75,13 +92,27 @@ export const StatCard: React.FC<StatCardProps> = ({
             )}
           </div>
         </div>
-        <div className={`p-2.5 rounded-xl border ${themeClass} transition-transform group-hover:scale-105 duration-150 shrink-0 shadow-2xs`}>
-          <Icon className="w-5 h-5" />
+
+        <div className="flex items-center gap-2">
+          {isInspectable && (
+            <div className="p-1 rounded-lg bg-[#F7F9FC] text-[#94A3B8] group-hover:text-[#3B5BDB] group-hover:bg-[#EEF2FF] transition-colors">
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </div>
+          )}
+          <div className={`p-2.5 rounded-xl border ${themeClass} transition-transform group-hover:scale-105 duration-150 shrink-0 shadow-2xs`}>
+            <Icon className="w-5 h-5" />
+          </div>
         </div>
       </div>
+
       {subtitle && (
         <div className="text-xs font-medium text-[#64748B] mt-3 pt-2.5 border-t border-[#E5E7EB] flex items-center justify-between">
           <span>{subtitle}</span>
+          {isInspectable && (
+            <span className="text-[10px] font-bold text-[#3B5BDB] opacity-0 group-hover:opacity-100 transition-opacity font-mono">
+              Inspect →
+            </span>
+          )}
         </div>
       )}
     </motion.div>

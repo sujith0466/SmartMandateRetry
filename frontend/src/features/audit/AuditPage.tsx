@@ -11,11 +11,15 @@ import {
   ChevronRight,
   Eye,
   ShieldCheck,
+  Check,
+  X,
+  Filter,
 } from 'lucide-react';
 import { exportAuditCsv, fetchAuditEvents } from '../../services/api';
 import { AuditEventItem, PaginationInfo } from '../../types';
 import { TableSkeleton } from '../../components/ui/SkeletonLoader';
 import { PayloadModal } from '../../components/ui/PayloadModal';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { ToastContainer, ToastMessage } from '../../components/ui/Toast';
 import { formatAuditEventType } from '../../utils/terminology';
 import { useReducedMotion } from '../../motion/useReducedMotion';
@@ -45,6 +49,7 @@ export const AuditPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedPayload, setSelectedPayload] = useState<any | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -56,14 +61,16 @@ export const AuditPage: React.FC = () => {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
+    setCopiedKey(text);
     showToast(`Copied ${label} to clipboard!`);
+    setTimeout(() => setCopiedKey(null), 2000);
   };
 
   const loadAudit = async (page: number = 1) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetchAuditEvents(page, 20, selectedEventType || undefined);
+      const response = await fetchAuditEvents(page, 20, undefined, selectedEventType || undefined);
       setEvents(response.data);
       setPagination(response.pagination);
     } catch (err: any) {
@@ -80,7 +87,7 @@ export const AuditPage: React.FC = () => {
   const handleExportCsv = async () => {
     try {
       setIsExporting(true);
-      const blob = await exportAuditCsv(selectedEventType || undefined);
+      const blob = await exportAuditCsv(undefined, selectedEventType || undefined);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -89,6 +96,7 @@ export const AuditPage: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+      showToast('Audit trail ledger exported successfully!', 'success');
     } catch (err: any) {
       showToast(err.message || 'Failed to export CSV', 'error');
     } finally {
@@ -107,12 +115,17 @@ export const AuditPage: React.FC = () => {
     );
   });
 
+  const handleFilterByCorrelation = (corrId: string) => {
+    setSearchQuery(corrId);
+    showToast(`Filtered audit ledger by correlation sequence: ${corrId.slice(0, 16)}...`, 'info');
+  };
+
   return (
     <motion.div
       variants={staggerContainer}
       initial="initial"
       animate="animate"
-      className="space-y-6"
+      className="space-y-6 text-left"
     >
       <ToastContainer toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
 
@@ -147,8 +160,16 @@ export const AuditPage: React.FC = () => {
               placeholder="Search case, correlation..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="text-xs pl-8 pr-3 py-2 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#64748B] focus:outline-none focus:border-[#3B5BDB] w-44 sm:w-56 shadow-2xs transition-colors"
+              className="text-xs pl-8 pr-7 py-2 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#64748B] focus:outline-none focus:border-[#3B5BDB] w-44 sm:w-60 shadow-2xs transition-colors"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#111827]"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
           </div>
 
           <select
@@ -179,13 +200,14 @@ export const AuditPage: React.FC = () => {
             whileTap={reducedMotion ? {} : { scale: 0.95 }}
             onClick={() => loadAudit(pagination.page)}
             className="p-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#64748B] hover:text-[#111827] transition-colors shadow-2xs"
-            title="Refresh"
+            title="Refresh Ledger"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#3B5BDB]' : ''}`} />
           </motion.button>
         </div>
       </motion.div>
 
+      {/* Error Alert */}
       {error && (
         <motion.div
           initial={{ opacity: 0, y: 4 }}
@@ -202,18 +224,18 @@ export const AuditPage: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Audit Events Table */}
+      {/* Audit Table Container */}
       <motion.div variants={staggerItem} className="bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[#E5E7EB] text-left text-xs">
             <thead className="bg-[#F7F9FC] text-[#64748B] font-extrabold uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="px-5 py-3.5">Event ID</th>
-                <th className="px-5 py-3.5">Event Type</th>
+                <th className="px-5 py-3.5">Event Classification</th>
                 <th className="px-5 py-3.5">Case Reference</th>
-                <th className="px-5 py-3.5">Actor</th>
-                <th className="px-5 py-3.5">Correlation ID</th>
-                <th className="px-5 py-3.5">Timestamp</th>
+                <th className="px-5 py-3.5">Correlation Trace</th>
+                <th className="px-5 py-3.5">Actor / Origin</th>
+                <th className="px-5 py-3.5">Timestamp (UTC)</th>
                 <th className="px-5 py-3.5 text-right">Payload</th>
               </tr>
             </thead>
@@ -221,67 +243,108 @@ export const AuditPage: React.FC = () => {
               {loading ? (
                 <tr>
                   <td colSpan={7} className="py-6">
-                    <TableSkeleton rows={5} cols={7} />
+                    <TableSkeleton rows={6} cols={7} />
                   </td>
                 </tr>
               ) : filteredEvents.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-[#64748B]">
-                    <FileText className="w-10 h-10 mx-auto text-[#94A3B8] mb-3" />
-                    <p className="font-bold text-[#111827] text-sm">No audit records found</p>
-                    <p className="text-xs text-[#64748B] mt-1">Events will appear as recovery decisions execute.</p>
+                  <td colSpan={7} className="p-8">
+                    <EmptyState
+                      icon={FileText}
+                      title="No audit events found"
+                      description={
+                        searchQuery || selectedEventType
+                          ? 'No compliance events match your active filters or correlation search.'
+                          : 'No audit events have been logged to the ledger yet.'
+                      }
+                      actionLabel={searchQuery || selectedEventType ? 'Clear Search & Filters' : undefined}
+                      onAction={() => {
+                        setSearchQuery('');
+                        setSelectedEventType('');
+                      }}
+                      actionIcon={Filter}
+                    />
                   </td>
                 </tr>
               ) : (
                 <AnimatePresence mode="popLayout">
-                  {filteredEvents.map((ev, index) => (
-                    <motion.tr
-                      key={ev.id}
-                      initial={reducedMotion ? {} : { opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.15, delay: index * 0.02 }}
-                      className="hover:bg-[#F7F9FC] transition-colors group"
-                    >
-                      <td className="px-5 py-4 font-mono font-bold text-[#111827]">{ev.id.slice(0, 16)}...</td>
-                      <td className="px-5 py-4">
-                        <div className="font-bold text-[#111827]">{formatAuditEventType(ev.event_type)}</div>
-                        <div className="text-[10px] font-mono text-[#64748B]">{ev.event_type}</div>
-                      </td>
-                      <td className="px-5 py-4 font-mono text-[#3B5BDB] font-bold">{ev.recovery_case_id || '—'}</td>
-                      <td className="px-5 py-4">
-                        <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#F1F5F9] text-[#475569] border border-[#E5E7EB] font-mono">
-                          {ev.actor}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 font-mono text-[#64748B] text-[11px]">
-                        {ev.correlation_id ? (
-                          <button
-                            onClick={() => copyToClipboard(ev.correlation_id!, 'Correlation ID')}
-                            className="hover:text-[#3B5BDB] transition-colors flex items-center gap-1"
+                  {filteredEvents.map((evt, index) => {
+                    return (
+                      <motion.tr
+                        key={evt.id}
+                        initial={reducedMotion ? {} : { opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.15, delay: index * 0.02 }}
+                        className="hover:bg-[#F7F9FC] transition-colors group"
+                      >
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-bold text-[#111827]">{evt.id.slice(0, 16)}...</span>
+                            <button
+                              onClick={() => copyToClipboard(evt.id, 'Event ID')}
+                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#EEF2FF] rounded text-[#64748B] hover:text-[#3B5BDB] transition-all"
+                              title="Copy Event ID"
+                            >
+                              {copiedKey === evt.id ? <Check className="w-3 h-3 text-[#059669]" /> : <Copy className="w-3 h-3" />}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE]">
+                            {evt.event_type}
+                          </span>
+                          <p className="text-[11px] text-[#64748B] mt-0.5 font-sans">{formatAuditEventType(evt.event_type)}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          {evt.recovery_case_id ? (
+                            <span className="font-mono text-[#111827] font-semibold">
+                              {evt.recovery_case_id.slice(0, 14)}...
+                            </span>
+                          ) : (
+                            <span className="text-[#94A3B8]">Global Policy</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4">
+                          {evt.correlation_id ? (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleFilterByCorrelation(evt.correlation_id!)}
+                                className="font-mono text-[11px] text-[#0891B2] hover:text-[#3B5BDB] hover:underline font-bold"
+                                title="Click to filter by this correlation ID"
+                              >
+                                {evt.correlation_id.slice(0, 16)}...
+                              </button>
+                              <button
+                                onClick={() => copyToClipboard(evt.correlation_id!, 'Correlation ID')}
+                                className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-[#ECFEFF] rounded text-[#0891B2]"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-[#94A3B8]">—</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="text-xs font-semibold text-[#111827]">{evt.actor}</span>
+                        </td>
+                        <td className="px-5 py-4 text-[#64748B] font-mono text-[11px]">
+                          {new Date(evt.created_at).toLocaleString()}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <motion.button
+                            whileHover={reducedMotion ? {} : { scale: 1.05 }}
+                            whileTap={reducedMotion ? {} : { scale: 0.95 }}
+                            onClick={() => setSelectedPayload(evt.payload || {})}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white border border-[#E5E7EB] hover:border-[#C7D2FE] hover:bg-[#EEF2FF] text-[#3B5BDB] text-xs font-bold transition-all shadow-2xs"
                           >
-                            {ev.correlation_id}
-                            <Copy className="w-3 h-3 opacity-60" />
-                          </button>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
-                      <td className="px-5 py-4 text-[#64748B] text-[11px]">
-                        {ev.created_at ? new Date(ev.created_at).toLocaleString() : '—'}
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <motion.button
-                          whileHover={reducedMotion ? {} : { scale: 1.05 }}
-                          whileTap={reducedMotion ? {} : { scale: 0.95 }}
-                          onClick={() => setSelectedPayload(ev.payload)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#111827] hover:bg-[#3B5BDB] text-white font-bold text-xs transition-all shadow-2xs"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          Inspect
-                        </motion.button>
-                      </td>
-                    </motion.tr>
-                  ))}
+                            <Eye className="w-3.5 h-3.5" />
+                            Inspect
+                          </motion.button>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
                 </AnimatePresence>
               )}
             </tbody>

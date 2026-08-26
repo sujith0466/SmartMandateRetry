@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -14,8 +14,10 @@ import {
   Search,
   Bell,
   Globe,
+  Command,
 } from 'lucide-react';
 import { getActiveMerchantId, setActiveMerchantId } from '../services/api';
+import { CommandMenu } from './ui/CommandMenu';
 
 interface MerchantOption {
   id: string;
@@ -58,6 +60,19 @@ export const Layout: React.FC = () => {
   const [activeMerchant, setActiveMerchant] = useState<string>(getActiveMerchantId());
   const [isTenantOpen, setIsTenantOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
+  const [isCommandMenuOpen, setIsCommandMenuOpen] = useState(false);
+
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandMenuOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleSelectMerchant = (merchantId: string) => {
     setActiveMerchantId(merchantId);
@@ -77,6 +92,9 @@ export const Layout: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-[#F7F9FC] text-[#111827] antialiased overflow-hidden font-sans">
+      {/* Global Command Palette */}
+      <CommandMenu isOpen={isCommandMenuOpen} onClose={() => setIsCommandMenuOpen(false)} />
+
       {/* Premium Light-First Sidebar Rail */}
       <aside className="w-64 bg-white border-r border-[#E5E7EB] flex flex-col z-20 select-none shadow-xs">
         {/* Brand Identity Header with Controlled Gradient */}
@@ -209,17 +227,30 @@ export const Layout: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Context-Aware Header */}
         <header className="h-16 bg-white border-b border-[#E5E7EB] px-8 flex items-center justify-between z-10 shrink-0">
-          {/* Quick Search */}
-          <form onSubmit={handleGlobalSearch} className="relative w-72 sm:w-96">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
-            <input
-              type="text"
-              placeholder="Search invoice, customer email, case ID..."
-              value={globalSearch}
-              onChange={(e) => setGlobalSearch(e.target.value)}
-              className="w-full text-xs pl-9 pr-4 py-2 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] placeholder-[#64748B] focus:outline-none focus:border-[#3B5BDB] focus:bg-white transition-colors"
-            />
-          </form>
+          {/* Quick Search & Command Shortcut */}
+          <div className="flex items-center gap-3">
+            <form onSubmit={handleGlobalSearch} className="relative w-64 sm:w-80">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
+              <input
+                type="text"
+                placeholder="Search invoice, customer, case ID..."
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                className="w-full text-xs pl-9 pr-4 py-2 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] placeholder-[#64748B] focus:outline-none focus:border-[#3B5BDB] focus:bg-white transition-colors"
+              />
+            </form>
+
+            {/* Ctrl+K Trigger Pill */}
+            <button
+              type="button"
+              onClick={() => setIsCommandMenuOpen(true)}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#F7F9FC] hover:bg-[#EEF2FF] border border-[#E5E7EB] hover:border-[#C7D2FE] text-[11px] font-mono font-bold text-[#64748B] hover:text-[#3B5BDB] transition-colors shadow-2xs"
+              title="Open Command Palette (Ctrl+K)"
+            >
+              <Command className="w-3 h-3" />
+              <span>K</span>
+            </button>
+          </div>
 
           {/* Header Controls & Status */}
           <div className="flex items-center gap-3.5">

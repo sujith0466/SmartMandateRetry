@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ShieldCheck, ShieldAlert, Cpu, Sparkles, AlertTriangle, Scale, ArrowRight } from 'lucide-react';
 import { DecisionAttributionResponse } from '../../types';
 import { fetchCaseExplainability } from '../../services/api';
+import { InsightTooltip } from '../../components/ui/InsightTooltip';
 import { useReducedMotion } from '../../motion/useReducedMotion';
 
 interface DecisionAttributionCardProps {
@@ -45,14 +46,14 @@ export const DecisionAttributionCard: React.FC<DecisionAttributionCardProps> = (
   }
 
   if (error || !attribution) {
-    return null; // Gracefully hide if explainability is unavailable
+    return null;
   }
 
   const isBlocked = attribution.policy_status === 'BLOCKED';
   const isModified = attribution.policy_status === 'MODIFIED';
 
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm space-y-5">
+    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm space-y-5 text-left">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
         <div className="flex items-center gap-2.5">
@@ -71,16 +72,21 @@ export const DecisionAttributionCard: React.FC<DecisionAttributionCardProps> = (
             </p>
           </div>
         </div>
+
+        <InsightTooltip
+          title="Dual-Brain Governance"
+          content="AI proposes optimal recovery strategy based on failure patterns. Deterministic policy rules (P0–P4) have unconditional veto power."
+        />
       </div>
 
-      {/* Dual-Brain Decision Flow Pipeline with Sequential Motion */}
+      {/* High-Contrast Dual-Brain Decision Flow Pipeline */}
       <div className="p-4 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
         {/* 1. AI Recommendation (Violet Theme) */}
         <motion.div
           initial={reducedMotion ? {} : { opacity: 0, x: -8 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.25 }}
-          className="flex items-center gap-3 w-full md:w-auto p-2 rounded-xl bg-white border border-[#E5E7EB] shadow-2xs"
+          className="flex items-center gap-3 w-full md:w-auto p-3 rounded-xl bg-white border border-[#DDD6FE] shadow-2xs"
         >
           <div className="p-2.5 rounded-xl bg-[#F5F3FF] border border-[#DDD6FE] text-[#7C3AED] shadow-2xs">
             <Cpu className="w-4 h-4" />
@@ -101,10 +107,10 @@ export const DecisionAttributionCard: React.FC<DecisionAttributionCardProps> = (
           initial={reducedMotion ? {} : { opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.25, delay: 0.1 }}
-          className={`flex items-center gap-3 w-full md:w-auto p-2 rounded-xl border shadow-2xs ${
+          className={`flex items-center gap-3 w-full md:w-auto p-3 rounded-xl border shadow-2xs ${
             isBlocked ? 'bg-[#FFF1F2] border-[#FECDD3]' :
             isModified ? 'bg-[#FFFBEB] border-[#FDE68A]' :
-            'bg-white border-[#E5E7EB]'
+            'bg-white border-[#A7F3D0]'
           }`}
         >
           <div className={`p-2.5 rounded-xl border shadow-2xs ${
@@ -132,7 +138,7 @@ export const DecisionAttributionCard: React.FC<DecisionAttributionCardProps> = (
           initial={reducedMotion ? {} : { opacity: 0, x: 8 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.25, delay: 0.2 }}
-          className="flex items-center gap-3 w-full md:w-auto p-2 rounded-xl bg-white border border-[#C7D2FE] shadow-2xs ring-2 ring-[#EEF2FF]"
+          className="flex items-center gap-3 w-full md:w-auto p-3 rounded-xl bg-white border border-[#C7D2FE] shadow-2xs ring-2 ring-[#EEF2FF]"
         >
           <div className="p-2.5 rounded-xl bg-[#EEF2FF] border border-[#C7D2FE] text-[#3B5BDB] shadow-2xs">
             {isBlocked ? <ShieldAlert className="w-4 h-4 text-[#E11D48]" /> : <ShieldCheck className="w-4 h-4 text-[#3B5BDB]" />}
@@ -140,7 +146,7 @@ export const DecisionAttributionCard: React.FC<DecisionAttributionCardProps> = (
           <div>
             <span className="text-[10px] text-[#64748B] uppercase font-bold tracking-wider">3. Authorized Action</span>
             <div className="font-mono font-black text-[#111827] text-xs mt-0.5">{attribution.final_action}</div>
-            <span className="text-[10px] text-[#059669] font-medium font-bold">Safe Execution Dispatch</span>
+            <span className="text-[10px] text-[#059669] font-bold">Safe Execution Dispatch</span>
           </div>
         </motion.div>
       </div>

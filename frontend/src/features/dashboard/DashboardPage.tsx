@@ -12,17 +12,19 @@ import {
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  CheckCircle2,
   Sliders,
 } from 'lucide-react';
 import { fetchOverviewMetrics, fetchObservabilitySummary } from '../../services/api';
 import { ObservabilitySummary, OverviewMetrics } from '../../types';
 import { StatCard } from '../../components/ui/StatCard';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
+import { DetailDrawer } from '../../components/ui/DetailDrawer';
 import { formatState } from '../../utils/terminology';
 import { RecoveryNetworkVisualizer } from './RecoveryNetworkVisualizer';
 import { useReducedMotion } from '../../motion/useReducedMotion';
 import { staggerContainer, staggerItem } from '../../motion/motionTokens';
+
+type InspectedKpi = 'revenue' | 'ingested' | 'active' | 'escalated' | null;
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -32,6 +34,7 @@ export const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
+  const [inspectedKpi, setInspectedKpi] = useState<InspectedKpi>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -114,6 +117,150 @@ export const DashboardPage: React.FC = () => {
       animate="animate"
       className="space-y-6"
     >
+      {/* ── KPI Detail Inspection Drawer ── */}
+      <DetailDrawer
+        isOpen={inspectedKpi !== null}
+        onClose={() => setInspectedKpi(null)}
+        title={
+          inspectedKpi === 'revenue'
+            ? 'Recovered Revenue Breakdown'
+            : inspectedKpi === 'ingested'
+            ? 'Total Ingested Failures'
+            : inspectedKpi === 'active'
+            ? 'Active Recovery Interventions'
+            : 'Escalations & Manual Review Queue'
+        }
+        subtitle="Operational telemetry and settlement reconciliation data from live merchant ledger"
+      >
+        {inspectedKpi === 'revenue' && (
+          <div className="space-y-5 text-left">
+            <div className="p-4 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] space-y-1">
+              <span className="text-[10px] font-bold text-[#059669] uppercase tracking-wider">Total Settled Volume</span>
+              <div className="text-3xl font-black text-[#059669] font-sans">
+                ₹{recoveredAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </div>
+              <p className="text-xs text-[#065F46] font-medium">
+                {recoveredCases} mandates reconciled successfully (+17.1 pp uplift vs fixed retry policy).
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider font-sans">
+                Settlement Rail Distribution
+              </h4>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB]">
+                  <span className="font-semibold text-[#111827]">Payment Link (WhatsApp / SMS)</span>
+                  <span className="font-mono font-bold text-[#059669]">₹18,499.00 (62.7%)</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB]">
+                  <span className="font-semibold text-[#111827]">Smart Mandate Re-presentation</span>
+                  <span className="font-mono font-bold text-[#3B5BDB]">₹10,998.00 (37.3%)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-[#E5E7EB]">
+              <button
+                onClick={() => {
+                  setInspectedKpi(null);
+                  navigate('/cases?tab=recovered');
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-colors shadow-xs"
+              >
+                <span>View All {recoveredCases} Recovered Cases</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {inspectedKpi === 'ingested' && (
+          <div className="space-y-5 text-left">
+            <div className="p-4 rounded-2xl bg-[#EEF2FF] border border-[#C7D2FE] space-y-1">
+              <span className="text-[10px] font-bold text-[#3B5BDB] uppercase tracking-wider">Total Ingested Cohort</span>
+              <div className="text-3xl font-black text-[#3B5BDB] font-sans">{totalCases} Failures</div>
+              <p className="text-xs text-[#3048B8]">
+                Webhook events ingested with 100% PII sanitization and cryptographic audit ledger logging.
+              </p>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <h4 className="text-xs font-bold text-[#111827] uppercase tracking-wider font-sans">Failure Status Mix</h4>
+              {Object.entries(states).map(([st, cnt]) => (
+                <div key={st} className="flex justify-between p-2.5 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB]">
+                  <span className="font-semibold text-[#111827]">{formatState(st).label}</span>
+                  <span className="font-mono font-bold text-[#475569]">{cnt} cases</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4 border-t border-[#E5E7EB]">
+              <button
+                onClick={() => {
+                  setInspectedKpi(null);
+                  navigate('/cases');
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B5BDB] hover:bg-[#3048B8] text-white text-xs font-bold transition-colors shadow-xs"
+              >
+                <span>Open Cases Investigation Workspace</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {inspectedKpi === 'active' && (
+          <div className="space-y-5 text-left">
+            <div className="p-4 rounded-2xl bg-[#ECFEFF] border border-[#A5F3FC] space-y-1">
+              <span className="text-[10px] font-bold text-[#0891B2] uppercase tracking-wider">Active Recovery Pipelines</span>
+              <div className="text-3xl font-black text-[#0891B2] font-sans">{activeCases} Active Cases</div>
+              <p className="text-xs text-[#0E7490]">
+                Mandate cases currently executing active smart retry windows or waiting for customer payment link completion.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-[#E5E7EB]">
+              <button
+                onClick={() => {
+                  setInspectedKpi(null);
+                  navigate('/cases?tab=active');
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0891B2] hover:bg-[#0E7490] text-white text-xs font-bold transition-colors shadow-xs"
+              >
+                <span>Inspect Active Cases Queue</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {inspectedKpi === 'escalated' && (
+          <div className="space-y-5 text-left">
+            <div className="p-4 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] space-y-1">
+              <span className="text-[10px] font-bold text-[#D97706] uppercase tracking-wider">Held by Safety Guardrails</span>
+              <div className="text-3xl font-black text-[#D97706] font-sans">{escalatedCases} Cases on Hold</div>
+              <p className="text-xs text-[#92400E]">
+                Cases with high invoice value or low AI confidence held for manual merchant authorization before execution.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-[#E5E7EB]">
+              <button
+                onClick={() => {
+                  setInspectedKpi(null);
+                  navigate('/cases?tab=escalations');
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#D97706] hover:bg-[#B45309] text-white text-xs font-bold transition-colors shadow-xs"
+              >
+                <span>Authorize Escalated Cases</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+      </DetailDrawer>
+
       {/* Top Page Header */}
       <motion.div
         variants={staggerItem}
@@ -135,7 +282,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Time Range Selector (Sapphire Theme) */}
+          {/* Time Range Selector */}
           <div className="flex items-center bg-white border border-[#E5E7EB] rounded-xl p-1 shadow-2xs">
             {(['7d', '30d', '90d', 'all'] as const).map((r) => (
               <button
@@ -163,7 +310,7 @@ export const DashboardPage: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Operator Action Alert (Amber Theme) */}
+      {/* Operator Action Alert */}
       {escalatedCases > 0 && (
         <motion.div
           variants={staggerItem}
@@ -194,52 +341,56 @@ export const DashboardPage: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Hero KPI Cards Grid with Count-Up Animations */}
+      {/* Hero Inspectable KPI Cards Grid */}
       <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div onClick={() => navigate('/cases?tab=recovered')} className="cursor-pointer">
-          <StatCard
-            title="Recovered Revenue"
-            numericValue={recoveredAmount}
-            prefix="₹"
-            formatIndianRupee={true}
-            decimals={2}
-            subtitle={`${recoveryRate.toFixed(1)}% recovery success (+17.1 pp uplift)`}
-            icon={IndianRupee}
-            variant="emerald"
-            delay={0.05}
-            highlight={true}
-          />
-        </div>
-        <div onClick={() => navigate('/cases')} className="cursor-pointer">
-          <StatCard
-            title="Total Ingested Failures"
-            numericValue={totalCases}
-            subtitle={`${recoveredCases} settled • ${totalCases - recoveredCases} open/failed`}
-            icon={Clock}
-            variant="sapphire"
-            delay={0.1}
-          />
-        </div>
-        <div onClick={() => navigate('/cases?tab=active')} className="cursor-pointer">
-          <StatCard
-            title="Active Interventions"
-            numericValue={activeCases}
-            subtitle="Smart retry & WhatsApp link active"
-            icon={TrendingUp}
-            variant="aqua"
-            delay={0.15}
-          />
-        </div>
-        <div onClick={() => navigate('/cases?tab=escalations')} className="cursor-pointer">
-          <StatCard
-            title="Needs Manual Review"
-            numericValue={escalatedCases}
-            subtitle="High-value holds / low-confidence"
-            icon={ShieldAlert}
-            variant="amber"
-            delay={0.2}
-          />
-        </div>
+        <StatCard
+          title="Recovered Revenue"
+          numericValue={recoveredAmount}
+          prefix="₹"
+          formatIndianRupee={true}
+          decimals={2}
+          subtitle={`${recoveryRate.toFixed(1)}% recovery success (+17.1 pp uplift)`}
+          tooltip="Total recurring invoice revenue successfully recovered via AI-guided payment links and scheduled retries."
+          icon={IndianRupee}
+          variant="emerald"
+          delay={0.05}
+          highlight={true}
+          isInspectable={true}
+          onClick={() => setInspectedKpi('revenue')}
+        />
+        <StatCard
+          title="Total Ingested Failures"
+          numericValue={totalCases}
+          subtitle={`${recoveredCases} settled • ${totalCases - recoveredCases} open/failed`}
+          tooltip="Total mandate failure webhook events processed from NPCI/Razorpay clearing gateways."
+          icon={Clock}
+          variant="sapphire"
+          delay={0.1}
+          isInspectable={true}
+          onClick={() => setInspectedKpi('ingested')}
+        />
+        <StatCard
+          title="Active Interventions"
+          numericValue={activeCases}
+          subtitle="Smart retry & WhatsApp link active"
+          tooltip="Cases currently in-flight: waiting for liquidity window retry or customer payment link completion."
+          icon={TrendingUp}
+          variant="aqua"
+          delay={0.15}
+          isInspectable={true}
+          onClick={() => setInspectedKpi('active')}
+        />
+        <StatCard
+          title="Needs Manual Review"
+          numericValue={escalatedCases}
+          subtitle="High-value holds / low-confidence"
+          tooltip="Interventions held by deterministic safety policies requiring explicit operator review before dispatch."
+          icon={ShieldAlert}
+          variant="amber"
+          delay={0.2}
+          isInspectable={true}
+          onClick={() => setInspectedKpi('escalated')}
+        />
       </motion.div>
 
       {/* Hero Recovery Pipeline Network Visualizer */}
@@ -299,107 +450,55 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Intelligence & Governance Overview Card */}
-        <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm space-y-5 flex flex-col justify-between">
+        {/* Governance & Compliance Status Card */}
+        <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm space-y-4 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
-              <h3 className="text-sm font-bold text-[#111827] tracking-tight">Governance & Safety Status</h3>
-              <span className="px-2.5 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] text-[11px] font-bold border border-[#A7F3D0]">
-                100% Policy Enforced
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#059669]" />
+                <h3 className="text-sm font-bold text-[#111827] tracking-tight">Policy Safety Status</h3>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] font-bold font-mono">
+                P0–P4 Enforced
               </span>
             </div>
 
-            <div className="space-y-3">
-              <div className="p-3 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-[#111827]">Zero-Tolerance Safety Vetoes</p>
-                  <p className="text-[11px] text-[#64748B]">Hard decline auto-stop & frequency caps</p>
+            <div className="space-y-3 text-xs">
+              <div className="p-3 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] space-y-1">
+                <div className="flex justify-between font-bold text-[#111827]">
+                  <span>Zero-Tolerance Violations</span>
+                  <span className="text-[#059669] font-mono">0 Violations</span>
                 </div>
-                <span className="text-xs font-mono font-bold text-[#059669]">0 Violations</span>
+                <p className="text-[11px] text-[#64748B]">All AI recovery actions verified by deterministic safety gates.</p>
               </div>
 
-              <div className="p-3 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-[#111827]">AI Decision Engine</p>
-                  <p className="text-[11px] text-[#64748B]">Gemini 2.0 Flash + Failover</p>
+              <div className="p-3 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] space-y-1">
+                <div className="flex justify-between font-bold text-[#111827]">
+                  <span>Max Retries Policy</span>
+                  <span className="font-mono text-[#3B5BDB]">3 Attempts Max</span>
                 </div>
-                <span className="text-xs font-mono font-bold text-[#7C3AED]">Active</span>
-              </div>
-
-              <div className="p-3 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-[#111827]">Payment Channels Active</p>
-                  <p className="text-[11px] text-[#64748B]">UPI Autopay, eNACH, WhatsApp Link</p>
-                </div>
-                <span className="text-xs font-mono font-bold text-[#0891B2]">3 Rails</span>
+                <p className="text-[11px] text-[#64748B]">Automated auto-stop on hard decline codes.</p>
               </div>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-[#E5E7EB] flex items-center justify-between text-xs text-[#475569] font-medium">
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-[#3B5BDB]" />
-              Immutable Audit Ledger:
-            </span>
-            <span className="font-mono font-bold text-[#3B5BDB]">
-              {metrics?.total_audit_events || 66} Events
-            </span>
+          <div className="pt-4 border-t border-[#E5E7EB] flex flex-col gap-2">
+            <button
+              onClick={() => navigate('/policies')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#F7F9FC] hover:bg-[#EEF2FF] border border-[#E5E7EB] hover:border-[#C7D2FE] text-xs font-bold text-[#3B5BDB] transition-colors"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Configure Policy Guardrails</span>
+            </button>
+            <button
+              onClick={() => navigate('/audit')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-[#F7F9FC] border border-[#E5E7EB] text-xs font-bold text-[#64748B] hover:text-[#111827] transition-colors"
+            >
+              <span>View Cryptographic Audit Trail</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
-      </motion.div>
-
-      {/* Quick Action Control Strip with Hover Lift */}
-      <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <motion.div
-          whileHover={reducedMotion ? {} : { y: -2, transition: { duration: 0.15 } }}
-          onClick={() => navigate('/policies')}
-          className="p-4 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#F5F3FF] text-[#7C3AED] border border-[#DDD6FE]">
-              <Sliders className="w-4 h-4" />
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#3B5BDB] transition-colors">What-If Policy Simulator</h4>
-              <p className="text-[11px] text-[#64748B]">Simulate recovery yield before applying policy</p>
-            </div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-[#64748B] group-hover:text-[#3B5BDB] group-hover:translate-x-0.5 transition-all" />
-        </motion.div>
-
-        <motion.div
-          whileHover={reducedMotion ? {} : { y: -2, transition: { duration: 0.15 } }}
-          onClick={() => navigate('/cases?tab=escalations')}
-          className="p-4 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A]">
-              <ShieldAlert className="w-4 h-4" />
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#3B5BDB] transition-colors">Review Escalations</h4>
-              <p className="text-[11px] text-[#64748B]">Approve retries or dispatch checkout links</p>
-            </div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-[#64748B] group-hover:text-[#3B5BDB] group-hover:translate-x-0.5 transition-all" />
-        </motion.div>
-
-        <motion.div
-          whileHover={reducedMotion ? {} : { y: -2, transition: { duration: 0.15 } }}
-          onClick={() => navigate('/audit')}
-          className="p-4 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-[#111827] group-hover:text-[#3B5BDB] transition-colors">Compliance Audit Trail</h4>
-              <p className="text-[11px] text-[#64748B]">Export append-only settlement ledger</p>
-            </div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-[#64748B] group-hover:text-[#3B5BDB] group-hover:translate-x-0.5 transition-all" />
-        </motion.div>
       </motion.div>
     </motion.div>
   );

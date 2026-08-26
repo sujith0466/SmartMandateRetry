@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Scale,
   ShieldCheck,
@@ -9,7 +9,6 @@ import {
   Search,
   AlertTriangle,
   Activity,
-  FlaskConical,
 } from 'lucide-react';
 import {
   fetchEvaluationSummary,
@@ -34,7 +33,6 @@ import { RunHistoryDrawer } from './components/RunHistoryDrawer';
 import { ScenarioResultTable, ScenarioFilters } from './components/ScenarioResultTable';
 import { ScenarioExplorerModal } from './components/ScenarioExplorerModal';
 import { LongitudinalTrendView } from './components/LongitudinalTrendView';
-import { useReducedMotion } from '../../motion/useReducedMotion';
 import { staggerContainer, staggerItem } from '../../motion/motionTokens';
 
 type ActiveTab =
@@ -47,7 +45,6 @@ type ActiveTab =
   | 'SCENARIO_EXPLORER';
 
 export const EvaluationPage: React.FC = () => {
-  const reducedMotion = useReducedMotion();
   const [activeTab, setActiveTab] = useState<ActiveTab>('COMPARATIVE');
   const [selectedSplit, setSelectedSplit] = useState<'TEST' | 'VALIDATION' | 'TRAIN' | 'ALL'>('TEST');
   const [selectedMode, setSelectedMode] = useState<string>('SMART_MANDATE');
@@ -198,18 +195,18 @@ export const EvaluationPage: React.FC = () => {
       variants={staggerContainer}
       initial="initial"
       animate="animate"
-      className="space-y-6"
+      className="space-y-6 text-left"
     >
-      {/* Header */}
+      {/* Header with Certified Evidence Distinction Badge */}
       <motion.div variants={staggerItem} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-black text-[#111827] tracking-tight font-sans">
               Evaluation & Benchmarking Lab
             </h1>
-            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#F5F3FF] text-[#7C3AED] border border-[#DDD6FE] flex items-center gap-1 font-mono">
-              <FlaskConical className="w-3.5 h-3.5 text-[#7C3AED]" />
-              5,000 SCENARIOS
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] flex items-center gap-1 font-mono">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#059669]" />
+              CERTIFIED BENCHMARK EVIDENCE
             </span>
           </div>
           <p className="text-xs text-[#64748B] mt-1">
@@ -219,7 +216,7 @@ export const EvaluationPage: React.FC = () => {
 
         {/* Mode Selector for Detailed Views */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[#64748B] font-bold">Active Inspector Mode:</span>
+          <span className="text-xs text-[#64748B] font-bold">System Mode:</span>
           <select
             value={selectedMode}
             onChange={(e) => {
@@ -248,21 +245,26 @@ export const EvaluationPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-[#FFF1F2] border border-[#FECDD3] text-[#9F1239] text-xs flex items-center gap-3 shadow-sm"
+          className="p-4 rounded-2xl bg-[#FFF1F2] border border-[#FECDD3] text-xs text-[#9F1239] flex items-center justify-between shadow-sm"
         >
-          <AlertTriangle className="w-5 h-5 flex-shrink-0 text-[#E11D48]" />
-          <span>{errorMessage}</span>
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-[#E11D48]" />
+            <span>{errorMessage}</span>
+          </div>
+          <button onClick={loadInitialData} className="font-bold underline text-[#BE123C]">
+            Retry
+          </button>
         </motion.div>
       )}
 
-      {/* Overview & Action Bar */}
+      {/* Macro Overview & Benchmark Execution Controls */}
       <motion.div variants={staggerItem}>
         <EvaluationOverview
           summary={summary}
           activeRun={activeRun}
           activeMetrics={activeMetrics}
           selectedSplit={selectedSplit}
-          onSplitChange={setSelectedSplit}
+          onSplitChange={(s) => setSelectedSplit(s)}
           isRunningBenchmark={isRunningBenchmark}
           onRunBenchmark={handleRunBenchmark}
           onRefresh={loadInitialData}
@@ -270,110 +272,98 @@ export const EvaluationPage: React.FC = () => {
         />
       </motion.div>
 
-      {/* Navigation Sub-Tabs (Sapphire Active Treatment) */}
-      <motion.div variants={staggerItem} className="flex items-center gap-1 border-b border-[#E5E7EB] pb-px overflow-x-auto">
+      {/* 7 Tab Navigation Switcher */}
+      <motion.div variants={staggerItem} className="flex border-b border-[#E5E7EB] space-x-1 overflow-x-auto">
         {[
-          { id: 'COMPARATIVE', label: 'Comparative Benchmark', icon: Scale, color: 'text-[#3B5BDB]' },
-          { id: 'SAFETY', label: 'Safety & Governance', icon: ShieldCheck, color: 'text-[#059669]' },
-          { id: 'CONFUSION_MATRIX', label: 'Confusion Matrix & F1', icon: Target, color: 'text-[#0891B2]' },
-          { id: 'FINANCIAL', label: 'Recovery & Financials', icon: IndianRupee, color: 'text-[#D97706]' },
-          { id: 'DIMENSIONAL', label: 'Dimensional Breakdowns', icon: Layers, color: 'text-[#7C3AED]' },
-          { id: 'TRENDS', label: 'Longitudinal Trends & Drift', icon: Activity, color: 'text-[#059669]' },
-          { id: 'SCENARIO_EXPLORER', label: 'Scenario Results Explorer', icon: Search, color: 'text-[#7C3AED]' },
-        ].map((t) => {
-          const Icon = t.icon;
-          const isActive = activeTab === t.id;
+          { id: 'COMPARATIVE', label: 'Comparative Benchmark', icon: Scale },
+          { id: 'SAFETY', label: 'Safety & Governance', icon: ShieldCheck },
+          { id: 'CONFUSION_MATRIX', label: 'Confusion Matrix & F1', icon: Target },
+          { id: 'FINANCIAL', label: 'Recovery & Financials', icon: IndianRupee },
+          { id: 'DIMENSIONAL', label: 'Dimensional Breakdowns', icon: Layers },
+          { id: 'TRENDS', label: 'Longitudinal Trends & Drift', icon: Activity },
+          { id: 'SCENARIO_EXPLORER', label: 'Scenario Results Explorer', icon: Search },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
           return (
             <button
-              key={t.id}
-              onClick={() => setActiveTab(t.id as ActiveTab)}
-              className={`relative flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition-all whitespace-nowrap z-0 ${
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as ActiveTab)}
+              className={`relative flex items-center gap-2 px-4 py-3 text-xs font-bold transition-colors whitespace-nowrap z-0 ${
                 isActive ? 'text-[#3B5BDB]' : 'text-[#64748B] hover:text-[#111827]'
               }`}
             >
               {isActive && (
                 <motion.div
-                  layoutId="evalActiveSubTabPill"
+                  layoutId="evalActiveTabPill"
                   className="absolute inset-0 bg-white border-b-2 border-[#3B5BDB] rounded-t-xl -z-10 shadow-2xs"
                   transition={{ type: 'spring', stiffness: 450, damping: 35 }}
                 />
               )}
-              <Icon className={`w-4 h-4 ${isActive ? 'text-[#3B5BDB]' : t.color}`} />
-              <span>{t.label}</span>
+              <Icon className={`w-4 h-4 ${isActive ? 'text-[#3B5BDB]' : 'text-[#64748B]'}`} />
+              <span>{tab.label}</span>
             </button>
           );
         })}
       </motion.div>
 
-      {/* Tab Panels with AnimatePresence */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={reducedMotion ? {} : { opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={reducedMotion ? {} : { opacity: 0, y: -4 }}
-          transition={{ duration: 0.16 }}
-        >
-          {activeTab === 'COMPARATIVE' && (
-            <ComparativeBenchmarkView
-              modeMetrics={modeMetrics}
-              baselineRecoveryRate={baselineRecoveryRate}
-            />
-          )}
+      {/* Tab Content Views */}
+      <motion.div variants={staggerItem} className="space-y-6">
+        {activeTab === 'COMPARATIVE' && (
+          <ComparativeBenchmarkView
+            modeMetrics={modeMetrics}
+            baselineRecoveryRate={baselineRecoveryRate}
+          />
+        )}
 
-          {activeTab === 'SAFETY' && activeMetrics && (
-            <SafetyGovernanceDashboard
-              safetyMetrics={activeMetrics.safety_metrics}
-              modeName={selectedMode}
-            />
-          )}
+        {activeTab === 'SAFETY' && activeMetrics && (
+          <SafetyGovernanceDashboard
+            safetyMetrics={activeMetrics.safety_metrics}
+            modeName={selectedMode}
+          />
+        )}
 
-          {activeTab === 'CONFUSION_MATRIX' && activeMetrics && (
-            <ConfusionMatrixView
-              metrics={activeMetrics}
-              modeName={selectedMode}
-            />
-          )}
+        {activeTab === 'CONFUSION_MATRIX' && activeMetrics && (
+          <ConfusionMatrixView
+            metrics={activeMetrics}
+            modeName={selectedMode}
+          />
+        )}
 
-          {activeTab === 'FINANCIAL' && activeMetrics && (
-            <RecoveryFinancialAnalytics
-              metrics={activeMetrics}
-              modeName={selectedMode}
-            />
-          )}
+        {activeTab === 'FINANCIAL' && activeMetrics && (
+          <RecoveryFinancialAnalytics
+            metrics={activeMetrics}
+            modeName={selectedMode}
+          />
+        )}
 
-          {activeTab === 'DIMENSIONAL' && activeMetrics && (
-            <DimensionalBreakdownView
-              metrics={activeMetrics}
-              modeName={selectedMode}
-            />
-          )}
+        {activeTab === 'DIMENSIONAL' && activeMetrics && (
+          <DimensionalBreakdownView
+            metrics={activeMetrics}
+            modeName={selectedMode}
+          />
+        )}
 
-          {activeTab === 'TRENDS' && (
-            <LongitudinalTrendView />
-          )}
+        {activeTab === 'TRENDS' && (
+          <LongitudinalTrendView />
+        )}
 
-          {activeTab === 'SCENARIO_EXPLORER' && (
+        {activeTab === 'SCENARIO_EXPLORER' && (
+          <div className="space-y-4">
             <ScenarioResultTable
               results={scenarioResults}
               isLoading={isScenarioLoading}
-              onSelectScenario={setSelectedScenario}
+              onSelectScenario={(sc: EvaluationScenarioResultItem) => setSelectedScenario(sc)}
               page={scenarioPage}
               totalPages={scenarioTotalPages}
               onPageChange={handlePageChange}
               onFilterChange={handleFilterChange}
             />
-          )}
-        </motion.div>
-      </AnimatePresence>
+          </div>
+        )}
+      </motion.div>
 
-      {/* Scenario Explorer Inspector Modal */}
-      <ScenarioExplorerModal
-        scenario={selectedScenario}
-        onClose={() => setSelectedScenario(null)}
-      />
-
-      {/* Run History Drawer */}
+      {/* History Drawer */}
       <RunHistoryDrawer
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
@@ -382,6 +372,14 @@ export const EvaluationPage: React.FC = () => {
         onSelectRun={handleSelectRun}
         isLoading={isLoading}
       />
+
+      {/* Scenario Inspector Modal */}
+      {selectedScenario && (
+        <ScenarioExplorerModal
+          scenario={selectedScenario}
+          onClose={() => setSelectedScenario(null)}
+        />
+      )}
     </motion.div>
   );
 };

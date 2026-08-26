@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, RotateCcw, AlertTriangle, CheckCircle2, Sparkles, TrendingUp, X } from 'lucide-react';
+import { Play, RotateCcw, AlertTriangle, CheckCircle2, Sparkles, TrendingUp, X, ShieldAlert, Check } from 'lucide-react';
 import { MerchantPolicy, PolicySimulationResponse } from '../../types';
 import { simulatePolicy } from '../../services/api';
 import { AnimatedNumber } from '../../motion/AnimatedNumber';
@@ -79,9 +79,9 @@ export const PolicySimulationModal: React.FC<PolicySimulationModalProps> = ({
           initial="initial"
           animate="animate"
           exit="exit"
-          className="bg-white border border-[#E5E7EB] rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-fintech-modal overflow-hidden"
+          className="bg-white border border-[#E5E7EB] rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-fintech-modal overflow-hidden text-left"
         >
-          {/* Header */}
+          {/* Header with High-Contrast Safeguard Badge */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5E7EB] bg-[#F7F9FC]">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-[#F5F3FF] text-[#7C3AED] border border-[#DDD6FE]">
@@ -90,8 +90,8 @@ export const PolicySimulationModal: React.FC<PolicySimulationModalProps> = ({
               <div>
                 <h2 className="text-base font-bold text-[#111827] flex items-center gap-2 font-sans">
                   What-If Policy Simulation Studio
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A] font-mono font-bold">
-                    NON-MUTATING / INSTANT
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] font-mono font-bold">
+                    NON-MUTATING SANDBOX
                   </span>
                 </h2>
                 <p className="text-xs text-[#64748B]">
@@ -102,10 +102,21 @@ export const PolicySimulationModal: React.FC<PolicySimulationModalProps> = ({
             <motion.button
               whileTap={reducedMotion ? {} : { scale: 0.95 }}
               onClick={onClose}
-              className="p-1 text-[#64748B] hover:text-[#111827] rounded-lg hover:bg-[#F1F5F9] transition-colors"
+              className="p-1.5 text-[#64748B] hover:text-[#111827] rounded-lg hover:bg-[#F1F5F9] transition-colors"
             >
               <X className="w-5 h-5" />
             </motion.button>
+          </div>
+
+          {/* Prominent Simulation Safeguard Notice */}
+          <div className="px-6 py-2.5 bg-[#FFFBEB] border-b border-[#FDE68A] flex items-center justify-between text-xs text-[#92400E]">
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-[#D97706] shrink-0" />
+              <span className="font-semibold">
+                Simulation Only: Adjusting parameters here will not change live production recovery policies.
+              </span>
+            </div>
+            <span className="text-[11px] font-mono font-bold text-[#B45309]">Instant In-Memory Simulation</span>
           </div>
 
           {/* Content Body */}
@@ -256,7 +267,7 @@ export const PolicySimulationModal: React.FC<PolicySimulationModalProps> = ({
                 </button>
               </div>
 
-              {/* Execute Button (Violet Theme for AI Intelligence) */}
+              {/* Execute Button */}
               <motion.button
                 whileHover={reducedMotion ? {} : { scale: 1.02 }}
                 whileTap={reducedMotion ? {} : { scale: 0.98 }}
@@ -293,7 +304,7 @@ export const PolicySimulationModal: React.FC<PolicySimulationModalProps> = ({
                   </div>
                   <h4 className="text-sm font-bold text-[#111827] mb-1">Ready for Simulation</h4>
                   <p className="text-xs text-[#64748B] max-w-sm">
-                    Adjust policy parameter sliders on the left and click "Execute What-If Simulation" to preview estimated recovery performance in under 2ms.
+                    Adjust policy parameter sliders on the left and click &ldquo;Execute What-If Simulation&rdquo; to preview estimated recovery performance against the certified split.
                   </p>
                 </div>
               )}
@@ -408,9 +419,10 @@ export const PolicySimulationModal: React.FC<PolicySimulationModalProps> = ({
                           onApplyToDraft(draft);
                           onClose();
                         }}
-                        className="px-4 py-2 rounded-xl bg-[#111827] hover:bg-[#3B5BDB] text-white text-xs font-bold transition-colors shadow-2xs"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#111827] hover:bg-[#3B5BDB] text-white text-xs font-bold transition-colors shadow-2xs"
                       >
-                        Copy Values to Policy Editor
+                        <Check className="w-3.5 h-3.5 text-[#059669]" />
+                        <span>Copy Values to Policy Editor</span>
                       </motion.button>
                     </div>
                   )}

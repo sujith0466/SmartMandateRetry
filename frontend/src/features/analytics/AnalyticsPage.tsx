@@ -25,6 +25,7 @@ export const AnalyticsPage: React.FC = () => {
   const [metrics, setMetrics] = useState<OverviewMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRail, setSelectedRail] = useState<'all' | 'link' | 'retry'>('all');
   const reducedMotion = useReducedMotion();
 
   const loadData = async () => {
@@ -71,7 +72,7 @@ export const AnalyticsPage: React.FC = () => {
       variants={staggerContainer}
       initial="initial"
       animate="animate"
-      className="space-y-6"
+      className="space-y-6 text-left"
     >
       {/* Header */}
       <motion.div variants={staggerItem} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -114,7 +115,7 @@ export const AnalyticsPage: React.FC = () => {
         </motion.div>
       )}
 
-      {/* 4 Macro Recovery KPIs with Animated Numbers */}
+      {/* 4 Macro Recovery KPIs with Animated Numbers & Tooltips */}
       <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Recovered Revenue"
@@ -123,6 +124,7 @@ export const AnalyticsPage: React.FC = () => {
           formatIndianRupee={true}
           decimals={2}
           subtitle="Direct settled subscription income"
+          tooltip="Total recurring subscription revenue successfully recovered from failed mandates."
           icon={IndianRupee}
           variant="emerald"
           highlight={true}
@@ -133,6 +135,7 @@ export const AnalyticsPage: React.FC = () => {
           suffix="%"
           decimals={1}
           subtitle={`${recoveredCases} settled of ${totalCases} mandate failures`}
+          tooltip="Percentage of eligible failed recurring payment transactions successfully reconciled."
           icon={Percent}
           variant="sapphire"
           delay={0.05}
@@ -141,6 +144,7 @@ export const AnalyticsPage: React.FC = () => {
           title="Recovery Uplift vs Native"
           value="+17.1 pp"
           subtitle="Above Razorpay native fixed schedule"
+          tooltip="Net percentage point recovery increase compared to standard fixed-interval retries."
           icon={TrendingUp}
           variant="emerald"
           delay={0.1}
@@ -149,6 +153,7 @@ export const AnalyticsPage: React.FC = () => {
           title="Avg Hours to Recovery"
           value="14.2 hrs"
           subtitle="Optimal timing window attribution"
+          tooltip="Average elapsed time from initial mandate failure event to successful settlement reconciliation."
           icon={Activity}
           variant="aqua"
           delay={0.15}
@@ -164,69 +169,86 @@ export const AnalyticsPage: React.FC = () => {
               <Zap className="w-4 h-4 text-[#3B5BDB]" />
               <h3 className="text-sm font-bold text-[#111827] font-sans">Recovery Strategy Performance</h3>
             </div>
-            <span className="text-xs text-[#64748B] font-mono font-semibold">By Channel</span>
+            {/* Strategy Filter Chips */}
+            <div className="flex items-center gap-1 bg-[#F7F9FC] p-1 rounded-xl border border-[#E5E7EB]">
+              {(['all', 'link', 'retry'] as const).map((rail) => (
+                <button
+                  key={rail}
+                  onClick={() => setSelectedRail(rail)}
+                  className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
+                    selectedRail === rail ? 'bg-[#3B5BDB] text-white shadow-2xs' : 'text-[#64748B] hover:text-[#111827]'
+                  }`}
+                >
+                  {rail === 'all' ? 'All Channels' : rail === 'link' ? 'Payment Links' : 'Auto Retries'}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-4">
-            {/* Smart Payment Link (Aqua Theme for Payment Channel) */}
-            <div className="p-4 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] space-y-2.5 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-[#ECFEFF] text-[#0891B2] border border-[#A5F3FC]">
-                    <Smartphone className="w-4 h-4" />
+            {/* Smart Payment Link */}
+            {(selectedRail === 'all' || selectedRail === 'link') && (
+              <div className="p-4 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] space-y-2.5 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-lg bg-[#ECFEFF] text-[#0891B2] border border-[#A5F3FC]">
+                      <Smartphone className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-[#111827]">Smart Payment Link (WhatsApp & SMS)</h4>
+                      <p className="text-[11px] text-[#64748B]">Multi-channel dynamic checkout link</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-black font-mono text-[#059669]">₹24,498 Recovered</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#E5E7EB] text-center">
+                  <div>
+                    <span className="text-[10px] text-[#64748B] uppercase font-bold">Dispatched</span>
+                    <p className="text-xs font-bold text-[#111827]">6 links</p>
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-[#111827]">Smart Payment Link (WhatsApp & SMS)</h4>
-                    <p className="text-[11px] text-[#64748B]">Multi-channel dynamic checkout link</p>
+                    <span className="text-[10px] text-[#64748B] uppercase font-bold">Converted</span>
+                    <p className="text-xs font-bold text-[#059669]">4 (66.7%)</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-[#64748B] uppercase font-bold">Avg Settlement</span>
+                    <p className="text-xs font-bold text-[#111827]">4.5 hrs</p>
                   </div>
                 </div>
-                <span className="text-xs font-black font-mono text-[#059669]">₹24,498 Recovered</span>
               </div>
-              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#E5E7EB] text-center">
-                <div>
-                  <span className="text-[10px] text-[#64748B] uppercase font-bold">Dispatched</span>
-                  <p className="text-xs font-bold text-[#111827]">6 links</p>
-                </div>
-                <div>
-                  <span className="text-[10px] text-[#64748B] uppercase font-bold">Converted</span>
-                  <p className="text-xs font-bold text-[#059669]">4 (66.7%)</p>
-                </div>
-                <div>
-                  <span className="text-[10px] text-[#64748B] uppercase font-bold">Avg Settlement</span>
-                  <p className="text-xs font-bold text-[#111827]">4.5 hrs</p>
-                </div>
-              </div>
-            </div>
+            )}
 
             {/* Automated Mandate Retry */}
-            <div className="p-4 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] space-y-2.5 shadow-2xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]">
-                    <RefreshCw className="w-4 h-4" />
+            {(selectedRail === 'all' || selectedRail === 'retry') && (
+              <div className="p-4 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] space-y-2.5 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-lg bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]">
+                      <RefreshCw className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-[#111827]">Automated Mandate Retry</h4>
+                      <p className="text-[11px] text-[#64748B]">Intelligent bank debit timing (06:00 IST window)</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-black font-mono text-[#059669]">₹4,999 Recovered</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#E5E7EB] text-center">
+                  <div>
+                    <span className="text-[10px] text-[#64748B] uppercase font-bold">Scheduled</span>
+                    <p className="text-xs font-bold text-[#111827]">4 attempts</p>
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-[#111827]">Automated Mandate Retry</h4>
-                    <p className="text-[11px] text-[#64748B]">Intelligent bank debit timing (06:00 IST window)</p>
+                    <span className="text-[10px] text-[#64748B] uppercase font-bold">Succeeded</span>
+                    <p className="text-xs font-bold text-[#059669]">1 (25.0%)</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-[#64748B] uppercase font-bold">Frictionless</span>
+                    <p className="text-xs font-bold text-[#3B5BDB]">100% Zero-Touch CX</p>
                   </div>
                 </div>
-                <span className="text-xs font-black font-mono text-[#059669]">₹4,999 Recovered</span>
               </div>
-              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#E5E7EB] text-center">
-                <div>
-                  <span className="text-[10px] text-[#64748B] uppercase font-bold">Scheduled</span>
-                  <p className="text-xs font-bold text-[#111827]">4 attempts</p>
-                </div>
-                <div>
-                  <span className="text-[10px] text-[#64748B] uppercase font-bold">Succeeded</span>
-                  <p className="text-xs font-bold text-[#059669]">1 (25.0%)</p>
-                </div>
-                <div>
-                  <span className="text-[10px] text-[#64748B] uppercase font-bold">Frictionless</span>
-                  <p className="text-xs font-bold text-[#3B5BDB]">100% Zero-Touch CX</p>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 

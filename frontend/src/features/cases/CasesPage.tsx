@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -14,11 +14,17 @@ import {
   CheckCircle2,
   Clock,
   Layers,
+  Copy,
+  Check,
+  X,
+  Filter,
 } from 'lucide-react';
 import { exportCasesCsv, fetchCases } from '../../services/api';
 import { CaseState, PaginationInfo, RecoveryCase } from '../../types';
 import { Badge } from '../../components/ui/Badge';
 import { TableSkeleton } from '../../components/ui/SkeletonLoader';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { ToastContainer, ToastMessage } from '../../components/ui/Toast';
 import { formatFailureCategory, formatState } from '../../utils/terminology';
 import { useReducedMotion } from '../../motion/useReducedMotion';
 import { staggerContainer, staggerItem } from '../../motion/motionTokens';
@@ -28,23 +34,48 @@ type TabType = 'all' | 'active' | 'escalations' | 'recovered';
 export const CasesPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTabParam = (searchParams.get('tab') as TabType) || 'all';
+  const initialSearch = searchParams.get('search') || '';
+  const initialCategory = searchParams.get('category') || '';
   const reducedMotion = useReducedMotion();
 
   const [activeTab, setActiveTab] = useState<TabType>(activeTabParam);
   const [cases, setCases] = useState<RecoveryCase[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({ page: 1, limit: 20, total: 0, pages: 1 });
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+  const [searchQuery, setSearchQuery] = useState<string>(initialSearch);
   const [loading, setLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 2500);
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(text);
+    showToast(`Copied ${label} (${text.slice(0, 14)}...) to clipboard!`);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    setSearchParams(tab === 'all' ? {} : { tab });
+    const newParams: Record<string, string> = {};
+    if (tab !== 'all') newParams.tab = tab;
+    if (searchQuery) newParams.search = searchQuery;
+    if (selectedCategory) newParams.category = selectedCategory;
+    setSearchParams(newParams);
   };
 
-  const loadCases = async (page: number = 1) => {
+  const loadCases = async (page: number = 1, currentSearch = searchQuery, currentCat = selectedCategory) => {
     setLoading(true);
     setError(null);
     try {
@@ -62,8 +93,8 @@ export const CasesPage: React.FC = () => {
       const response = await fetchCases(page, 20, {
         state: stateFilter,
         stage: stageFilter,
-        failure_category: selectedCategory || undefined,
-        search: searchQuery || undefined,
+        failure_category: currentCat || undefined,
+        search: currentSearch || undefined,
       });
 
       setCases(response.data);
@@ -75,14 +106,17 @@ export const CasesPage: React.FC = () => {
     }
   };
 
+  // Debounced search trigger
   useEffect(() => {
-    loadCases(1);
-  }, [activeTab, selectedCategory]);
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    debounceTimeoutRef.current = setTimeout(() => {
+      loadCases(1, searchQuery, selectedCategory);
+    }, 350);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    loadCases(1);
-  };
+    return () => {
+      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    };
+  }, [searchQuery, selectedCategory, activeTab]);
 
   const handleExportCsv = async () => {
     try {
@@ -103,11 +137,19 @@ export const CasesPage: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+      showToast('Recovery cases exported successfully!', 'success');
     } catch (err: any) {
-      alert(err.message || 'Failed to export CSV');
+      showToast(err.message || 'Failed to export CSV', 'error');
     } finally {
       setIsExporting(false);
     }
+  };
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('');
+    setActiveTab('all');
+    setSearchParams({});
   };
 
   const getDerivedPriority = (amount: number, state: CaseState) => {
@@ -139,6 +181,8 @@ export const CasesPage: React.FC = () => {
       animate="animate"
       className="space-y-6"
     >
+      <ToastContainer toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
+
       {/* Header & Controls */}
       <motion.div
         variants={staggerItem}
@@ -155,17 +199,25 @@ export const CasesPage: React.FC = () => {
 
         {/* Action Toolbar */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Search Form */}
-          <form onSubmit={handleSearchSubmit} className="relative">
+          {/* Instant Search Field */}
+          <div className="relative">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
             <input
               type="text"
-              placeholder="Search invoice, customer..."
+              placeholder="Search invoice, customer ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="text-xs pl-8 pr-3 py-2 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#64748B] focus:outline-none focus:border-[#3B5BDB] w-44 sm:w-56 shadow-2xs transition-colors"
+              className="text-xs pl-8 pr-7 py-2 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#64748B] focus:outline-none focus:border-[#3B5BDB] w-48 sm:w-60 shadow-2xs transition-colors"
             />
-          </form>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#111827]"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
 
           {/* Failure Category Filter */}
           <select
@@ -205,7 +257,7 @@ export const CasesPage: React.FC = () => {
       </motion.div>
 
       {/* Filter Tabs Navigation with Fluid Active Pill */}
-      <motion.div variants={staggerItem} className="flex items-center border-b border-[#E5E7EB] space-x-1">
+      <motion.div variants={staggerItem} className="flex items-center border-b border-[#E5E7EB] space-x-1 overflow-x-auto">
         {[
           { id: 'all', label: 'All Ingested Cases', icon: Layers },
           { id: 'active', label: 'Active Pipeline', icon: Clock },
@@ -218,7 +270,7 @@ export const CasesPage: React.FC = () => {
             <button
               key={t.id}
               onClick={() => handleTabChange(t.id as TabType)}
-              className={`relative flex items-center gap-2 px-4 py-3 text-xs font-bold transition-colors z-0 ${
+              className={`relative flex items-center gap-2 px-4 py-3 text-xs font-bold transition-colors whitespace-nowrap z-0 ${
                 isActive ? 'text-[#3B5BDB]' : 'text-[#64748B] hover:text-[#111827]'
               }`}
             >
@@ -278,10 +330,21 @@ export const CasesPage: React.FC = () => {
                 </tr>
               ) : cases.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center text-[#64748B]">
-                    <Inbox className="w-10 h-10 mx-auto text-[#94A3B8] mb-3" />
-                    <p className="font-bold text-[#111827] text-sm">No recovery cases found in this view</p>
-                    <p className="text-xs text-[#64748B] mt-1">Try switching tabs or resetting search filters.</p>
+                  <td colSpan={8} className="p-8">
+                    <EmptyState
+                      icon={Inbox}
+                      title="No recovery cases found"
+                      description={
+                        searchQuery || selectedCategory || activeTab !== 'all'
+                          ? 'No cases match your active filters or search query.'
+                          : 'No mandate failure cases have been ingested yet.'
+                      }
+                      actionLabel={
+                        searchQuery || selectedCategory || activeTab !== 'all' ? 'Reset All Filters' : undefined
+                      }
+                      onAction={handleResetFilters}
+                      actionIcon={Filter}
+                    />
                   </td>
                 </tr>
               ) : (
@@ -299,8 +362,17 @@ export const CasesPage: React.FC = () => {
                         className="hover:bg-[#F7F9FC] transition-colors group"
                       >
                         <td className="px-5 py-4">
-                          <div className="font-mono font-bold text-[#111827] group-hover:text-[#3B5BDB] transition-colors">
-                            {c.invoice_id}
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-bold text-[#111827] group-hover:text-[#3B5BDB] transition-colors">
+                              {c.invoice_id}
+                            </span>
+                            <button
+                              onClick={() => copyToClipboard(c.invoice_id || c.id, 'Invoice ID')}
+                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#EEF2FF] rounded text-[#64748B] hover:text-[#3B5BDB] transition-all"
+                              title="Copy Invoice ID"
+                            >
+                              {copiedId === c.invoice_id ? <Check className="w-3 h-3 text-[#059669]" /> : <Copy className="w-3 h-3" />}
+                            </button>
                           </div>
                           <div className="text-[11px] text-[#64748B] font-mono">{c.id.slice(0, 16)}...</div>
                         </td>
