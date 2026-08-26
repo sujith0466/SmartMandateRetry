@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     OPENROUTER_MODEL: str = "google/gemini-2.0-flash-001"
     OPENROUTER_TIMEOUT_SECONDS: float = 5.0
     OPENROUTER_MAX_RETRIES: int = 2
+    OPENROUTER_FREE_ONLY: bool = True
+    OPENROUTER_MODEL_DISCOVERY_ENABLED: bool = True
+    OPENROUTER_MODEL_REFRESH_MINUTES: int = 30
+    OPENROUTER_MAX_FREE_MODEL_ATTEMPTS: int = 3
 
     # Policy Defaults
     POLICY_MAX_RETRIES: int = 3

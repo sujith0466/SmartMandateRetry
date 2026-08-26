@@ -57,6 +57,8 @@ REQUIRED_DOCS = [
     "docs/09_Program/PHASE_07_IMPLEMENTATION_PLAN.md",
     "docs/09_Program/PHASE_07_COMPLETION_REPORT.md",
     "docs/09_Program/AI_PROVIDER_HARDENING_PLAN.md",
+    "docs/09_Program/FREE_MODEL_CATALOG.md",
+    "docs/09_Program/AI_PROVIDER_HARDENING_REPORT.md",
 ]
 
 

@@ -4,6 +4,17 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 
 ---
 
+## [AI Provider Hardening Complete] - 2026-08-26
+### Added
+- **Free Model Registry & Discovery:** Built `FreeModelRegistry` dynamically querying OpenRouter `/api/v1/models` and enforcing strict $0.00 cost filters (`input_price == 0` and `output_price == 0`).
+- **Free-Only Safety Guard:** Enforced runtime pre-call assertion rejecting any non-free model invocation.
+- **Dynamic Failover & Rotation:** Implemented multi-model rotation across healthy free models upon 429 rate limits, 5xx server errors, or timeouts.
+- **Model Health & Cooldown Engine:** Implemented `ModelHealth` with temporary cooldowns upon transient failures.
+- **Deterministic Offline Mock:** Preserved offline `MockLLMProvider` for unit tests and CI without external API consumption.
+- **Catalog Snapshot & Hardening Report:** Authored `docs/09_Program/FREE_MODEL_CATALOG.md` and `docs/09_Program/AI_PROVIDER_HARDENING_REPORT.md`.
+
+---
+
 ## [Phase 7 Complete] - 2026-08-26
 ### Added
 - **Policy Decision Contract:** Defined `PolicyDecision` domain model and `PolicyStatusEnum` (`ALLOWED`, `MODIFIED`, `BLOCKED`) with complete dictionary serialization.
@@ -17,7 +28,7 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 - **Strategy & Stage Compatibility Enforcer (POL-RULE-008):** Guaranteed action-to-stage and action-to-taxonomy compatibility.
 - **Minimum Interval Floor (POL-RULE-003):** Automatically extended short delay proposals to merchant minimum interval (default: 24h).
 - **Policy Engine Service & Audit Trail:** Implemented `PolicyEngineService` recording append-only `AuditEvent` (`POLICY_DECISION_EVALUATED`) in PostgreSQL with UnitOfWork isolation.
-- **Phase 7 Test Suite:** Built 12 unit and integration tests across rules, precedence, evaluator engine, and database persistence (**91 total passing backend tests** with 90% overall coverage).
+- **Phase 7 Test Suite:** Built 12 unit and integration tests across rules, precedence, evaluator engine, and database persistence (91 total passing backend tests with 90% overall coverage).
 - **Phase Documentation:** Authored `docs/09_Program/PHASE_07_COMPLETION_REPORT.md`.
 
 ---
