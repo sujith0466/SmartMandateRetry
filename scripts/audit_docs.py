@@ -83,6 +83,11 @@ REQUIRED_DOCS = [
     "docs/09_Program/PHASE_18_COMPLETION_REPORT.md",
     "docs/09_Program/PHASE_19_IMPLEMENTATION_PLAN.md",
     "docs/09_Program/PHASE_19_COMPLETION_REPORT.md",
+    "docs/09_Program/PHASE_20_IMPLEMENTATION_PLAN.md",
+    "docs/09_Program/PHASE_20_PRODUCTION_READINESS_REPORT.md",
+    "docs/09_Program/PHASE_20_RELEASE_CHECKLIST.md",
+    "docs/09_Program/PHASE_20_ROLLBACK_RUNBOOK.md",
+    "docs/09_Program/PHASE_20_OPERATIONAL_RUNBOOKS.md",
 ]
 
 
