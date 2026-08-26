@@ -2,6 +2,18 @@
 
 All notable changes to the SmartMandateRetry codebase, specifications, and architecture are documented in this file.
 
+## [Phase 16 Complete] - 2026-08-26
+### Added
+- **Synthetic Evaluation Scenario Generator Subsystem (`backend/app/evaluation/`):** Implemented deterministic, reproducible, leakage-safe synthetic scenario generator producing realistic failure scenarios across 14 failure families and 4 difficulty tiers (`EASY`, `MEDIUM`, `HARD`, `EDGE`).
+- **Domain Scenario Schemas (`scenario_schema.py`):** Authored Pydantic v2 schemas (`SyntheticScenario`, `SyntheticPolicyConfig`, `SyntheticCustomerProfile`, `SyntheticRecoveryCase`, `SyntheticAIDecision`, `DatasetManifest`) with strict bounds matching database constraints and failure taxonomy enums.
+- **Deterministic Seed Manager (`seed_manager.py`):** Implemented `SeedManager` with per-family PRNG derivation, seed-derived stable ISO 8601 timestamps (2024 base), and synthetic identifiers (`syn_`, `synth_cust_`, `synth_merch_`) without clock dependencies.
+- **Pure Python Ground Truth Labeler (`scenario_generator.py`):** Implemented deterministic policy precedence labeling (`P0` Hard Decline Auto-Stop, `P1` Retry Cap, `P2` Recovery Window / High-Value Escalation / Spacing, `P3` AI Confidence / Contact Cap, `P4` Authorized Actions).
+- **Leakage-Safe Dataset Splitter (`dataset_splitter.py`):** Implemented entity-grouped dataset partitioning (by `synthetic_customer_id`) guaranteeing 0% cross-split leakage across `TRAIN` (70%), `VALIDATION` (15%), and `TEST` (15%) splits.
+- **Manifest Serialization & Integrity (`dataset_manifest.py`):** Added `DatasetManifestManager` with schema validation, family/tier/split distribution summaries, and SHA-256 manifest checksums.
+- **Evaluation CLI Tool (`scripts/generate_eval_dataset.py`):** Added CLI interface with `--seed`, `--n-scenarios`, `--output`, and `--validate` commands.
+- **Comprehensive Evaluation Test Suite (`backend/tests/test_evaluation/`):** 100 new unit tests covering schemas, determinism, scenario families, difficulty tiers, P0–P4 ground truth, leakage safety, manifest round-trips, and performance (<1s for 5,000 scenarios).
+- **Phase Documentation:** Authored `docs/09_Program/PHASE_16_IMPLEMENTATION_PLAN.md` and `docs/09_Program/PHASE_16_COMPLETION_REPORT.md`.
+
 ---
 
 ## [Phase 15 Complete] - 2026-08-26
