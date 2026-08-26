@@ -90,6 +90,24 @@ export async function fetchPolicies(): Promise<MerchantPolicy> {
   return request('/policies');
 }
 
+export async function updatePolicy(policyData: Partial<MerchantPolicy>): Promise<MerchantPolicy> {
+  return request('/policies', {
+    method: 'PUT',
+    body: JSON.stringify(policyData),
+  });
+}
+
+export async function previewPolicyChanges(proposedData: Partial<MerchantPolicy>): Promise<import('../types').PolicyChangePreview> {
+  return request('/policies/preview', {
+    method: 'POST',
+    body: JSON.stringify(proposedData),
+  });
+}
+
+export async function fetchPolicyHistory(limit: number = 20): Promise<import('../types').PolicyHistoryResponse> {
+  return request(`/policies/history?limit=${limit}`);
+}
+
 export async function fetchCases(
   page: number = 1,
   limit: number = 20,

@@ -9,9 +9,11 @@ import {
   User,
   FileCheck,
   Copy,
+  ShieldCheck,
+  ShieldAlert,
 } from 'lucide-react';
-import { fetchCaseActions, fetchCaseDetail, fetchCaseReconciliation } from '../../services/api';
-import { CaseDetailResponse, ReconciliationStatusInfo, RecoveryActionItem } from '../../types';
+import { fetchAuditEvents, fetchCaseActions, fetchCaseDetail, fetchCaseReconciliation } from '../../services/api';
+import { AuditEventItem, CaseDetailResponse, ReconciliationStatusInfo, RecoveryActionItem } from '../../types';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
 import { ToastContainer, ToastMessage } from '../../components/ui/Toast';
@@ -21,6 +23,7 @@ export const CaseDetailPage: React.FC = () => {
   const [detail, setDetail] = useState<CaseDetailResponse | null>(null);
   const [actions, setActions] = useState<RecoveryActionItem[]>([]);
   const [reconciliation, setReconciliation] = useState<ReconciliationStatusInfo | null>(null);
+  const [policyDecisions, setPolicyDecisions] = useState<AuditEventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -43,14 +46,16 @@ export const CaseDetailPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [detailRes, actionsRes, reconRes] = await Promise.all([
+      const [detailRes, actionsRes, reconRes, auditRes] = await Promise.all([
         fetchCaseDetail(caseId),
         fetchCaseActions(caseId).catch(() => ({ actions: [] })),
         fetchCaseReconciliation(caseId).catch(() => null),
+        fetchAuditEvents(1, 10, caseId, 'POLICY_DECISION_EVALUATED').catch(() => ({ data: [], pagination: { page: 1, limit: 10, total: 0, pages: 1 } })),
       ]);
       setDetail(detailRes);
       setActions(actionsRes.actions);
       setReconciliation(reconRes);
+      setPolicyDecisions(auditRes.data);
     } catch (err: any) {
       setError(err.message || `Failed to load details for case ${caseId}`);
     } finally {
@@ -280,6 +285,73 @@ export const CaseDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Governance & Policy Decisions Explanation */}
+      {policyDecisions.length > 0 && (
+        <div className="glass-card p-6 rounded-2xl space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-violet-400" />
+              <h3 className="text-sm font-bold text-white">Governance & Safety Policy Evaluation</h3>
+            </div>
+            <span className="text-xs font-mono text-slate-400">Deterministic Safety Gate</span>
+          </div>
+
+          <div className="space-y-3">
+            {policyDecisions.map((p) => {
+              const payload = p.payload || {};
+              const status = payload.status || 'ALLOWED';
+              const rules = payload.policy_rules_applied || [];
+              const reasons = payload.policy_reasons || [];
+              const allowed = payload.execution_allowed;
+
+              return (
+                <div key={p.id} className="p-4 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-200">Policy Outcome:</span>
+                      <Badge state={status} variant={allowed ? 'emerald' : status === 'BLOCKED' ? 'rose' : 'violet'}>
+                        {status}
+                      </Badge>
+                      <span className="text-slate-400 font-mono text-[11px]">
+                        Action: {payload.final_action || payload.original_action}
+                      </span>
+                    </div>
+                    <span className="text-slate-500 font-mono text-[11px]">
+                      {new Date(p.created_at).toLocaleString()}
+                    </span>
+                  </div>
+
+                  {rules.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      <span className="text-[11px] text-slate-400 self-center">Rules Enforced:</span>
+                      {rules.map((r: string) => (
+                        <span
+                          key={r}
+                          className="px-2 py-0.5 rounded text-[10px] font-mono bg-violet-950/80 text-violet-300 border border-violet-800/60"
+                        >
+                          {r}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {reasons.length > 0 && (
+                    <div className="text-xs text-slate-300 pt-1 space-y-1">
+                      {reasons.map((r: string, idx: number) => (
+                        <div key={idx} className="flex items-center gap-1.5 text-rose-400">
+                          <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                          <span>{r}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Execution Actions History */}
       <div className="glass-card rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl">

@@ -21,6 +21,18 @@ class AppError(Exception):
         self.details = details or {}
 
 
+class ValidationError(AppError):
+    """Raised when client payload fails schema or constraint validation."""
+
+    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None) -> None:
+        super().__init__(
+            message=message,
+            status_code=400,
+            error_code="VALIDATION_ERROR",
+            details=details
+        )
+
+
 class SignatureVerificationError(AppError):
     """Raised when an inbound webhook signature fails HMAC-SHA256 check."""
 

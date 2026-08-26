@@ -4,6 +4,18 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 
 ---
 
+## [Phase 15 Complete] - 2026-08-26
+### Added
+- **Merchant Policy Governance Subsystem:** Implemented `PolicyManagementService` for safe, atomic merchant recovery policy mutation, server-side validation against database check constraints, and deterministic safety change previews.
+- **Governance APIs:** Added `PUT /api/v1/policies`, `POST /api/v1/policies/preview`, and `GET /api/v1/policies/history`.
+- **Append-Only Governance Audit Trail:** Added `POLICY_CONFIGURATION_UPDATED` to `AuditEventType` recording changed fields, previous states, new states, actors, and correlation IDs.
+- **Multi-Step Policy Editor Modal:** Added `PolicyEditorModal.tsx` in React with parameter inputs, field bounds validation, and before/after diff preview with deterministic safety impact alerts.
+- **Policy Revision Timeline:** Added chronological revision history timeline in `PoliciesPage.tsx` displaying all policy changes recorded in the audit trail.
+- **Case Governance Explanations:** Added policy evaluation decisions breakdown ("Why was this blocked?") to `CaseDetailPage.tsx`.
+- **Phase Documentation:** Authored `docs/09_Program/PHASE_15_COMPLETION_REPORT.md`.
+
+---
+
 ## [Phase 14 Complete] - 2026-08-26
 ### Added
 - **Dark Fintech Design System:** Established obsidian canvas (`#090D16`), slate glass surfaces (`#0F172A`), emerald recovery glows, and electric violet accents across all 7 console routes.

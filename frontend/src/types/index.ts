@@ -80,6 +80,7 @@ export interface ReconciliationStatusInfo {
 }
 
 export interface MerchantPolicy {
+  id?: string;
   merchant_id?: string;
   max_retries_per_case: number;
   min_retry_interval_hours: number;
@@ -88,6 +89,51 @@ export interface MerchantPolicy {
   high_value_threshold_inr: number;
   max_customer_contacts_per_cycle: number;
   hard_decline_auto_stop: boolean;
+  updated_at?: string | null;
+}
+
+export interface PolicyUpdateRequest {
+  max_retries_per_case?: number;
+  min_retry_interval_hours?: number;
+  max_recovery_window_days?: number;
+  min_confidence_threshold?: number;
+  high_value_threshold_inr?: number;
+  max_customer_contacts_per_cycle?: number;
+  hard_decline_auto_stop?: boolean;
+}
+
+export interface PolicyDiffItem {
+  field: string;
+  label: string;
+  current: any;
+  proposed: any;
+}
+
+export interface PolicyChangePreview {
+  merchant_id: string;
+  has_changes: boolean;
+  diffs: PolicyDiffItem[];
+  impact_notes: string[];
+  proposed_policy: MerchantPolicy;
+}
+
+export interface PolicyHistoryItem {
+  id: string;
+  event_type: string;
+  actor: string;
+  payload: {
+    policy_id?: string;
+    changed_fields?: string[];
+    previous_state?: Record<string, any>;
+    new_state?: Record<string, any>;
+  };
+  correlation_id?: string | null;
+  created_at: string;
+}
+
+export interface PolicyHistoryResponse {
+  merchant_id: string;
+  history: PolicyHistoryItem[];
 }
 
 export interface OverviewMetrics {
@@ -103,12 +149,12 @@ export interface OverviewMetrics {
 
 export interface AuditEventItem {
   id: string;
-  recovery_case_id?: string | null;
   event_type: string;
   actor: string;
+  payload: Record<string, any>;
+  recovery_case_id?: string | null;
   correlation_id?: string | null;
   created_at: string;
-  payload: Record<string, any>;
 }
 
 export interface PaginationInfo {
@@ -118,26 +164,26 @@ export interface PaginationInfo {
   pages: number;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationInfo;
+}
+
 export interface ObservabilitySummary {
+  timestamp: string;
+  merchant_id: string;
   recovery_pipeline: {
     total_cases: number;
     cases_by_state: Record<string, number>;
-    total_recovered_inr: number;
     actions_by_status: Record<string, number>;
-    total_audit_events: number;
   };
   telemetry: {
     counters: Record<string, number>;
-    gauges: Record<string, number>;
     histograms: Record<string, { count: number; avg: number; min: number; max: number }>;
   };
 }
 
 export interface ReadinessCheck {
   status: string;
-  checks: {
-    database: string;
-    redis: string;
-    llm_provider: string;
-  };
+  checks: Record<string, string>;
 }

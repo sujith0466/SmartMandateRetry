@@ -1,43 +1,67 @@
-"""Merchant safety policies REST API blueprint."""
+"""Merchant safety policies and governance REST API blueprint."""
 
-from flask import Blueprint, g, jsonify
+from flask import Blueprint, g, jsonify, request
 from app.core.auth import get_uow, require_merchant_auth
-from app.core.config import get_settings
-from app.domain.models import RecoveryPolicy
+from app.core.errors import ValidationError
+from app.services.policy_management_service import PolicyManagementService
 
 policies_bp = Blueprint("policies", __name__)
+
+
+def _get_service() -> PolicyManagementService:
+    return PolicyManagementService(uow=get_uow())
 
 
 @policies_bp.route("", methods=["GET"])
 @require_merchant_auth
 def get_policy():
     """Fetch active recovery policy configuration for the authenticated merchant."""
-    settings = get_settings()
     merchant_id = g.merchant_id
+    service = _get_service()
+    policy_data = service.get_policy_dict(merchant_id)
+    return jsonify(policy_data), 200
 
-    uow = get_uow()
-    with uow:
-        policy = uow.session.query(RecoveryPolicy).filter(RecoveryPolicy.merchant_id == merchant_id).first()
 
-    if policy:
-        return jsonify({
-            "merchant_id": merchant_id,
-            "max_retries_per_case": policy.max_retries_per_case,
-            "min_retry_interval_hours": policy.min_retry_interval_hours,
-            "max_recovery_window_days": policy.max_recovery_window_days,
-            "min_confidence_threshold": float(policy.min_confidence_threshold),
-            "high_value_threshold_inr": float(policy.high_value_threshold_inr),
-            "max_customer_contacts_per_cycle": policy.max_customer_contacts_per_cycle,
-            "hard_decline_auto_stop": policy.hard_decline_auto_stop,
-        }), 200
+@policies_bp.route("", methods=["PUT", "PATCH"])
+@require_merchant_auth
+def update_policy():
+    """Update recovery policy configuration for the authenticated merchant."""
+    merchant_id = g.merchant_id
+    payload = request.get_json(silent=True)
+    if not payload or not isinstance(payload, dict):
+        raise ValidationError("Request body must be a valid JSON object")
 
-    return jsonify({
-        "merchant_id": merchant_id,
-        "max_retries_per_case": settings.POLICY_MAX_RETRIES,
-        "min_retry_interval_hours": settings.POLICY_MIN_INTERVAL_HOURS,
-        "max_recovery_window_days": settings.POLICY_MAX_WINDOW_DAYS,
-        "min_confidence_threshold": settings.POLICY_MIN_CONFIDENCE,
-        "high_value_threshold_inr": settings.POLICY_HIGH_VALUE_INR,
-        "max_customer_contacts_per_cycle": settings.POLICY_MAX_CONTACTS,
-        "hard_decline_auto_stop": True
-    }), 200
+    correlation_id = request.headers.get("X-Correlation-ID")
+    service = _get_service()
+    updated_policy = service.update_policy(
+        merchant_id=merchant_id,
+        update_data=payload,
+        actor="MERCHANT_OPERATOR",
+        correlation_id=correlation_id,
+    )
+    return jsonify(updated_policy), 200
+
+
+@policies_bp.route("/preview", methods=["POST"])
+@require_merchant_auth
+def preview_policy_changes():
+    """Preview proposed policy changes with deterministic safety impact analysis."""
+    merchant_id = g.merchant_id
+    payload = request.get_json(silent=True)
+    if not payload or not isinstance(payload, dict):
+        raise ValidationError("Request body must be a valid JSON object")
+
+    service = _get_service()
+    preview_result = service.preview_policy_changes(merchant_id, payload)
+    return jsonify(preview_result), 200
+
+
+@policies_bp.route("/history", methods=["GET"])
+@require_merchant_auth
+def get_policy_history():
+    """Fetch immutable policy governance change audit history for the authenticated merchant."""
+    merchant_id = g.merchant_id
+    limit = min(request.args.get("limit", 20, type=int), 100)
+    service = _get_service()
+    history = service.get_policy_history(merchant_id, limit=limit)
+    return jsonify({"merchant_id": merchant_id, "history": history}), 200
