@@ -37,21 +37,21 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
   return (
     <div className="space-y-4">
       {/* Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md shadow-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4.5 rounded-2xl bg-white border border-slate-200 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-950/80 border border-indigo-800/60 flex items-center justify-center text-indigo-400">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 shadow-xs">
             <Database className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-white">
+              <h2 className="text-sm font-bold text-slate-900">
                 {activeRun?.dataset_name || summary?.dataset.name || 'eval_dataset_42_5000'}
               </h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800/50">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono">
                 SEED {summary?.dataset.seed || 42}
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               5,000 synthetic failure scenarios across 14 failure families & 4 difficulty tiers
             </p>
           </div>
@@ -59,15 +59,15 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
 
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Split Selector */}
-          <div className="flex items-center rounded-xl bg-slate-950 border border-slate-800 p-0.5">
+          <div className="flex items-center rounded-xl bg-slate-100 border border-slate-200 p-1">
             {(['TEST', 'VALIDATION', 'TRAIN', 'ALL'] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => onSplitChange(s)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
                   selectedSplit === s
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 {s}
@@ -77,7 +77,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
 
           <button
             onClick={onOpenHistory}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-xs font-semibold transition-all"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold transition-all shadow-xs"
           >
             <History className="w-3.5 h-3.5 text-slate-400" />
             Runs ({summary?.total_runs || 0})
@@ -85,7 +85,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
 
           <button
             onClick={onRefresh}
-            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/80 transition-all"
+            className="p-2 rounded-xl bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition-all shadow-xs"
             title="Refresh Evaluation Data"
           >
             <RotateCw className="w-3.5 h-3.5" />
@@ -94,7 +94,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
           <button
             onClick={onRunBenchmark}
             disabled={isRunningBenchmark}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-bold shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isRunningBenchmark ? (
               <>
@@ -142,7 +142,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
           value={totalViolations.toString()}
           subtitle={totalViolations === 0 ? 'Zero safety policy breaches' : 'CRITICAL SAFETY FAILURE'}
           icon={ShieldCheck}
-          variant={totalViolations === 0 ? 'emerald' : 'amber'}
+          variant={totalViolations === 0 ? 'emerald' : 'rose'}
         />
       </div>
     </div>

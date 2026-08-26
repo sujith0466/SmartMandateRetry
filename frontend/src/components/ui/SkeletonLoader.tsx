@@ -5,12 +5,12 @@ interface SkeletonProps {
 }
 
 export const Skeleton: React.FC<SkeletonProps> = ({ className = 'h-4 w-full' }) => {
-  return <div className={`animate-pulse bg-slate-800/80 rounded-lg ${className}`} />;
+  return <div className={`animate-pulse bg-slate-200/70 rounded-lg ${className}`} />;
 };
 
 export const TableSkeleton: React.FC<{ rows?: number; cols?: number }> = ({ rows = 5, cols = 6 }) => {
   return (
-    <div className="space-y-3 p-4">
+    <div className="space-y-3 p-4 bg-white">
       {Array.from({ length: rows }).map((_, rIdx) => (
         <div key={rIdx} className="flex gap-4 items-center">
           {Array.from({ length: cols }).map((_, cIdx) => (

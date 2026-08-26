@@ -109,11 +109,11 @@ export const CaseDetailPage: React.FC = () => {
   if (error || !detail) {
     return (
       <div className="space-y-4">
-        <Link to="/cases" className="inline-flex items-center text-xs font-bold text-slate-400 hover:text-white">
+        <Link to="/cases" className="inline-flex items-center text-xs font-bold text-slate-500 hover:text-slate-900">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Cases
         </Link>
-        <div className="glass-panel border-rose-800/80 rounded-2xl p-6 text-xs text-rose-300 bg-rose-950/20">
-          <p className="font-bold text-sm text-rose-200">Case Investigation Error</p>
+        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-xs text-rose-800 shadow-sm">
+          <p className="font-bold text-sm text-rose-900">Case Investigation Error</p>
           <p className="mt-1">{error || 'Case not found'}</p>
         </div>
       </div>
@@ -133,7 +133,7 @@ export const CaseDetailPage: React.FC = () => {
       active: !['DETECTED', 'ANALYZING', 'DECISION_PENDING', 'POLICY_REVIEW'].includes(c.state),
     },
     {
-      label: 'Action In Flight',
+      label: 'Action Dispatched',
       active: ['ACTION_PENDING', 'IN_PROGRESS', 'WAITING_FOR_OUTCOME', 'RECOVERED', 'FAILED'].includes(c.state),
     },
     {
@@ -146,7 +146,7 @@ export const CaseDetailPage: React.FC = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
       className="space-y-6"
@@ -158,22 +158,22 @@ export const CaseDetailPage: React.FC = () => {
         <div className="flex items-center space-x-3">
           <Link
             to="/cases"
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+            className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors shadow-xs"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
             <div className="flex items-center space-x-3">
-              <h1 className="text-2xl font-black text-white font-mono tracking-tight">{c.invoice_id}</h1>
+              <h1 className="text-2xl font-black text-slate-900 font-mono tracking-tight">{c.invoice_id}</h1>
               <Badge state={c.state} />
             </div>
-            <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+            <p className="text-xs text-slate-500 mt-1 flex items-center gap-2">
               <span>
-                Case ID: <strong className="font-mono text-slate-300">{c.id}</strong>
+                Case Reference: <strong className="font-mono text-slate-700">{c.id}</strong>
               </span>
               <span>•</span>
               <span>
-                Failure: <strong className="text-indigo-300">{catInfo.label}</strong>
+                Failure: <strong className="text-indigo-600 font-semibold">{catInfo.label}</strong>
               </span>
             </p>
           </div>
@@ -182,16 +182,16 @@ export const CaseDetailPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => copyToClipboard(c.id, 'Case ID')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-bold transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-xs"
           >
-            <Copy className="w-3.5 h-3.5" />
+            <Copy className="w-3.5 h-3.5 text-slate-400" />
             Copy ID
           </button>
           <button
             onClick={loadData}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-bold transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-xs"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
+            <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
             Refresh
           </button>
         </div>
@@ -199,15 +199,15 @@ export const CaseDetailPage: React.FC = () => {
 
       {/* Operator Intervention Action Bar (for Escalated or Active cases) */}
       {canIntervene && (
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-indigo-950/40 via-slate-900 to-slate-900 border border-indigo-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+        <div className="p-5 rounded-2xl bg-indigo-50/70 border border-indigo-200 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-center gap-3.5">
+            <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-sm">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white">Operator Manual Intervention</h4>
-              <p className="text-xs text-slate-400">
-                Override autonomous policy or trigger high-touch manual recovery actions
+              <h4 className="text-sm font-bold text-indigo-950">Operator Manual Intervention</h4>
+              <p className="text-xs text-indigo-800 mt-0.5">
+                Override autonomous policy, dispatch direct checkout links, or authorize immediate bank retry
               </p>
             </div>
           </div>
@@ -215,21 +215,21 @@ export const CaseDetailPage: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setInterventionAction('SEND_PAYMENT_LINK')}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors shadow-sm"
             >
               <Send className="w-3.5 h-3.5" />
               Dispatch Payment Link
             </button>
             <button
               onClick={() => setInterventionAction('APPROVE_RETRY')}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors shadow-sm"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               Approve Mandate Retry
             </button>
             <button
               onClick={() => setInterventionAction('DISMISS')}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 text-xs font-bold transition-colors border border-slate-700 hover:border-rose-800"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-bold transition-colors border border-slate-200 hover:border-rose-300 shadow-xs"
             >
               <XCircle className="w-3.5 h-3.5" />
               Close Case
@@ -240,39 +240,39 @@ export const CaseDetailPage: React.FC = () => {
 
       {/* Intervention Confirmation Dialog Modal */}
       {interventionAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-fintech-modal space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
+              <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200">
                 <Sparkles className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-white">Confirm Manual Intervention</h3>
+              <h3 className="text-base font-bold text-slate-900">Confirm Operator Intervention</h3>
             </div>
-            <p className="text-xs text-slate-300">
-              Apply action <strong className="text-indigo-400">{formatActionType(interventionAction)}</strong> to case{' '}
-              <strong className="font-mono text-white">{c.invoice_id}</strong>.
+            <p className="text-xs text-slate-600">
+              Apply action <strong className="text-indigo-600 font-bold">{formatActionType(interventionAction)}</strong> to case{' '}
+              <strong className="font-mono text-slate-900 font-bold">{c.invoice_id}</strong>.
             </p>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-slate-400 uppercase">Operator Notes</label>
+              <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Operator Notes</label>
               <textarea
                 value={interventionNotes}
                 onChange={(e) => setInterventionNotes(e.target.value)}
                 placeholder="Reason for manual override..."
                 rows={3}
-                className="w-full text-xs p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="w-full text-xs p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
               />
             </div>
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
               <button
                 onClick={() => setInterventionAction(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleExecuteIntervention}
                 disabled={actionLoading}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-2"
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm transition-colors"
               >
                 {actionLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                 Confirm & Log Audit
@@ -283,27 +283,27 @@ export const CaseDetailPage: React.FC = () => {
       )}
 
       {/* Visual Recovery Lifecycle Progression Track */}
-      <div className="glass-card p-6 rounded-2xl space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Recovery Lifecycle Track</h3>
-          <span className="text-[11px] font-mono text-indigo-400">Deterministic Safety State Machine</span>
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Recovery Lifecycle Track</h3>
+          <span className="text-[11px] font-mono font-bold text-indigo-600">Deterministic State Machine</span>
         </div>
         <div className="flex items-center justify-between overflow-x-auto py-3">
           {lifecycleSteps.map((step, idx) => (
             <React.Fragment key={step.label}>
               <div className="flex flex-col items-center min-w-[90px] text-center">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                     step.active
-                      ? 'bg-emerald-500 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.5)]'
-                      : 'bg-slate-800 text-slate-500 border border-slate-700'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-400 border border-slate-200'
                   }`}
                 >
                   {step.active ? <CheckCircle2 className="w-4 h-4" /> : idx + 1}
                 </div>
                 <span
                   className={`text-[11px] mt-2 font-bold tracking-tight ${
-                    step.active ? 'text-white' : 'text-slate-500'
+                    step.active ? 'text-slate-900' : 'text-slate-400'
                   }`}
                 >
                   {step.label}
@@ -312,7 +312,7 @@ export const CaseDetailPage: React.FC = () => {
               {idx < lifecycleSteps.length - 1 && (
                 <div
                   className={`flex-1 h-0.5 mx-1 transition-all ${
-                    step.active ? 'bg-emerald-500 shadow-[0_0_8px_#10B981]' : 'bg-slate-800'
+                    step.active ? 'bg-emerald-500' : 'bg-slate-200'
                   }`}
                 />
               )}
@@ -327,46 +327,48 @@ export const CaseDetailPage: React.FC = () => {
       {/* Grid: Customer Context & Settlement Reconciliation */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Customer Context (Sanitized) */}
-        <div className="glass-card p-6 rounded-2xl space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <User className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-sm font-bold text-white">Customer & Subscription Profile</h3>
+              <User className="w-4 h-4 text-indigo-600" />
+              <h3 className="text-sm font-bold text-slate-900">Customer & Subscription Profile</h3>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">DATA MASKED</span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-mono">
+              PII SANITIZED
+            </span>
           </div>
           <div className="text-xs space-y-3">
-            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
-              <span className="text-slate-400">Customer ID:</span>
-              <span className="font-mono font-bold text-slate-200">{customer?.id || '—'}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+              <span className="text-slate-500 font-medium">Customer ID:</span>
+              <span className="font-mono font-bold text-slate-900">{customer?.id || '—'}</span>
             </div>
-            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
-              <span className="text-slate-400">Masked Email:</span>
-              <span className="font-mono font-bold text-slate-200">{customer?.email || '—'}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+              <span className="text-slate-500 font-medium">Masked Email:</span>
+              <span className="font-mono font-bold text-slate-900">{customer?.email || '—'}</span>
             </div>
-            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
-              <span className="text-slate-400">Masked Contact:</span>
-              <span className="font-mono font-bold text-slate-200">{customer?.contact || '—'}</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+              <span className="text-slate-500 font-medium">Masked Phone:</span>
+              <span className="font-mono font-bold text-slate-900">{customer?.contact || '—'}</span>
             </div>
-            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
-              <span className="text-slate-400">Tenure / Success Track:</span>
-              <span className="font-bold text-slate-200">
-                {customer?.tenure_months || 12} months • {((customer?.historical_success_rate || 0.95) * 100).toFixed(0)}% historical recovery
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+              <span className="text-slate-500 font-medium">Customer Track Record:</span>
+              <span className="font-bold text-slate-900">
+                {customer?.tenure_months || 12} months tenure • {((customer?.historical_success_rate || 0.95) * 100).toFixed(0)}% recovery rate
               </span>
             </div>
             <div className="flex justify-between items-center py-1">
-              <span className="text-slate-400">Subscription Plan:</span>
-              <span className="font-bold text-slate-200">{subscription?.plan_id || '—'}</span>
+              <span className="text-slate-500 font-medium">Subscription Plan:</span>
+              <span className="font-bold text-slate-900">{subscription?.plan_id || '—'}</span>
             </div>
           </div>
         </div>
 
         {/* Settlement Reconciliation Status */}
-        <div className="glass-card p-6 rounded-2xl space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <FileCheck className="w-4 h-4 text-emerald-400" />
-              <h3 className="text-sm font-bold text-white">Settlement Reconciliation</h3>
+              <FileCheck className="w-4 h-4 text-emerald-600" />
+              <h3 className="text-sm font-bold text-slate-900">Settlement Reconciliation</h3>
             </div>
             <Badge
               state={reconciliation?.is_settled ? 'RECOVERED' : 'WAITING_FOR_OUTCOME'}
@@ -376,27 +378,27 @@ export const CaseDetailPage: React.FC = () => {
             </Badge>
           </div>
           <div className="text-xs space-y-3">
-            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
-              <span className="text-slate-400">Recovered Revenue:</span>
-              <span className="text-base font-extrabold text-emerald-400 font-mono">
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+              <span className="text-slate-500 font-medium">Recovered Revenue:</span>
+              <span className="text-lg font-black text-emerald-700 font-sans">
                 ₹{reconciliation?.recovered_amount_inr?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) || '0.00'}
               </span>
             </div>
-            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
-              <span className="text-slate-400">Reconciled Action ID:</span>
-              <span className="font-mono font-bold text-slate-200">
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+              <span className="text-slate-500 font-medium">Reconciled Action ID:</span>
+              <span className="font-mono font-bold text-slate-900">
                 {reconciliation?.reconciled_action_id || '—'}
               </span>
             </div>
-            <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
-              <span className="text-slate-400">Gateway Transaction Reference:</span>
-              <span className="font-mono font-bold text-indigo-300">
+            <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
+              <span className="text-slate-500 font-medium">Gateway Reference ID:</span>
+              <span className="font-mono font-bold text-indigo-700">
                 {reconciliation?.external_reference_id || '—'}
               </span>
             </div>
             <div className="flex justify-between items-center py-1">
-              <span className="text-slate-400">Settlement Timestamp:</span>
-              <span className="text-slate-300">
+              <span className="text-slate-500 font-medium">Settlement Timestamp:</span>
+              <span className="text-slate-700 font-medium">
                 {reconciliation?.resolved_at ? new Date(reconciliation.resolved_at).toLocaleString() : '—'}
               </span>
             </div>
@@ -405,27 +407,27 @@ export const CaseDetailPage: React.FC = () => {
       </div>
 
       {/* Execution Actions History */}
-      <div className="glass-card rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl">
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+      <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-indigo-400" />
-            <h3 className="text-sm font-bold text-white">Execution Actions History</h3>
+            <Activity className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-sm font-bold text-slate-900">Execution Actions History</h3>
           </div>
-          <span className="text-xs font-mono text-slate-400">{actions.length} Action(s) Logged</span>
+          <span className="text-xs font-mono font-bold text-slate-500">{actions.length} Action(s) Logged</span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-800/80 text-left text-xs">
-            <thead className="bg-[#090E1A] text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+          <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
+            <thead className="bg-slate-50 text-slate-500 font-extrabold uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="px-5 py-3.5">Action ID</th>
-                <th className="px-5 py-3.5">Action Type</th>
+                <th className="px-5 py-3.5">Recovery Channel</th>
                 <th className="px-5 py-3.5">Status</th>
-                <th className="px-5 py-3.5">External Gateway Reference</th>
+                <th className="px-5 py-3.5">Gateway Transaction Reference</th>
                 <th className="px-5 py-3.5">Dispatched At</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-300 font-medium">
+            <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
               {actions.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-500">
@@ -434,14 +436,14 @@ export const CaseDetailPage: React.FC = () => {
                 </tr>
               ) : (
                 actions.map((a) => (
-                  <tr key={a.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="px-5 py-3.5 font-mono font-bold text-white">{a.id}</td>
-                    <td className="px-5 py-3.5 font-bold text-indigo-300">{formatActionType(a.action_type)}</td>
+                  <tr key={a.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-5 py-3.5 font-mono font-bold text-slate-900">{a.id}</td>
+                    <td className="px-5 py-3.5 font-bold text-indigo-700">{formatActionType(a.action_type)}</td>
                     <td className="px-5 py-3.5">
                       <Badge state={a.status} />
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-slate-400">{a.external_reference_id || '—'}</td>
-                    <td className="px-5 py-3.5 text-slate-400 text-[11px]">
+                    <td className="px-5 py-3.5 font-mono text-slate-500">{a.external_reference_id || '—'}</td>
+                    <td className="px-5 py-3.5 text-slate-500 text-[11px]">
                       {a.executed_at ? new Date(a.executed_at).toLocaleString() : '—'}
                     </td>
                   </tr>

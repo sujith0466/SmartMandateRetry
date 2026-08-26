@@ -3,7 +3,7 @@ import { CaseState } from '../../types';
 
 interface BadgeProps {
   state?: CaseState | string;
-  variant?: 'emerald' | 'indigo' | 'violet' | 'amber' | 'rose' | 'slate';
+  variant?: 'emerald' | 'indigo' | 'violet' | 'amber' | 'rose' | 'slate' | 'cyan';
   dot?: boolean;
   children?: React.ReactNode;
 }
@@ -12,34 +12,37 @@ export const Badge: React.FC<BadgeProps> = ({ state, variant, dot = true, childr
   let resolvedVariant = variant || 'slate';
 
   if (state) {
-    if (state === 'RECOVERED' || state === 'HEALTHY' || state === 'ACTIVE') resolvedVariant = 'emerald';
-    else if (state === 'SCHEDULED' || state === 'ACTION_PENDING' || state === 'READY') resolvedVariant = 'indigo';
-    else if (state === 'POLICY_REVIEW' || state === 'ESCALATED') resolvedVariant = 'violet';
-    else if (state === 'IN_PROGRESS' || state === 'WAITING_FOR_OUTCOME' || state === 'ANALYZING') resolvedVariant = 'amber';
-    else if (state === 'FAILED' || state === 'STOPPED' || state === 'EXPIRED' || state === 'UNHEALTHY') resolvedVariant = 'rose';
+    const s = state.toUpperCase();
+    if (['RECOVERED', 'HEALTHY', 'ACTIVE', 'CONNECTED', 'SUCCESS', 'ALLOWED'].includes(s)) resolvedVariant = 'emerald';
+    else if (['SCHEDULED', 'ACTION_PENDING', 'READY', 'OPENROUTER'].includes(s)) resolvedVariant = 'indigo';
+    else if (['POLICY_REVIEW', 'ESCALATED', 'MODIFIED'].includes(s)) resolvedVariant = 'amber';
+    else if (['IN_PROGRESS', 'WAITING_FOR_OUTCOME', 'ANALYZING', 'DETECTED', 'DECISION_PENDING'].includes(s)) resolvedVariant = 'cyan';
+    else if (['FAILED', 'HALTED', 'STOPPED', 'EXPIRED', 'UNHEALTHY', 'BLOCKED', 'OFFLINE'].includes(s)) resolvedVariant = 'rose';
   }
 
   const styles = {
-    emerald: 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60 shadow-[0_0_10px_rgba(16,185,129,0.1)]',
-    indigo: 'bg-indigo-950/60 text-indigo-300 border-indigo-800/60 shadow-[0_0_10px_rgba(99,102,241,0.1)]',
-    violet: 'bg-violet-950/60 text-violet-300 border-violet-800/60 shadow-[0_0_10px_rgba(139,92,246,0.1)]',
-    amber: 'bg-amber-950/60 text-amber-300 border-amber-800/60 shadow-[0_0_10px_rgba(245,158,11,0.1)]',
-    rose: 'bg-rose-950/60 text-rose-300 border-rose-800/60 shadow-[0_0_10px_rgba(244,63,94,0.1)]',
-    slate: 'bg-slate-800/60 text-slate-300 border-slate-700/60',
-  }[resolvedVariant];
+    emerald: 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-sm',
+    indigo: 'bg-indigo-50 text-indigo-800 border-indigo-200 shadow-sm',
+    violet: 'bg-purple-50 text-purple-800 border-purple-200 shadow-sm',
+    amber: 'bg-amber-50 text-amber-800 border-amber-200 shadow-sm',
+    rose: 'bg-rose-50 text-rose-800 border-rose-200 shadow-sm',
+    cyan: 'bg-sky-50 text-sky-800 border-sky-200 shadow-sm',
+    slate: 'bg-slate-100 text-slate-700 border-slate-200',
+  }[resolvedVariant] || 'bg-slate-100 text-slate-700 border-slate-200';
 
   const dotColors = {
-    emerald: 'bg-emerald-400 animate-pulse',
-    indigo: 'bg-indigo-400',
-    violet: 'bg-violet-400 animate-pulse',
-    amber: 'bg-amber-400 animate-pulse',
-    rose: 'bg-rose-400',
+    emerald: 'bg-emerald-500',
+    indigo: 'bg-indigo-500',
+    violet: 'bg-purple-500',
+    amber: 'bg-amber-500',
+    rose: 'bg-rose-500',
+    cyan: 'bg-sky-500',
     slate: 'bg-slate-400',
-  }[resolvedVariant];
+  }[resolvedVariant] || 'bg-slate-400';
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border ${styles} transition-colors`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-tight border ${styles} transition-colors`}
     >
       {dot && <span className={`w-1.5 h-1.5 rounded-full ${dotColors}`} />}
       {children || state}
