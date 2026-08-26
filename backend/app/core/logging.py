@@ -1,20 +1,17 @@
-"""Structured JSON logging configuration with keyword argument support."""
+"""Structured JSON logging configuration with deep redaction and correlation ID propagation."""
 
 import json
 import logging
 import sys
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+
+from app.core.correlation import get_correlation_id
+from app.core.sanitizer import sanitize_data
 
 
 class JSONFormatter(logging.Formatter):
-    """Formats log records as structured JSON."""
-
-    # Sensitive keys that must be redacted
-    SENSITIVE_KEYS = {
-        "secret", "api_key", "webhook_secret", "razorpay_key_secret",
-        "razorpay_webhook_secret", "openrouter_api_key", "password", "token", "authorization"
-    }
+    """Formats log records as structured JSON with automatic PII/secret redaction."""
 
     def format(self, record: logging.LogRecord) -> str:
         log_entry: Dict[str, Any] = {
@@ -24,13 +21,16 @@ class JSONFormatter(logging.Formatter):
             "message": record.getMessage(),
         }
 
-        # Extract extra structured attributes attached to record
+        # Auto-inject correlation ID if available in context
+        cid = get_correlation_id()
+        if cid:
+            log_entry["correlation_id"] = cid
+
+        # Extract and sanitize extra structured attributes attached to record
         if hasattr(record, "extra_fields"):
-            for k, v in record.extra_fields.items():
-                if any(s in k.lower() for s in self.SENSITIVE_KEYS):
-                    log_entry[k] = "[REDACTED]"
-                else:
-                    log_entry[k] = v
+            sanitized_extras = sanitize_data(record.extra_fields)
+            if isinstance(sanitized_extras, dict):
+                log_entry.update(sanitized_extras)
 
         if record.exc_info:
             log_entry["exception"] = self.formatException(record.exc_info)
@@ -66,6 +66,6 @@ def setup_logging(debug: bool = False) -> None:
 
 
 def get_logger(name: str) -> StructuredLoggerAdapter:
-    """Return configured structured logger instance."""
-    base_logger = logging.getLogger(name)
-    return StructuredLoggerAdapter(base_logger, {})
+    """Obtain a structured logger adapter by name."""
+    logger = logging.getLogger(name)
+    return StructuredLoggerAdapter(logger, {})

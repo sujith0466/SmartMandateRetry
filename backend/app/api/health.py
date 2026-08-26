@@ -1,9 +1,11 @@
-"""Health and readiness probe endpoints."""
+"""Health, readiness, metrics, and diagnostic observability endpoints."""
 
 from flask import Blueprint, jsonify
 from app.core.config import get_settings
+from app.core.metrics import metrics
 from app.infrastructure.database import engine
 from app.infrastructure.redis import get_redis
+from app.services.observability_service import ObservabilityService
 
 health_bp = Blueprint("health", __name__)
 
@@ -22,14 +24,16 @@ def liveness():
 
 @health_bp.route("/readyz", methods=["GET"])
 def readiness():
-    """Readiness probe checking PostgreSQL and Redis connectivity."""
+    """Readiness probe checking PostgreSQL, Redis, and OpenRouter readiness."""
+    settings = get_settings()
     checks = {
         "database": "unknown",
-        "redis": "unknown"
+        "redis": "unknown",
+        "llm_provider": "unknown",
     }
     all_healthy = True
 
-    # Database connectivity check
+    # 1. Database connectivity check
     try:
         with engine.connect() as conn:
             conn.exec_driver_sql("SELECT 1")
@@ -38,7 +42,7 @@ def readiness():
         checks["database"] = f"unhealthy: {str(e)}"
         all_healthy = False
 
-    # Redis connectivity check
+    # 2. Redis connectivity check
     try:
         r = get_redis()
         r.ping()
@@ -47,8 +51,28 @@ def readiness():
         checks["redis"] = f"unhealthy: {str(e)}"
         all_healthy = False
 
+    # 3. LLM Provider configuration check (zero credentials leaked)
+    if settings.LLM_PROVIDER in ("openrouter", "mock"):
+        checks["llm_provider"] = f"configured ({settings.LLM_PROVIDER})"
+    else:
+        checks["llm_provider"] = f"unrecognized provider: {settings.LLM_PROVIDER}"
+        all_healthy = False
+
     status_code = 200 if all_healthy else 503
     return jsonify({
         "status": "ready" if all_healthy else "not_ready",
         "checks": checks
     }), status_code
+
+
+@health_bp.route("/metrics", methods=["GET"])
+def get_metrics_snapshot():
+    """Export current in-memory metrics snapshot for monitoring."""
+    return jsonify(metrics.get_snapshot()), 200
+
+
+@health_bp.route("/observability/summary", methods=["GET"])
+def get_observability_summary():
+    """Operational KPI metrics and lifecycle summary."""
+    service = ObservabilityService()
+    return jsonify(service.get_operational_summary()), 200
