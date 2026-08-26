@@ -88,6 +88,7 @@ REQUIRED_DOCS = [
     "docs/09_Program/PHASE_20_RELEASE_CHECKLIST.md",
     "docs/09_Program/PHASE_20_ROLLBACK_RUNBOOK.md",
     "docs/09_Program/PHASE_20_OPERATIONAL_RUNBOOKS.md",
+    "docs/09_Program/PHASE_21_IMPLEMENTATION_PLAN.md",
 ]
 
 
