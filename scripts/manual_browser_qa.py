@@ -35,6 +35,7 @@ def run_browser_qa():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(viewport={"width": 1440, "height": 900})
+        context.add_init_script("localStorage.setItem('smartmandate_active_merchant', 'merch_saas_metrics_01')")
         page = context.new_page()
 
         # Capture console and network errors
@@ -237,6 +238,12 @@ def run_browser_qa():
         assert overview_card.count() > 0, "Evaluation Lab header missing"
         record_result("Evaluation Lab", "Overview & Split Selector", "PASS", "Dataset manifest metrics and run controls rendered")
 
+        # Run benchmark to populate sub-tabs
+        run_btn = page.locator("button:has-text('Run Benchmark')").first
+        if run_btn.count() > 0:
+            run_btn.click()
+            time.sleep(3)
+
         # Sub-Tab 1: Comparative Benchmark
         comp_tab_btn = page.get_by_role("button", name="Comparative Benchmark").first
         comp_tab_btn.click()
@@ -334,10 +341,12 @@ def run_browser_qa():
     print("BROWSER QA VERIFICATION RESULTS SUMMARY")
     print("==========================================================================")
     pass_count = sum(1 for r in qa_results if r["status"] == "PASS")
-    total_count = len(qa_results)
-    print(f"Total Flows Tested: {total_count}")
+    skip_count = sum(1 for r in qa_results if r["status"] == "SKIP")
+    fail_count = sum(1 for r in qa_results if r["status"] == "FAIL")
+    print(f"Total Flows Tested: {len(qa_results)}")
     print(f"Passed:             {pass_count}")
-    print(f"Failed:             {total_count - pass_count}")
+    print(f"Skipped:            {skip_count}")
+    print(f"Failed:             {fail_count}")
     print(f"Console Errors:     {len(console_errors)}")
     for err in console_errors:
         print(f"   * {err}")
