@@ -187,3 +187,123 @@ export interface ReadinessCheck {
   status: string;
   checks: Record<string, string>;
 }
+
+// ==========================================
+// Phase 18 — Evaluation Lab Types
+// ==========================================
+
+export type EvaluationModeType = 'SMART_MANDATE' | 'RAZORPAY_NATIVE' | 'RULE_BASED' | 'AI_UNGUARDED';
+
+export interface ClassMetricsType {
+  precision: number;
+  recall: number;
+  f1_score: number;
+  support: number;
+}
+
+export interface SafetyMetricsType {
+  hard_decline_safety_rate: number;
+  retry_cap_safety_rate: number;
+  recovery_window_enforcement_rate: number;
+  high_value_escalation_compliance: number;
+  low_confidence_veto_rate: number;
+  contact_cap_enforcement_rate: number;
+  total_policy_violations: number;
+}
+
+export interface DimensionBreakdownItem {
+  total: number;
+  label_accuracy: number;
+  recovered_count: number;
+  recovery_rate?: number;
+}
+
+export interface BenchmarkMetricsType {
+  total_evaluated: number;
+  label_accuracy: number;
+  policy_outcome_accuracy: number;
+  final_action_accuracy: number;
+  case_outcome_accuracy: number;
+  macro_f1: number;
+  weighted_f1: number;
+  confusion_matrix: Record<string, Record<string, number>>;
+  per_class_metrics: Record<string, ClassMetricsType>;
+  safety_metrics: SafetyMetricsType;
+  simulated_recovery_rate: number;
+  simulated_recovered_revenue_inr: string | number;
+  total_at_risk_revenue_inr: string | number;
+  revenue_recovery_rate: number;
+  wasted_action_rate: number;
+  intervention_efficiency: number;
+  recovery_uplift_pp: number | null;
+  family_breakdown?: Record<string, DimensionBreakdownItem>;
+  difficulty_breakdown?: Record<string, DimensionBreakdownItem>;
+  category_breakdown?: Record<string, DimensionBreakdownItem>;
+  split_breakdown?: Record<string, DimensionBreakdownItem>;
+  dataset_seed?: number;
+  dataset_split?: string;
+}
+
+export interface EvaluationRunItem {
+  id: string;
+  dataset_name: string;
+  baseline_mode: EvaluationModeType | string;
+  metrics_summary: BenchmarkMetricsType;
+  created_at: string;
+  results_count?: number;
+}
+
+export interface ScenarioResultDetails {
+  scenario_family: string;
+  difficulty_tier: string;
+  dataset_split: string;
+  predicted_action: string;
+  predicted_policy_status: string;
+  predicted_case_outcome: string;
+  is_label_correct: boolean;
+  is_policy_violation: boolean;
+  violation_type?: string | null;
+  execution_time_ms: number;
+  reasons: string[];
+}
+
+export interface EvaluationScenarioResultItem {
+  id: string;
+  evaluation_run_id: string;
+  scenario_id: string;
+  actual_outcome: string;
+  simulated_outcome: string;
+  details: ScenarioResultDetails;
+  created_at: string;
+}
+
+export interface EvaluationSummaryResponse {
+  total_runs: number;
+  latest_run: EvaluationRunItem | null;
+  dataset: {
+    name: string;
+    total_scenarios: number;
+    splits: Record<string, number>;
+    families_count: number;
+    difficulty_tiers: Record<string, number>;
+    seed: number;
+  };
+}
+
+export interface BenchmarkRunRequest {
+  dataset?: string;
+  split?: 'TRAIN' | 'VALIDATION' | 'TEST' | 'ALL';
+  mode?: EvaluationModeType | 'ALL';
+  compare?: boolean;
+  persist?: boolean;
+}
+
+export interface ComparativeBenchmarkResponse {
+  mode_metrics: Record<string, BenchmarkMetricsType>;
+  baseline_recovery_rate: number;
+  total_evaluated: number;
+  split: string;
+  persisted_run_ids: Record<string, string>;
+  json_report_path?: string;
+  markdown_report_path?: string;
+}

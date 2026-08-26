@@ -157,3 +157,67 @@ export async function fetchAuditEvents(
 export async function fetchObservabilitySummary(): Promise<ObservabilitySummary> {
   return request('/observability/summary');
 }
+
+// ==========================================
+// Phase 18 — Evaluation Lab API Methods
+// ==========================================
+
+export async function fetchEvaluationSummary(): Promise<import('../types').EvaluationSummaryResponse> {
+  return request('/evaluation/summary');
+}
+
+export async function fetchEvaluationRuns(
+  page: number = 1,
+  limit: number = 20
+): Promise<{ data: import('../types').EvaluationRunItem[]; pagination: PaginationInfo }> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
+  return request(`/evaluation/runs?${params.toString()}`);
+}
+
+export async function fetchEvaluationRunDetail(
+  runId: string
+): Promise<import('../types').EvaluationRunItem> {
+  return request(`/evaluation/runs/${runId}`);
+}
+
+export async function fetchScenarioResults(
+  runId: string,
+  page: number = 1,
+  limit: number = 20,
+  filters?: {
+    family?: string;
+    tier?: string;
+    split?: string;
+    label?: string;
+    is_correct?: boolean;
+    is_violation?: boolean;
+    search?: string;
+  }
+): Promise<{ data: import('../types').EvaluationScenarioResultItem[]; pagination: PaginationInfo }> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
+
+  if (filters?.family) params.append('family', filters.family);
+  if (filters?.tier) params.append('tier', filters.tier);
+  if (filters?.split) params.append('split', filters.split);
+  if (filters?.label) params.append('label', filters.label);
+  if (filters?.is_correct !== undefined) params.append('is_correct', filters.is_correct.toString());
+  if (filters?.is_violation !== undefined) params.append('is_violation', filters.is_violation.toString());
+  if (filters?.search) params.append('search', filters.search);
+
+  return request(`/evaluation/runs/${runId}/results?${params.toString()}`);
+}
+
+export async function executeBenchmarkRun(
+  req: import('../types').BenchmarkRunRequest
+): Promise<import('../types').ComparativeBenchmarkResponse | { mode: string; split: string; metrics: import('../types').BenchmarkMetricsType; total_evaluated: number; run_id: string }> {
+  return request('/evaluation/benchmark', {
+    method: 'POST',
+    body: JSON.stringify(req),
+  });
+}

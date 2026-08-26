@@ -9,6 +9,7 @@ from app.api.v1.audit import audit_bp
 from app.api.v1.cases import cases_bp
 from app.api.v1.policies import policies_bp
 from app.api.v1.webhooks import webhooks_bp
+from app.api.v1.evaluation import evaluation_bp
 from app.core.config import get_settings
 from app.core.correlation import generate_correlation_id, set_correlation_id
 from app.core.errors import register_error_handlers
@@ -52,6 +53,7 @@ def create_app() -> Flask:
     app.register_blueprint(webhooks_bp, url_prefix="/api/v1/webhooks")
     app.register_blueprint(analytics_bp, url_prefix="/api/v1/analytics")
     app.register_blueprint(audit_bp, url_prefix="/api/v1/audit-events")
+    app.register_blueprint(evaluation_bp, url_prefix="/api/v1/evaluation")
 
     return app
 
