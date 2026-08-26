@@ -18,8 +18,8 @@ def get_correlation_id() -> Optional[str]:
 
 
 def set_correlation_id(correlation_id: Optional[str]) -> None:
-    """Set current context correlation ID."""
-    _correlation_id_ctx.set(correlation_id or generate_correlation_id())
+    """Set or clear current context correlation ID."""
+    _correlation_id_ctx.set(correlation_id)
 
 
 class CorrelationContext:

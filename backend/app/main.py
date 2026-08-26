@@ -1,15 +1,18 @@
 """Application Factory for SmartMandateRetry Flask Service."""
 
-from flask import Flask
+from flask import Flask, g, request
 from flask_cors import CORS
-from app.core.config import get_settings
-from app.core.errors import register_error_handlers
-from app.core.logging import setup_logging
+
 from app.api.health import health_bp
+from app.api.v1.analytics import analytics_bp
+from app.api.v1.audit import audit_bp
 from app.api.v1.cases import cases_bp
 from app.api.v1.policies import policies_bp
 from app.api.v1.webhooks import webhooks_bp
-from app.api.v1.analytics import analytics_bp
+from app.core.config import get_settings
+from app.core.correlation import generate_correlation_id, set_correlation_id
+from app.core.errors import register_error_handlers
+from app.core.logging import setup_logging
 
 
 def create_app() -> Flask:
@@ -24,6 +27,21 @@ def create_app() -> Flask:
     # Enable CORS for frontend communication
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+    # Correlation ID Request Hooks
+    @app.before_request
+    def bind_correlation_id():
+        inbound_cid = request.headers.get("X-Correlation-ID")
+        correlation_id = inbound_cid if (inbound_cid and len(inbound_cid) <= 64) else generate_correlation_id()
+        set_correlation_id(correlation_id)
+        g.correlation_id = correlation_id
+
+    @app.after_request
+    def attach_correlation_header(response):
+        cid = getattr(g, "correlation_id", None)
+        if cid:
+            response.headers["X-Correlation-ID"] = cid
+        return response
+
     # Register error handlers
     register_error_handlers(app)
 
@@ -33,6 +51,7 @@ def create_app() -> Flask:
     app.register_blueprint(policies_bp, url_prefix="/api/v1/policies")
     app.register_blueprint(webhooks_bp, url_prefix="/api/v1/webhooks")
     app.register_blueprint(analytics_bp, url_prefix="/api/v1/analytics")
+    app.register_blueprint(audit_bp, url_prefix="/api/v1/audit-events")
 
     return app
 

@@ -68,6 +68,8 @@ def test_timed_operation_records_on_exception():
 
 
 def test_correlation_context_lifecycle():
+    from app.core.correlation import set_correlation_id
+    set_correlation_id(None)
     cid1 = generate_correlation_id()
     assert cid1.startswith("corr_")
 

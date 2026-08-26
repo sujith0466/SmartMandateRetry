@@ -60,12 +60,13 @@ def uow(db_session: Session) -> UnitOfWork:
 
 
 @pytest.fixture
-def app() -> Flask:
+def app(db_session: Session) -> Flask:
     """Return configured test application instance."""
     app = create_app()
     app.config.update({
         "TESTING": True,
-        "DEBUG": False
+        "DEBUG": False,
+        "UOW_FACTORY": lambda: UnitOfWork(session_factory=lambda: db_session),
     })
     return app
 

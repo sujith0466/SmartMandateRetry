@@ -4,6 +4,20 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 
 ---
 
+## [Phase 12 Complete] - 2026-08-26
+### Added
+- **Merchant Authentication Decorator:** Implemented `@require_merchant_auth` validating API Keys (`X-API-Key`), Merchant IDs (`X-Merchant-ID`), and Bearer tokens against PostgreSQL.
+- **Strict Anti-IDOR Tenant Isolation:** Scoped all case, action, audit, and analytics database queries to `merchant_id == g.merchant_id` with 404 resource-enumeration defense.
+- **Recovery Cases REST API:** Implemented `GET /api/v1/cases` (bounded pagination $1 \le \text{limit} \le 100$, state filtering), `GET /api/v1/cases/<case_id>` (deep case, customer, and subscription context), and `GET /api/v1/cases/<case_id>/actions`.
+- **Settlement Reconciliation REST API:** Implemented `GET /api/v1/cases/<case_id>/reconciliation` exposing authoritative settlement status without mutation risk.
+- **Safety Policies & Analytics REST APIs:** Implemented `GET /api/v1/policies` and `GET /api/v1/analytics/overview`.
+- **Append-Only Audit REST API:** Implemented `GET /api/v1/audit-events` with deep PII/credential sanitization.
+- **Correlation ID Middleware:** Integrated Flask `before_request` and `after_request` hooks for `X-Correlation-ID` capture and propagation.
+- **Phase 12 Test Suite:** Created 14 unit, auth, IDOR, and REST integration tests (**166 total passing backend tests** with 91% overall coverage).
+- **Phase Documentation:** Authored `docs/09_Program/PHASE_12_COMPLETION_REPORT.md`.
+
+---
+
 ## [Phase 11 Complete] - 2026-08-26
 ### Added
 - **Observability Contracts & Constants:** Defined `AuditEventType` (12 authoritative lifecycle events), `MetricName`, and `LogLevel` enums.
