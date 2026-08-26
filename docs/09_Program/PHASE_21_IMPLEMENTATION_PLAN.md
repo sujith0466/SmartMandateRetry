@@ -5,7 +5,7 @@
 **Master Task ID:** TSK-030 — Phase 21: Post-Production Evolution & Advanced Intelligence Architecture  
 **Status:** APPROVED (PLANNING ONLY — IMPLEMENTATION NOT STARTED)  
 **Date:** 2026-08-26  
-**Certified Baseline:** fff114 (Phase 20 Certified Production Baseline)  
+**Certified Baseline:** ffff114 (Phase 20 Certified Production Baseline)  
 **Target Scope:** Advanced Adaptive Recovery Intelligence, Policy Simulation & What-If Analysis, AI Decision Explainability Tracing, Longitudinal Evaluation & Model Drift Monitoring, Merchant Vertical Cohort Benchmarking, and Asynchronous Evaluation Engine.  
 
 ---
@@ -29,7 +29,7 @@ Phase 20 completed and certified all production-hardening, operations, security,
 | Phase 6–9 | AI Decision Engine, Policy Gates, Actions, Reconciliation | COMPLETE + FROZEN | AIDecisionEngine, PolicyEvaluationEngine (P0–P4), ReconciliationService |
 | Phase 10–15 | State Machine, Merchant Console, Analytics, Audit Trail | COMPLETE + FROZEN | StateTransitionService, Frontend Dashboard, Cases, Policies, Audit Logs |
 | Phase 16–18 | Synthetic Dataset, Comparative Benchmark, Evaluation Lab UI | COMPLETE + FROZEN | 5,000 Scenarios (Seed 42), 4 Evaluation Modes, Full Evaluation Lab Visualizers |
-| Phase 19–20 | E2E QA, Security Hardening, Ops Runbooks, Production Certification | COMPLETE + FROZEN | 375 Backend Tests, 92% Coverage, 0 Security Findings, Docker Validation (fff114) |
+| Phase 19–20 | E2E QA, Security Hardening, Ops Runbooks, Production Certification | COMPLETE + FROZEN | 375 Backend Tests, 92% Coverage, 0 Security Findings, Docker Validation (ffff114) |
 
 ---
 
@@ -42,7 +42,7 @@ Phase 20 completed and certified all production-hardening, operations, security,
 
 ### Technical Debt & Extension Boundaries:
 - Static policy configuration without preview capabilities before saving.
-- In-memory synchronous benchmark execution (optimal for $\le$ 5,000 scenarios, but requires async worker support for massive datasets).
+- In-memory synchronous benchmark execution (optimal for <= 5,000 scenarios, but requires async worker support for massive datasets).
 - AI decision reasoning is captured as plain text without formal feature importance attribution.
 
 ---
@@ -78,7 +78,7 @@ Phase 20 completed and certified all production-hardening, operations, security,
 
 ## 5. Phase 21 Objectives & Success Metrics
 
-1. **Objective 1 (Policy Simulation):** Enable merchants to simulate policy changes against the 802-scenario test split in $< 100	ext{ms}$ to preview estimated recovery rate, revenue impact, and policy vetoes before committing changes.
+1. **Objective 1 (Policy Simulation):** Enable merchants to simulate policy changes against the 802-scenario test split in < 100ms to preview estimated recovery rate, revenue impact, and policy vetoes before committing changes.
 2. **Objective 2 (Explainability Tracing):** Provide structured factor weighting and rule trace visualizations in the Case Detail and Evaluation Explorer.
 3. **Objective 3 (Longitudinal Analytics):** Deliver comparative trend analysis across multiple evaluation runs to detect model performance drift and regression.
 4. **Objective 4 (Vertical Cohorts):** Enable industry-specific scenario filtering (SaaS B2B, OTT B2C, EdTech) for contextual evaluation.
@@ -94,7 +94,7 @@ Phase 20 completed and certified all production-hardening, operations, security,
 | TSK-030-02 | Policy Simulation Engine Backend | Build PolicySimulationService evaluating draft RecoveryPolicy payloads against evaluation splits without DB mutations. | P0 (Mandatory) |
 | TSK-030-03 | Policy Simulation API & Contracts | Expose POST /api/v1/policies/simulate returning simulated recovery uplift, financial yield, and veto count. | P0 (Mandatory) |
 | TSK-030-04 | What-If Policy Studio UI | Interactive frontend simulation modal in Policy Settings allowing real-time slider testing before saving. | P0 (Mandatory) |
-| TSK-030-05 | Decision Explainability & Attribution | Structured feature weight attribution schemas (actor_weights, eto_reasons_chain) in decision pipeline. | P1 (Important) |
+| TSK-030-05 | Decision Explainability & Attribution | Structured feature weight attribution schemas (factor_weights, veto_reasons_chain) in decision pipeline. | P1 (Important) |
 | TSK-030-06 | Explainability Inspector UI | Rich visual decision attribution component in Case Detail timeline and Scenario Explorer Modal. | P1 (Important) |
 | TSK-030-07 | Longitudinal Drift & Trend Service | Evaluation run trend aggregation (/api/v1/evaluation/trends) tracking accuracy and recovery rates over time. | P1 (Important) |
 | TSK-030-08 | Longitudinal Evaluation UI | Multi-run trend chart and drift indicator cards in Evaluation Lab UI. | P1 (Important) |
@@ -116,11 +116,10 @@ Phase 20 completed and certified all production-hardening, operations, security,
 ## 8. Quality Gates & Definition of Done
 
 1. **Non-Regression:** 100% pass rate across existing 375 backend tests.
-2. **Coverage:** Maintain $\ge 90\%$ backend code coverage.
-3. **Frontend Build:** 
-pm run build succeeds with 0 TypeScript/Vite errors.
+2. **Coverage:** Maintain >= 90% backend code coverage.
+3. **Frontend Build:** `npm run build` succeeds with 0 TypeScript/Vite errors.
 4. **Safety Invariants:** Zero violations on SmartMandate mode across all simulations.
-5. **Performance:** Simulation responses returned in $< 100	ext{ms}$.
+5. **Performance:** Simulation responses returned in < 100ms.
 6. **Documentation Audit:** All program documents verified.
 7. **Security Scan:** 0 secret findings across working tree and git history.
 
