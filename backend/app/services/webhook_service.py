@@ -14,6 +14,7 @@ from app.infrastructure.razorpay_adapter import RazorpayWebhookAdapter
 from app.infrastructure.repositories.unit_of_work import UnitOfWork
 from app.infrastructure.webhook_verifier import RazorpaySignatureVerifier
 from app.services.event_router import IngressEventRouter, IngressRoutingResult
+from app.services.failure_intelligence_service import FailureIntelligenceService
 
 logger = get_logger("smartmandate.webhook_service")
 
@@ -25,11 +26,13 @@ class WebhookIngestionService:
         self,
         verifier: Optional[RazorpaySignatureVerifier] = None,
         router: Optional[IngressEventRouter] = None,
+        failure_service: Optional[FailureIntelligenceService] = None,
         uow: Optional[UnitOfWork] = None,
     ) -> None:
         settings = get_settings()
         self.verifier = verifier or RazorpaySignatureVerifier(settings.RAZORPAY_WEBHOOK_SECRET)
         self.router = router or IngressEventRouter()
+        self.failure_service = failure_service or FailureIntelligenceService(uow=uow)
         self.uow = uow or UnitOfWork(get_session)
 
     def process_webhook(
@@ -105,19 +108,23 @@ class WebhookIngestionService:
             self.uow.webhook_events.mark_processed(event_id)
             self.uow.commit()
 
-            logger.info(
-                "Webhook event processed and routed successfully",
-                event_id=event_id,
-                event_type=envelope.event,
-                routing_status=routing_result.status,
-                target_queue=routing_result.target_queue,
-                correlation_id=correlation_id,
-            )
+        # 7. Route Handlers (Phase 4: Process Failure Intelligence for PAYMENT_FAILED)
+        if normalized_event.event_type == "PAYMENT_FAILED":
+            self.failure_service.process_failure(normalized_event, correlation_id=correlation_id)
 
-            return {
-                "status": "received",
-                "event_id": event_id,
-                "event_type": envelope.event,
-                "routing": routing_result.status,
-                "target_queue": routing_result.target_queue,
-            }, 200
+        logger.info(
+            "Webhook event processed and routed successfully",
+            event_id=event_id,
+            event_type=envelope.event,
+            routing_status=routing_result.status,
+            target_queue=routing_result.target_queue,
+            correlation_id=correlation_id,
+        )
+
+        return {
+            "status": "received",
+            "event_id": event_id,
+            "event_type": envelope.event,
+            "routing": routing_result.status,
+            "target_queue": routing_result.target_queue,
+        }, 200

@@ -32,6 +32,10 @@ class RecoveryCaseRepository(BaseRepository[RecoveryCase]):
         )
         return self.session.scalars(stmt).first()
 
+    def find_by_merchant_and_invoice(self, merchant_id: str, invoice_id: str) -> Optional[RecoveryCase]:
+        """Alias for find_by_invoice_id."""
+        return self.find_by_invoice_id(merchant_id, invoice_id)
+
     def find_by_merchant_and_state(
         self,
         merchant_id: str,
