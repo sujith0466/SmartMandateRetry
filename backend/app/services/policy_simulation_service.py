@@ -1,4 +1,4 @@
-﻿"""Policy Simulation Service for Phase 21 What-If Analysis.
+"""Policy Simulation Service for Phase 21 What-If Analysis.
 
 Evaluates draft merchant recovery policies against certified synthetic datasets
 without mutating database state, production policies, or executing real transactions.
@@ -54,6 +54,7 @@ class PolicySimulationResult:
             "simulated_recovery_rate": round(self.simulated_recovery_rate, 4),
             "baseline_recovery_rate": round(self.baseline_recovery_rate, 4),
             "recovery_uplift_pp": round(self.recovery_uplift_pp, 4),
+            "recovery_rate_uplift_pp": round(self.recovery_uplift_pp, 4),
             "total_revenue_inr": round(self.total_revenue_inr, 2),
             "recovered_revenue_inr": round(self.recovered_revenue_inr, 2),
             "revenue_recovery_rate": round(self.revenue_recovery_rate, 4),
@@ -75,7 +76,11 @@ class PolicySimulationResult:
 class PolicySimulationService:
     """Executes fast, deterministic what-if simulations for draft policy configurations."""
 
-    DEFAULT_DATASET_PATH = "datasets/eval_dataset_42_5000.json"
+    DEFAULT_DATASET_PATH = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "datasets",
+        "eval_dataset_42_5000.json",
+    )
     NATIVE_BASELINE_RECOVERY_RATE = 0.29214463840399004  # 29.21%
 
     def __init__(self, manifest_manager: Optional[DatasetManifestManager] = None) -> None:
@@ -88,15 +93,20 @@ class PolicySimulationService:
             if os.path.exists(path):
                 manifest = self.manifest_manager.load_manifest(path)
             else:
-                from app.evaluation.scenario_generator import ScenarioGenerator
-                from app.evaluation.dataset_splitter import DatasetSplitter
-                from app.evaluation.seed_manager import SeedManager
-                sm = SeedManager(42)
-                gen = ScenarioGenerator(sm)
-                scenarios = gen.generate(5000, n_customers=250, n_merchants=50)
-                splitter = DatasetSplitter(sm)
-                scenarios = splitter.split(scenarios)
-                manifest = self.manifest_manager.build(42, scenarios)
+                # Fallback path lookup in parent or current working dir
+                alt_path = os.path.join(os.getcwd(), "datasets", "eval_dataset_42_5000.json")
+                if os.path.exists(alt_path):
+                    manifest = self.manifest_manager.load_manifest(alt_path)
+                else:
+                    from app.evaluation.scenario_generator import ScenarioGenerator
+                    from app.evaluation.dataset_splitter import DatasetSplitter
+                    from app.evaluation.seed_manager import SeedManager
+                    sm = SeedManager(42)
+                    gen = ScenarioGenerator(sm)
+                    scenarios = gen.generate(5000, n_customers=250, n_merchants=50)
+                    splitter = DatasetSplitter(sm)
+                    scenarios = splitter.split(scenarios)
+                    manifest = self.manifest_manager.build(42, scenarios)
             if not dataset_path:
                 self._cached_manifest = manifest
             return manifest

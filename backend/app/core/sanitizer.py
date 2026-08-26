@@ -14,8 +14,10 @@ EMAIL_REGEX = re.compile(r"([a-zA-Z0-9_.+-]+)@([a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)")
 PHONE_REGEX = re.compile(r"(\+?\d{1,3})?[-.\s]?(\d{3})[-.\s]?(\d{3})[-.\s]?(\d{4})")
 
 
-def mask_email(email: str) -> str:
+def mask_email(email: Union[str, None]) -> str:
     """Mask email preserving first and last character of user and domain."""
+    if not email or not isinstance(email, str):
+        return ""
     match = EMAIL_REGEX.search(email)
     if not match:
         return email
@@ -24,8 +26,10 @@ def mask_email(email: str) -> str:
     return f"{masked_user}@{domain}"
 
 
-def mask_phone(phone: str) -> str:
+def mask_phone(phone: Union[str, None]) -> str:
     """Mask phone number preserving country code and last 4 digits."""
+    if not phone or not isinstance(phone, str):
+        return ""
     digits = re.sub(r"\D", "", phone)
     if len(digits) >= 10:
         return f"+91******{digits[-4:]}"

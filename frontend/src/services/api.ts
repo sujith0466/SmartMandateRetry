@@ -13,8 +13,21 @@ import {
 
 const API_BASE = '/api/v1';
 
-// Default demo merchant ID for local UI interaction
-const DEFAULT_MERCHANT_ID = 'm_demo_merchant_01';
+// Default active merchant tenant (enterprise baseline)
+export const DEFAULT_MERCHANT_ID = 'merch_saas_metrics_01';
+
+export function getActiveMerchantId(): string {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    return localStorage.getItem('smartmandate_active_merchant') || DEFAULT_MERCHANT_ID;
+  }
+  return DEFAULT_MERCHANT_ID;
+}
+
+export function setActiveMerchantId(merchantId: string): void {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    localStorage.setItem('smartmandate_active_merchant', merchantId);
+  }
+}
 
 export class ApiError extends Error {
   code: string;
@@ -38,7 +51,7 @@ function getHeaders(customHeaders?: HeadersInit): Headers {
     headers.set('Content-Type', 'application/json');
   }
   if (!headers.has('X-Merchant-ID')) {
-    headers.set('X-Merchant-ID', DEFAULT_MERCHANT_ID);
+    headers.set('X-Merchant-ID', getActiveMerchantId());
   }
   if (!headers.has('X-Correlation-ID')) {
     headers.set('X-Correlation-ID', `corr_fe_${Math.random().toString(36).substring(2, 10)}`);
@@ -121,15 +134,25 @@ export async function fetchPolicyHistory(limit: number = 20): Promise<import('..
 export async function fetchCases(
   page: number = 1,
   limit: number = 20,
-  state?: string,
-  stage?: string
+  filters?: {
+    state?: string;
+    stage?: string;
+    failure_category?: string;
+    search?: string;
+    min_amount?: number;
+    max_amount?: number;
+  }
 ): Promise<{ data: RecoveryCase[]; pagination: PaginationInfo }> {
   const params = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),
   });
-  if (state) params.append('state', state);
-  if (stage) params.append('stage', stage);
+  if (filters?.state) params.append('state', filters.state);
+  if (filters?.stage) params.append('stage', filters.stage);
+  if (filters?.failure_category) params.append('failure_category', filters.failure_category);
+  if (filters?.search) params.append('search', filters.search);
+  if (filters?.min_amount !== undefined) params.append('min_amount', filters.min_amount.toString());
+  if (filters?.max_amount !== undefined) params.append('max_amount', filters.max_amount.toString());
 
   return request(`/cases?${params.toString()}`);
 }
@@ -144,6 +167,40 @@ export async function fetchCaseActions(caseId: string): Promise<{ actions: Recov
 
 export async function fetchCaseReconciliation(caseId: string): Promise<ReconciliationStatusInfo> {
   return request(`/cases/${caseId}/reconciliation`);
+}
+
+export async function escalateCase(
+  caseId: string,
+  reason: string,
+  notes: string = ''
+): Promise<{ status: string; case_id: string; state: string; message: string }> {
+  return request(`/cases/${caseId}/escalate`, {
+    method: 'POST',
+    body: JSON.stringify({ reason, notes }),
+  });
+}
+
+export async function resolveEscalatedCase(
+  caseId: string,
+  action: 'APPROVE_RETRY' | 'SEND_PAYMENT_LINK' | 'DISMISS',
+  notes: string = ''
+): Promise<{ status: string; case_id: string; new_state: string; action_executed: string; message: string }> {
+  return request(`/cases/${caseId}/resolve`, {
+    method: 'POST',
+    body: JSON.stringify({ action, notes }),
+  });
+}
+
+export async function exportCasesCsv(state?: string, stage?: string): Promise<Blob> {
+  const params = new URLSearchParams();
+  if (state) params.append('state', state);
+  if (stage) params.append('stage', stage);
+
+  const response = await fetch(`${API_BASE}/cases/export?${params.toString()}`, {
+    headers: getHeaders({ Accept: 'text/csv' }),
+  });
+  if (!response.ok) throw new Error('Failed to export cases CSV');
+  return response.blob();
 }
 
 export async function fetchAuditEvents(
@@ -162,6 +219,18 @@ export async function fetchAuditEvents(
   if (correlationId) params.append('correlation_id', correlationId);
 
   return request(`/audit-events?${params.toString()}`);
+}
+
+export async function exportAuditCsv(caseId?: string, eventType?: string): Promise<Blob> {
+  const params = new URLSearchParams();
+  if (caseId) params.append('case_id', caseId);
+  if (eventType) params.append('event_type', eventType);
+
+  const response = await fetch(`${API_BASE}/audit-events/export?${params.toString()}`, {
+    headers: getHeaders({ Accept: 'text/csv' }),
+  });
+  if (!response.ok) throw new Error('Failed to export audit CSV');
+  return response.blob();
 }
 
 export async function fetchObservabilitySummary(): Promise<ObservabilitySummary> {

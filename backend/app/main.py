@@ -48,6 +48,7 @@ def create_app() -> Flask:
 
     # Register API Blueprints
     app.register_blueprint(health_bp, url_prefix="/api/v1")
+    app.register_blueprint(health_bp, name="root_health", url_prefix="")
     app.register_blueprint(cases_bp, url_prefix="/api/v1/cases")
     app.register_blueprint(policies_bp, url_prefix="/api/v1/policies")
     app.register_blueprint(webhooks_bp, url_prefix="/api/v1/webhooks")

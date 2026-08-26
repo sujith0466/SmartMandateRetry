@@ -9,25 +9,36 @@ import {
   User,
   FileCheck,
   Copy,
-  ShieldCheck,
-  ShieldAlert,
+  Send,
+  XCircle,
+  Sparkles,
 } from 'lucide-react';
-import { fetchAuditEvents, fetchCaseActions, fetchCaseDetail, fetchCaseReconciliation } from '../../services/api';
-import { AuditEventItem, CaseDetailResponse, ReconciliationStatusInfo, RecoveryActionItem } from '../../types';
+import {
+  fetchCaseActions,
+  fetchCaseDetail,
+  fetchCaseReconciliation,
+  resolveEscalatedCase,
+} from '../../services/api';
+import { CaseDetailResponse, ReconciliationStatusInfo, RecoveryActionItem } from '../../types';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
 import { ToastContainer, ToastMessage } from '../../components/ui/Toast';
 import { DecisionAttributionCard } from './DecisionAttributionCard';
+import { formatActionType, formatFailureCategory } from '../../utils/terminology';
 
 export const CaseDetailPage: React.FC = () => {
   const { caseId } = useParams<{ caseId: string }>();
   const [detail, setDetail] = useState<CaseDetailResponse | null>(null);
   const [actions, setActions] = useState<RecoveryActionItem[]>([]);
   const [reconciliation, setReconciliation] = useState<ReconciliationStatusInfo | null>(null);
-  const [policyDecisions, setPolicyDecisions] = useState<AuditEventItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Intervention modal state
+  const [interventionAction, setInterventionAction] = useState<'APPROVE_RETRY' | 'SEND_PAYMENT_LINK' | 'DISMISS' | null>(null);
+  const [interventionNotes, setInterventionNotes] = useState('');
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -47,16 +58,14 @@ export const CaseDetailPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [detailRes, actionsRes, reconRes, auditRes] = await Promise.all([
+      const [detailRes, actionsRes, reconRes] = await Promise.all([
         fetchCaseDetail(caseId),
         fetchCaseActions(caseId).catch(() => ({ actions: [] })),
         fetchCaseReconciliation(caseId).catch(() => null),
-        fetchAuditEvents(1, 10, caseId, 'POLICY_DECISION_EVALUATED').catch(() => ({ data: [], pagination: { page: 1, limit: 10, total: 0, pages: 1 } })),
       ]);
       setDetail(detailRes);
       setActions(actionsRes.actions);
       setReconciliation(reconRes);
-      setPolicyDecisions(auditRes.data);
     } catch (err: any) {
       setError(err.message || `Failed to load details for case ${caseId}`);
     } finally {
@@ -67,6 +76,22 @@ export const CaseDetailPage: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [caseId]);
+
+  const handleExecuteIntervention = async () => {
+    if (!caseId || !interventionAction) return;
+    try {
+      setActionLoading(true);
+      await resolveEscalatedCase(caseId, interventionAction, interventionNotes);
+      showToast(`Action '${interventionAction}' applied successfully!`, 'success');
+      setInterventionAction(null);
+      setInterventionNotes('');
+      await loadData();
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to apply intervention', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -96,15 +121,15 @@ export const CaseDetailPage: React.FC = () => {
   }
 
   const { case: c, customer, subscription } = detail;
+  const catInfo = formatFailureCategory(c.failure_category);
 
   // Stages of the lifecycle
   const lifecycleSteps = [
-    { label: 'Detected', active: true },
-    { label: 'Analyzing', active: c.state !== 'DETECTED' },
-    { label: 'Decision Pending', active: !['DETECTED', 'ANALYZING'].includes(c.state) },
-    { label: 'Policy Review', active: !['DETECTED', 'ANALYZING', 'DECISION_PENDING'].includes(c.state) },
+    { label: 'Ingested', active: true },
+    { label: 'AI Strategy', active: c.state !== 'DETECTED' },
+    { label: 'Safety Gate', active: !['DETECTED', 'ANALYZING', 'DECISION_PENDING'].includes(c.state) },
     {
-      label: c.state === 'ESCALATED' ? 'Escalated' : c.state === 'STOPPED' ? 'Stopped' : 'Scheduled',
+      label: c.state === 'ESCALATED' ? 'Escalated (Hold)' : (c.state === 'HALTED' || c.state === 'STOPPED') ? 'Hard Stopped' : 'Scheduled',
       active: !['DETECTED', 'ANALYZING', 'DECISION_PENDING', 'POLICY_REVIEW'].includes(c.state),
     },
     {
@@ -112,10 +137,12 @@ export const CaseDetailPage: React.FC = () => {
       active: ['ACTION_PENDING', 'IN_PROGRESS', 'WAITING_FOR_OUTCOME', 'RECOVERED', 'FAILED'].includes(c.state),
     },
     {
-      label: c.state === 'RECOVERED' ? 'Recovered' : c.state === 'FAILED' ? 'Failed' : 'Outcome Pending',
+      label: c.state === 'RECOVERED' ? 'Settled (Paid)' : c.state === 'FAILED' ? 'Exhausted' : 'Awaiting Settlement',
       active: ['RECOVERED', 'FAILED'].includes(c.state),
     },
   ];
+
+  const canIntervene = ['ESCALATED', 'ACTION_PENDING', 'SCHEDULED', 'DETECTED'].includes(c.state);
 
   return (
     <motion.div
@@ -137,16 +164,16 @@ export const CaseDetailPage: React.FC = () => {
           </Link>
           <div>
             <div className="flex items-center space-x-3">
-              <h1 className="text-2xl font-black text-white font-mono tracking-tight">{c.id}</h1>
+              <h1 className="text-2xl font-black text-white font-mono tracking-tight">{c.invoice_id}</h1>
               <Badge state={c.state} />
             </div>
             <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
               <span>
-                Subscription: <strong className="font-mono text-slate-300">{c.subscription_id}</strong>
+                Case ID: <strong className="font-mono text-slate-300">{c.id}</strong>
               </span>
               <span>•</span>
               <span>
-                Stage: <strong className="text-slate-300">{c.stage}</strong>
+                Failure: <strong className="text-indigo-300">{catInfo.label}</strong>
               </span>
             </p>
           </div>
@@ -170,11 +197,96 @@ export const CaseDetailPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Operator Intervention Action Bar (for Escalated or Active cases) */}
+      {canIntervene && (
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-indigo-950/40 via-slate-900 to-slate-900 border border-indigo-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white">Operator Manual Intervention</h4>
+              <p className="text-xs text-slate-400">
+                Override autonomous policy or trigger high-touch manual recovery actions
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setInterventionAction('SEND_PAYMENT_LINK')}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors shadow-sm"
+            >
+              <Send className="w-3.5 h-3.5" />
+              Dispatch Payment Link
+            </button>
+            <button
+              onClick={() => setInterventionAction('APPROVE_RETRY')}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors shadow-sm"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Approve Mandate Retry
+            </button>
+            <button
+              onClick={() => setInterventionAction('DISMISS')}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 text-xs font-bold transition-colors border border-slate-700 hover:border-rose-800"
+            >
+              <XCircle className="w-3.5 h-3.5" />
+              Close Case
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Intervention Confirmation Dialog Modal */}
+      {interventionAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-white">Confirm Manual Intervention</h3>
+            </div>
+            <p className="text-xs text-slate-300">
+              Apply action <strong className="text-indigo-400">{formatActionType(interventionAction)}</strong> to case{' '}
+              <strong className="font-mono text-white">{c.invoice_id}</strong>.
+            </p>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-slate-400 uppercase">Operator Notes</label>
+              <textarea
+                value={interventionNotes}
+                onChange={(e) => setInterventionNotes(e.target.value)}
+                placeholder="Reason for manual override..."
+                rows={3}
+                className="w-full text-xs p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                onClick={() => setInterventionAction(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleExecuteIntervention}
+                disabled={actionLoading}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-2"
+              >
+                {actionLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                Confirm & Log Audit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Visual Recovery Lifecycle Progression Track */}
       <div className="glass-card p-6 rounded-2xl space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Recovery Lifecycle Track</h3>
-          <span className="text-[11px] font-mono text-indigo-400">Deterministic Progression</span>
+          <span className="text-[11px] font-mono text-indigo-400">Deterministic Safety State Machine</span>
         </div>
         <div className="flex items-center justify-between overflow-x-auto py-3">
           {lifecycleSteps.map((step, idx) => (
@@ -221,7 +333,7 @@ export const CaseDetailPage: React.FC = () => {
               <User className="w-4 h-4 text-indigo-400" />
               <h3 className="text-sm font-bold text-white">Customer & Subscription Profile</h3>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">SANITIZED</span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">DATA MASKED</span>
           </div>
           <div className="text-xs space-y-3">
             <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
@@ -237,12 +349,14 @@ export const CaseDetailPage: React.FC = () => {
               <span className="font-mono font-bold text-slate-200">{customer?.contact || '—'}</span>
             </div>
             <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
-              <span className="text-slate-400">Subscription Plan:</span>
-              <span className="font-bold text-slate-200">{subscription?.plan_id || '—'}</span>
+              <span className="text-slate-400">Tenure / Success Track:</span>
+              <span className="font-bold text-slate-200">
+                {customer?.tenure_months || 12} months • {((customer?.historical_success_rate || 0.95) * 100).toFixed(0)}% historical recovery
+              </span>
             </div>
             <div className="flex justify-between items-center py-1">
-              <span className="text-slate-400">Subscription Cycle:</span>
-              <span className="font-mono font-bold text-slate-200">{subscription?.current_cycle || 1}</span>
+              <span className="text-slate-400">Subscription Plan:</span>
+              <span className="font-bold text-slate-200">{subscription?.plan_id || '—'}</span>
             </div>
           </div>
         </div>
@@ -258,30 +372,30 @@ export const CaseDetailPage: React.FC = () => {
               state={reconciliation?.is_settled ? 'RECOVERED' : 'WAITING_FOR_OUTCOME'}
               variant={reconciliation?.is_settled ? 'emerald' : 'slate'}
             >
-              {reconciliation?.is_settled ? 'RECONCILED (PAID)' : 'UNRECONCILED'}
+              {reconciliation?.is_settled ? 'RECONCILED (SETTLED)' : 'PENDING SETTLEMENT'}
             </Badge>
           </div>
           <div className="text-xs space-y-3">
             <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
-              <span className="text-slate-400">Recovered Amount:</span>
+              <span className="text-slate-400">Recovered Revenue:</span>
               <span className="text-base font-extrabold text-emerald-400 font-mono">
                 ₹{reconciliation?.recovered_amount_inr?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) || '0.00'}
               </span>
             </div>
             <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
-              <span className="text-slate-400">Reconciled Action:</span>
+              <span className="text-slate-400">Reconciled Action ID:</span>
               <span className="font-mono font-bold text-slate-200">
                 {reconciliation?.reconciled_action_id || '—'}
               </span>
             </div>
             <div className="flex justify-between items-center py-1 border-b border-slate-800/40">
-              <span className="text-slate-400">Gateway Reference:</span>
+              <span className="text-slate-400">Gateway Transaction Reference:</span>
               <span className="font-mono font-bold text-indigo-300">
                 {reconciliation?.external_reference_id || '—'}
               </span>
             </div>
             <div className="flex justify-between items-center py-1">
-              <span className="text-slate-400">Resolution Timestamp:</span>
+              <span className="text-slate-400">Settlement Timestamp:</span>
               <span className="text-slate-300">
                 {reconciliation?.resolved_at ? new Date(reconciliation.resolved_at).toLocaleString() : '—'}
               </span>
@@ -290,73 +404,6 @@ export const CaseDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Governance & Policy Decisions Explanation */}
-      {policyDecisions.length > 0 && (
-        <div className="glass-card p-6 rounded-2xl space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-violet-400" />
-              <h3 className="text-sm font-bold text-white">Governance & Safety Policy Evaluation</h3>
-            </div>
-            <span className="text-xs font-mono text-slate-400">Deterministic Safety Gate</span>
-          </div>
-
-          <div className="space-y-3">
-            {policyDecisions.map((p) => {
-              const payload = p.payload || {};
-              const status = payload.status || 'ALLOWED';
-              const rules = payload.policy_rules_applied || [];
-              const reasons = payload.policy_reasons || [];
-              const allowed = payload.execution_allowed;
-
-              return (
-                <div key={p.id} className="p-4 bg-slate-900/90 rounded-xl border border-slate-800 space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-200">Policy Outcome:</span>
-                      <Badge state={status} variant={allowed ? 'emerald' : status === 'BLOCKED' ? 'rose' : 'violet'}>
-                        {status}
-                      </Badge>
-                      <span className="text-slate-400 font-mono text-[11px]">
-                        Action: {payload.final_action || payload.original_action}
-                      </span>
-                    </div>
-                    <span className="text-slate-500 font-mono text-[11px]">
-                      {new Date(p.created_at).toLocaleString()}
-                    </span>
-                  </div>
-
-                  {rules.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      <span className="text-[11px] text-slate-400 self-center">Rules Enforced:</span>
-                      {rules.map((r: string) => (
-                        <span
-                          key={r}
-                          className="px-2 py-0.5 rounded text-[10px] font-mono bg-violet-950/80 text-violet-300 border border-violet-800/60"
-                        >
-                          {r}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {reasons.length > 0 && (
-                    <div className="text-xs text-slate-300 pt-1 space-y-1">
-                      {reasons.map((r: string, idx: number) => (
-                        <div key={idx} className="flex items-center gap-1.5 text-rose-400">
-                          <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
-                          <span>{r}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Execution Actions History */}
       <div className="glass-card rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl">
         <div className="p-5 border-b border-slate-800 flex items-center justify-between">
@@ -364,7 +411,7 @@ export const CaseDetailPage: React.FC = () => {
             <Activity className="w-4 h-4 text-indigo-400" />
             <h3 className="text-sm font-bold text-white">Execution Actions History</h3>
           </div>
-          <span className="text-xs font-mono text-slate-400">{actions.length} Action(s)</span>
+          <span className="text-xs font-mono text-slate-400">{actions.length} Action(s) Logged</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -372,10 +419,10 @@ export const CaseDetailPage: React.FC = () => {
             <thead className="bg-[#090E1A] text-slate-400 font-bold uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="px-5 py-3.5">Action ID</th>
-                <th className="px-5 py-3.5">Type</th>
+                <th className="px-5 py-3.5">Action Type</th>
                 <th className="px-5 py-3.5">Status</th>
-                <th className="px-5 py-3.5">External Reference</th>
-                <th className="px-5 py-3.5">Executed At</th>
+                <th className="px-5 py-3.5">External Gateway Reference</th>
+                <th className="px-5 py-3.5">Dispatched At</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-slate-300 font-medium">
@@ -389,7 +436,7 @@ export const CaseDetailPage: React.FC = () => {
                 actions.map((a) => (
                   <tr key={a.id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="px-5 py-3.5 font-mono font-bold text-white">{a.id}</td>
-                    <td className="px-5 py-3.5 font-bold text-indigo-300">{a.action_type}</td>
+                    <td className="px-5 py-3.5 font-bold text-indigo-300">{formatActionType(a.action_type)}</td>
                     <td className="px-5 py-3.5">
                       <Badge state={a.status} />
                     </td>

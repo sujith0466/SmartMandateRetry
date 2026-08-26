@@ -12,10 +12,11 @@ export type CaseState =
   | 'RECOVERED'
   | 'FAILED'
   | 'ESCALATED'
+  | 'HALTED'
   | 'STOPPED'
   | 'EXPIRED';
 
-export type FailureCategory = 'TEMPORARY' | 'PERMANENT' | 'ACTION_REQUIRED' | 'RISK' | 'UNKNOWN';
+export type FailureCategory = 'TEMPORARY' | 'PERMANENT' | 'ACTION_REQUIRED' | 'RISK' | 'RISK_FLAGGED' | 'UNKNOWN';
 
 export interface RecoveryCase {
   id: string;
@@ -41,6 +42,8 @@ export interface CustomerContext {
   id: string;
   email?: string;
   contact?: string;
+  tenure_months?: number;
+  historical_success_rate?: number;
   created_at?: string;
 }
 

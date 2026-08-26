@@ -60,3 +60,57 @@ def list_audit_events():
             "pages": (total + limit - 1) // limit if limit > 0 else 1,
         }
     }), 200
+
+
+@audit_bp.route("/export", methods=["GET"])
+@require_merchant_auth
+def export_audit_csv():
+    """Export merchant append-only audit trail as CSV for compliance audits."""
+    import csv
+    import io
+    import json
+    from datetime import datetime, timezone
+    from flask import Response
+
+    merchant_id = g.merchant_id
+    case_id = request.args.get("case_id")
+    event_type = request.args.get("event_type")
+
+    uow = get_uow()
+    with uow:
+        query = uow.session.query(AuditEvent).filter(AuditEvent.merchant_id == merchant_id)
+        if case_id:
+            query = query.filter(AuditEvent.recovery_case_id == case_id)
+        if event_type:
+            query = query.filter(AuditEvent.event_type == event_type)
+
+        events = query.order_by(desc(AuditEvent.created_at)).all()
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow([
+            "Event ID", "Timestamp", "Event Type", "Actor", "Case ID",
+            "Correlation ID", "Payload Summary"
+        ])
+
+        for ev in events:
+            sanitized = sanitize_data(ev.payload)
+            payload_str = json.dumps(sanitized) if isinstance(sanitized, dict) else str(sanitized)
+            writer.writerow([
+                ev.id,
+                ev.created_at.strftime("%Y-%m-%d %H:%M:%S") if ev.created_at else "",
+                ev.event_type,
+                ev.actor,
+                ev.recovery_case_id or "",
+                ev.correlation_id or "",
+                payload_str[:200],
+            ])
+
+    csv_data = output.getvalue()
+    filename = f"audit_trail_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.csv"
+    return Response(
+        csv_data,
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+

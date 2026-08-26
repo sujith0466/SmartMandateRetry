@@ -225,7 +225,7 @@ def execute_benchmark():
     payload = request.get_json() or {}
     split = payload.get("split", "TEST").upper()
     mode_input = payload.get("mode", "SMART_MANDATE").upper()
-    compare = payload.get("compare", False) or mode_input == "ALL"
+    compare = payload.get("compare", False) or mode_input in ("ALL", "COMPARATIVE_ALL")
     persist = payload.get("persist", True)
 
     if split not in ("TRAIN", "VALIDATION", "TEST", "ALL"):
