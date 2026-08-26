@@ -8,6 +8,7 @@ import {
   Layers,
   Search,
   AlertTriangle,
+  Activity,
 } from 'lucide-react';
 import {
   fetchEvaluationSummary,
@@ -31,6 +32,7 @@ import { DimensionalBreakdownView } from './components/DimensionalBreakdownView'
 import { RunHistoryDrawer } from './components/RunHistoryDrawer';
 import { ScenarioResultTable, ScenarioFilters } from './components/ScenarioResultTable';
 import { ScenarioExplorerModal } from './components/ScenarioExplorerModal';
+import { LongitudinalTrendView } from './components/LongitudinalTrendView';
 
 type ActiveTab =
   | 'COMPARATIVE'
@@ -38,6 +40,7 @@ type ActiveTab =
   | 'CONFUSION_MATRIX'
   | 'FINANCIAL'
   | 'DIMENSIONAL'
+  | 'TRENDS'
   | 'SCENARIO_EXPLORER';
 
 export const EvaluationPage: React.FC = () => {
@@ -317,6 +320,18 @@ export const EvaluationPage: React.FC = () => {
         </button>
 
         <button
+          onClick={() => setActiveTab('TRENDS')}
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
+            activeTab === 'TRENDS'
+              ? 'border-indigo-500 text-white bg-indigo-950/20'
+              : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/20'
+          }`}
+        >
+          <Activity className="w-4 h-4 text-emerald-400" />
+          Longitudinal Trends & Drift
+        </button>
+
+        <button
           onClick={() => setActiveTab('SCENARIO_EXPLORER')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'SCENARIO_EXPLORER'
@@ -364,6 +379,10 @@ export const EvaluationPage: React.FC = () => {
             metrics={activeMetrics}
             modeName={selectedMode}
           />
+        )}
+
+        {activeTab === 'TRENDS' && (
+          <LongitudinalTrendView />
         )}
 
         {activeTab === 'SCENARIO_EXPLORER' && (

@@ -280,3 +280,50 @@ def execute_benchmark():
             "json_report_path": single_result.get("json_report_path"),
             "markdown_report_path": single_result.get("markdown_report_path"),
         }), 200
+
+
+@evaluation_bp.route("/trends", methods=["GET"])
+@require_merchant_auth
+def get_evaluation_trends():
+    """Fetch longitudinal performance trends and drift indicators across persisted evaluation runs."""
+    uow = get_uow()
+    persistence = EvaluationPersistenceService(uow=uow)
+    runs = persistence.list_latest_runs(limit=50)
+
+    if not runs:
+        return jsonify({
+            "status": "INSUFFICIENT_DATA",
+            "message": "No persisted evaluation runs found. Execute benchmark runs to generate historical trends.",
+            "trends": [],
+            "drift_detected": False,
+        }), 200
+
+    trend_points = []
+    for r in reversed(runs):
+        summary = r.metrics_summary or {}
+        macro = summary.get("macro_metrics", {})
+        trend_points.append({
+            "run_id": r.id,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "dataset_name": r.dataset_name,
+            "baseline_mode": r.baseline_mode,
+            "accuracy": macro.get("label_accuracy", 0.0),
+            "macro_f1": macro.get("macro_f1", 0.0),
+            "recovery_rate": macro.get("eligible_recovery_rate", 0.0),
+            "recovery_uplift_pp": macro.get("recovery_rate_uplift_pp", 0.0),
+            "zero_tolerance_violations": macro.get("zero_tolerance_violations", 0),
+        })
+
+    drift_detected = False
+    if len(trend_points) >= 3:
+        recent_acc = trend_points[-1]["accuracy"]
+        historical_avg_acc = sum(p["accuracy"] for p in trend_points[:-1]) / (len(trend_points) - 1)
+        if (historical_avg_acc - recent_acc) > 0.05:
+            drift_detected = True
+
+    return jsonify({
+        "status": "DRIFT_DETECTED" if drift_detected else "STABLE",
+        "total_runs": len(trend_points),
+        "drift_detected": drift_detected,
+        "trends": trend_points,
+    }), 200

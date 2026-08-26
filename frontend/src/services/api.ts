@@ -231,3 +231,13 @@ export async function executeBenchmarkRun(
     body: JSON.stringify(req),
   });
 }
+
+export async function fetchCaseExplainability(
+  caseId: string
+): Promise<import('../types').DecisionAttributionResponse> {
+  return request(`/cases/${caseId}/explainability`);
+}
+
+export async function fetchEvaluationTrends(): Promise<import('../types').EvaluationTrendsResponse> {
+  return request('/evaluation/trends');
+}

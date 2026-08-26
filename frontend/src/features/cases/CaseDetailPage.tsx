@@ -17,6 +17,7 @@ import { AuditEventItem, CaseDetailResponse, ReconciliationStatusInfo, RecoveryA
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
 import { ToastContainer, ToastMessage } from '../../components/ui/Toast';
+import { DecisionAttributionCard } from './DecisionAttributionCard';
 
 export const CaseDetailPage: React.FC = () => {
   const { caseId } = useParams<{ caseId: string }>();
@@ -207,6 +208,9 @@ export const CaseDetailPage: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Decision Explainability & Attribution */}
+      {caseId && <DecisionAttributionCard caseId={caseId} />}
 
       {/* Grid: Customer Context & Settlement Reconciliation */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

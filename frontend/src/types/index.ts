@@ -333,3 +333,44 @@ export interface ComparativeBenchmarkResponse {
   json_report_path?: string;
   markdown_report_path?: string;
 }
+
+export interface FactorWeightItem {
+  factor_name: string;
+  label: string;
+  weight: number;
+  impact: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
+  description: string;
+}
+
+export interface DecisionAttributionResponse {
+  case_id: string;
+  ai_action: string;
+  ai_confidence: number;
+  policy_status: string;
+  final_action: string;
+  governing_authority: string;
+  factor_weights: FactorWeightItem[];
+  veto_chain: string[];
+  policy_override_explanation?: string | null;
+  summary: string;
+}
+
+export interface TrendDataPoint {
+  run_id: string;
+  created_at: string;
+  dataset_name: string;
+  baseline_mode: string;
+  accuracy: number;
+  macro_f1: number;
+  recovery_rate: number;
+  recovery_uplift_pp: number;
+  zero_tolerance_violations: number;
+}
+
+export interface EvaluationTrendsResponse {
+  status: 'STABLE' | 'DRIFT_DETECTED' | 'INSUFFICIENT_DATA';
+  total_runs: number;
+  drift_detected: boolean;
+  trends: TrendDataPoint[];
+  message?: string;
+}
