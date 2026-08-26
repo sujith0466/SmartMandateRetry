@@ -7,7 +7,6 @@ import { CaseDetailPage } from '../features/cases/CaseDetailPage';
 import { AnalyticsPage } from '../features/analytics/AnalyticsPage';
 import { PoliciesPage } from '../features/policies/PoliciesPage';
 import { AuditPage } from '../features/audit/AuditPage';
-import { ObservabilityPage } from '../features/observability/ObservabilityPage';
 import { EvaluationPage } from '../features/evaluation/EvaluationPage';
 
 export const AppRoutes: React.FC = () => {
@@ -21,8 +20,9 @@ export const AppRoutes: React.FC = () => {
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="policies" element={<PoliciesPage />} />
         <Route path="audit" element={<AuditPage />} />
-        <Route path="observability" element={<ObservabilityPage />} />
         <Route path="evaluation" element={<EvaluationPage />} />
+        {/* Redirect legacy /observability to dashboard */}
+        <Route path="observability" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );

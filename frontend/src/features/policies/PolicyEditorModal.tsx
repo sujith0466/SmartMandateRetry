@@ -1,348 +1,252 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  X,
-  ShieldCheck,
-  ArrowRight,
-  AlertTriangle,
-  CheckCircle2,
-  Lock,
-  Clock,
-  Scale,
-  Award,
-  Users,
-  ShieldAlert,
-} from 'lucide-react';
-import { previewPolicyChanges, updatePolicy } from '../../services/api';
-import { MerchantPolicy, PolicyChangePreview } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { X, Save, AlertTriangle, ShieldCheck, RefreshCw } from 'lucide-react';
+import { MerchantPolicy } from '../../types';
+import { updatePolicy } from '../../services/api';
 
 interface PolicyEditorModalProps {
-  currentPolicy: MerchantPolicy;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (updatedPolicy: MerchantPolicy) => void;
+  currentPolicy: MerchantPolicy;
+  initialDraft?: Partial<MerchantPolicy>;
+  onPolicyUpdated: (updated: MerchantPolicy) => void;
 }
 
 export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
-  currentPolicy,
   isOpen,
   onClose,
-  onSuccess,
+  currentPolicy,
+  initialDraft,
+  onPolicyUpdated,
 }) => {
-  const [step, setStep] = useState<'EDIT' | 'PREVIEW'>('EDIT');
-  const [formData, setFormData] = useState<MerchantPolicy>({ ...currentPolicy });
-  const [preview, setPreview] = useState<PolicyChangePreview | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState<MerchantPolicy>(currentPolicy);
+  const [reason, setReason] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        ...currentPolicy,
+        ...(initialDraft || {}),
+      });
+      setReason('');
+      setError(null);
+    }
+  }, [isOpen, currentPolicy, initialDraft]);
 
   if (!isOpen) return null;
 
-  const handleInputChange = (field: keyof MerchantPolicy, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleProceedToPreview = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await previewPolicyChanges(formData);
-      setPreview(res);
-      setStep('PREVIEW');
-    } catch (err: any) {
-      setError(err.message || 'Validation failed. Please verify field ranges.');
-    } finally {
-      setLoading(false);
+    if (!reason.trim()) {
+      setError('Audit trail requires an operational rationale for modifying policy guardrails');
+      return;
     }
-  };
 
-  const handleConfirmSave = async () => {
-    setLoading(true);
-    setError(null);
     try {
-      const updated = await updatePolicy(formData);
-      onSuccess(updated);
+      setLoading(true);
+      setError(null);
+      const res = await updatePolicy(formData);
+      onPolicyUpdated(res);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Failed to save policy updates.');
+      setError(err?.message || 'Failed to update policy');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 10 }}
-          transition={{ duration: 0.15 }}
-          className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-fintech-modal border border-slate-200 space-y-5 my-8"
-        >
-          {/* Modal Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-blue-50 text-blue-700 border border-blue-200">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-slate-900 font-sans">
-                  {step === 'EDIT' ? 'Configure Recovery Safety Rules' : 'Review & Confirm Policy Updates'}
-                </h3>
-                <p className="text-xs text-slate-500">
-                  {step === 'EDIT'
-                    ? 'Adjust deterministic safety limits and recovery guardrails.'
-                    : 'Inspect parameter diffs and deterministic safety impacts before applying.'}
-                </p>
-              </div>
-            </div>
-            <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+  // Compute diffs
+  const diffs: { field: string; label: string; oldVal: any; newVal: any }[] = [];
+  if (formData.max_retries_per_case !== currentPolicy.max_retries_per_case) {
+    diffs.push({ field: 'max_retries_per_case', label: 'Max Retries', oldVal: currentPolicy.max_retries_per_case, newVal: formData.max_retries_per_case });
+  }
+  if (formData.min_retry_interval_hours !== currentPolicy.min_retry_interval_hours) {
+    diffs.push({ field: 'min_retry_interval_hours', label: 'Min Interval (hrs)', oldVal: currentPolicy.min_retry_interval_hours, newVal: formData.min_retry_interval_hours });
+  }
+  if (formData.max_recovery_window_days !== currentPolicy.max_recovery_window_days) {
+    diffs.push({ field: 'max_recovery_window_days', label: 'Recovery Window (days)', oldVal: currentPolicy.max_recovery_window_days, newVal: formData.max_recovery_window_days });
+  }
+  if (formData.min_confidence_threshold !== currentPolicy.min_confidence_threshold) {
+    diffs.push({ field: 'min_confidence_threshold', label: 'Min AI Confidence', oldVal: currentPolicy.min_confidence_threshold, newVal: formData.min_confidence_threshold });
+  }
+  if (formData.high_value_threshold_inr !== currentPolicy.high_value_threshold_inr) {
+    diffs.push({ field: 'high_value_threshold_inr', label: 'High Value Threshold (₹)', oldVal: currentPolicy.high_value_threshold_inr, newVal: formData.high_value_threshold_inr });
+  }
+  if (formData.max_customer_contacts_per_cycle !== currentPolicy.max_customer_contacts_per_cycle) {
+    diffs.push({ field: 'max_customer_contacts_per_cycle', label: 'Contact Cap', oldVal: currentPolicy.max_customer_contacts_per_cycle, newVal: formData.max_customer_contacts_per_cycle });
+  }
 
-          {/* Error Banner */}
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+      <div className="bg-white border border-[#E5E7EB] rounded-2xl w-full max-w-2xl shadow-fintech-modal overflow-hidden animate-in fade-in zoom-in duration-150">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5E7EB] bg-[#F7F9FC]">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE]">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-[#111827]">Edit Merchant Safety Policies</h2>
+              <p className="text-xs text-[#64748B]">
+                Modifications are audited with version history & compliance logs
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 text-[#64748B] hover:text-[#111827] rounded-lg hover:bg-[#F1F5F9] transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center gap-2 shadow-2xs">
-              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+            <div className="p-3.5 rounded-xl bg-[#FFF1F2] border border-[#FECDD3] text-[#9F1239] text-xs flex items-center gap-2 shadow-2xs">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-[#E11D48]" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* STEP 1: FORM INPUTS */}
-          {step === 'EDIT' && (
-            <form onSubmit={handleProceedToPreview} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Max Retries */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
-                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-blue-600" />
-                    Max Retries Cap (1 - 10)
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={10}
-                    value={formData.max_retries_per_case}
-                    onChange={(e) => handleInputChange('max_retries_per_case', parseInt(e.target.value) || 1)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
-                    required
-                  />
-                  <p className="text-[10px] text-slate-500 font-medium">Max execution attempts before auto-stop</p>
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Max Retries */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#475569]">Max Retries per Case (P1)</label>
+              <input
+                type="number"
+                min="1"
+                max="8"
+                value={formData.max_retries_per_case}
+                onChange={(e) => setFormData({ ...formData, max_retries_per_case: parseInt(e.target.value) || 1 })}
+                className="w-full text-xs p-2.5 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] focus:outline-none focus:border-[#3B5BDB] focus:bg-white transition-colors"
+              />
+            </div>
 
-                {/* Min Retry Interval */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
-                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-blue-600" />
-                    Min Spacing (Hours: 1 - 168)
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={168}
-                    value={formData.min_retry_interval_hours}
-                    onChange={(e) => handleInputChange('min_retry_interval_hours', parseInt(e.target.value) || 1)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
-                    required
-                  />
-                  <p className="text-[10px] text-slate-500 font-medium">Spacing between successive retry executions</p>
-                </div>
+            {/* Min Interval */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#475569]">Min Retry Interval Hours (P1)</label>
+              <input
+                type="number"
+                min="6"
+                max="72"
+                value={formData.min_retry_interval_hours}
+                onChange={(e) => setFormData({ ...formData, min_retry_interval_hours: parseInt(e.target.value) || 6 })}
+                className="w-full text-xs p-2.5 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] focus:outline-none focus:border-[#3B5BDB] focus:bg-white transition-colors"
+              />
+            </div>
 
-                {/* Recovery Window */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
-                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Scale className="w-3.5 h-3.5 text-blue-600" />
-                    Recovery Window (Days: 1 - 60)
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={60}
-                    value={formData.max_recovery_window_days}
-                    onChange={(e) => handleInputChange('max_recovery_window_days', parseInt(e.target.value) || 1)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
-                    required
-                  />
-                  <p className="text-[10px] text-slate-500 font-medium">Days before an unrecovered case expires</p>
-                </div>
+            {/* Recovery Window */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#475569]">Max Recovery Window Days (P2)</label>
+              <input
+                type="number"
+                min="3"
+                max="30"
+                value={formData.max_recovery_window_days}
+                onChange={(e) => setFormData({ ...formData, max_recovery_window_days: parseInt(e.target.value) || 3 })}
+                className="w-full text-xs p-2.5 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] focus:outline-none focus:border-[#3B5BDB] focus:bg-white transition-colors"
+              />
+            </div>
 
-                {/* High Value Escalation */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
-                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Award className="w-3.5 h-3.5 text-blue-600" />
-                    High-Value Threshold (INR)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={100}
-                    value={formData.high_value_threshold_inr}
-                    onChange={(e) => handleInputChange('high_value_threshold_inr', parseFloat(e.target.value) || 0)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
-                    required
-                  />
-                  <p className="text-[10px] text-slate-500 font-medium">Invoices at or above this require review</p>
-                </div>
+            {/* Min AI Confidence */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#475569]">Min AI Confidence Threshold (P3)</label>
+              <input
+                type="number"
+                step="0.05"
+                min="0.50"
+                max="0.95"
+                value={formData.min_confidence_threshold}
+                onChange={(e) => setFormData({ ...formData, min_confidence_threshold: parseFloat(e.target.value) || 0.75 })}
+                className="w-full text-xs p-2.5 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] focus:outline-none focus:border-[#3B5BDB] focus:bg-white transition-colors"
+              />
+            </div>
 
-                {/* AI Confidence Minimum */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
-                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                    Min AI Confidence (0.00 - 1.00)
-                  </label>
-                  <input
-                    type="number"
-                    min={0.0}
-                    max={1.0}
-                    step={0.05}
-                    value={formData.min_confidence_threshold}
-                    onChange={(e) => handleInputChange('min_confidence_threshold', parseFloat(e.target.value) || 0.0)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
-                    required
-                  />
-                  <p className="text-[10px] text-slate-500 font-medium">AI decisions below this score are vetoed</p>
-                </div>
+            {/* High Value Threshold */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#475569]">High Value Escalation Cap ₹ (P2b)</label>
+              <input
+                type="number"
+                step="500"
+                min="2000"
+                max="100000"
+                value={formData.high_value_threshold_inr}
+                onChange={(e) => setFormData({ ...formData, high_value_threshold_inr: parseFloat(e.target.value) || 10000 })}
+                className="w-full text-xs p-2.5 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] focus:outline-none focus:border-[#3B5BDB] focus:bg-white transition-colors"
+              />
+            </div>
 
-                {/* Max Customer Contacts */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
-                  <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-blue-600" />
-                    Max Contacts Per Cycle (1 - 10)
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={10}
-                    value={formData.max_customer_contacts_per_cycle}
-                    onChange={(e) => handleInputChange('max_customer_contacts_per_cycle', parseInt(e.target.value) || 1)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
-                    required
-                  />
-                  <p className="text-[10px] text-slate-500 font-medium">Cap on customer communication triggers</p>
-                </div>
-              </div>
+            {/* Max Customer Contacts */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-[#475569]">Max Customer Contacts Cap (P3b)</label>
+              <input
+                type="number"
+                min="1"
+                max="5"
+                value={formData.max_customer_contacts_per_cycle}
+                onChange={(e) => setFormData({ ...formData, max_customer_contacts_per_cycle: parseInt(e.target.value) || 3 })}
+                className="w-full text-xs p-2.5 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] focus:outline-none focus:border-[#3B5BDB] focus:bg-white transition-colors"
+              />
+            </div>
+          </div>
 
-              {/* Hard Decline Auto Stop */}
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between shadow-2xs">
-                <div className="space-y-0.5">
-                  <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <ShieldAlert className="w-4 h-4 text-rose-600" />
-                    Hard Decline Auto-Stop Protection
-                  </span>
-                  <p className="text-[11px] text-slate-500">
-                    Immediately stop recovery on non-recoverable failures (e.g. account closed, stolen card).
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={formData.hard_decline_auto_stop}
-                  onChange={(e) => handleInputChange('hard_decline_auto_stop', e.target.checked)}
-                  className="w-4 h-4 text-blue-600 rounded bg-white border-slate-300 focus:ring-blue-500"
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors disabled:opacity-50"
-                >
-                  <span>Preview Changes</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* STEP 2: PREVIEW & SAFETY IMPACT */}
-          {step === 'PREVIEW' && (
-            <div className="space-y-4">
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-sans">Parameter Diffs</h4>
-                {preview?.diffs.length === 0 ? (
-                  <div className="p-4 bg-slate-50 rounded-xl text-xs text-slate-500 text-center">
-                    No parameter changes detected.
+          {/* Diff Preview */}
+          {diffs.length > 0 && (
+            <div className="p-3.5 bg-[#FFFBEB] rounded-xl border border-[#FDE68A] space-y-1.5 shadow-2xs">
+              <span className="text-[10px] font-bold text-[#92400E] uppercase tracking-wider">
+                Pending Changes Preview ({diffs.length} parameters modified)
+              </span>
+              <div className="space-y-1 text-xs">
+                {diffs.map((d) => (
+                  <div key={d.field} className="flex justify-between font-mono">
+                    <span className="text-[#92400E]">{d.label}:</span>
+                    <span>
+                      <del className="text-[#E11D48] mr-2">{String(d.oldVal)}</del>
+                      <ins className="text-[#059669] font-bold no-underline">{String(d.newVal)}</ins>
+                    </span>
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    {preview?.diffs.map((d) => (
-                      <div
-                        key={d.field}
-                        className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs shadow-2xs"
-                      >
-                        <span className="font-bold text-slate-800">{d.label}</span>
-                        <div className="flex items-center gap-2 font-mono">
-                          <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-500 line-through">
-                            {d.current?.toString()}
-                          </span>
-                          <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                          <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">
-                            {d.proposed?.toString()}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Safety Impact Analysis */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-sans">Safety Impact Analysis</h4>
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
-                  {preview?.impact_notes.map((note, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-xs text-slate-700 font-medium">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
-                      <span>{note}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-between items-center pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setStep('EDIT')}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-colors"
-                >
-                  Back to Edit
-                </button>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleConfirmSave}
-                    disabled={loading}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors disabled:opacity-50"
-                  >
-                    {loading ? 'Saving...' : 'Confirm & Apply Policy'}
-                  </button>
-                </div>
+                ))}
               </div>
             </div>
           )}
-        </motion.div>
+
+          {/* Audit Reason */}
+          <div className="space-y-1 pt-1">
+            <label className="text-xs font-bold text-[#475569]">
+              Operational Rationale <span className="text-[#E11D48]">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Adjusted retry cap based on Q3 cohort benchmark simulation"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="w-full text-xs p-2.5 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] focus:outline-none focus:border-[#3B5BDB] focus:bg-white transition-colors"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#E5E7EB]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl bg-[#F1F5F9] hover:bg-[#E5E7EB] text-[#475569] text-xs font-bold transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 rounded-xl bg-[#3B5BDB] hover:bg-[#3048B8] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-colors disabled:opacity-50"
+            >
+              {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              Save & Log Compliance Audit
+            </button>
+          </div>
+        </form>
       </div>
-    </AnimatePresence>
+    </div>
   );
 };

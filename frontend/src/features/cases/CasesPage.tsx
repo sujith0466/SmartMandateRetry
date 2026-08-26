@@ -110,20 +110,20 @@ export const CasesPage: React.FC = () => {
   const getDerivedPriority = (amount: number, state: CaseState) => {
     if (state === 'ESCALATED' || amount >= 10000) {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FFF1F2] text-[#E11D48] border border-[#FECDD3]">
           HIGH VALUE
         </span>
       );
     }
     if (amount >= 3000) {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A]">
           MEDIUM
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F1F5F9] text-[#475569] border border-[#E5E7EB]">
         STANDARD
       </span>
     );
@@ -139,10 +139,10 @@ export const CasesPage: React.FC = () => {
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight font-sans">
+          <h1 className="text-2xl font-black text-[#111827] tracking-tight font-sans">
             Recovery Cases Workspace
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Operational mandate recovery triage, failure classification & human intervention queue
           </p>
         </div>
@@ -151,13 +151,13 @@ export const CasesPage: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Search Form */}
           <form onSubmit={handleSearchSubmit} className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
             <input
               type="text"
               placeholder="Search invoice, customer..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="text-xs pl-8 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 w-44 sm:w-56 shadow-2xs transition-colors"
+              className="text-xs pl-8 pr-3 py-2 rounded-xl bg-white border border-[#E5E7EB] text-[#111827] placeholder-[#64748B] focus:outline-none focus:border-[#3B5BDB] w-44 sm:w-56 shadow-2xs transition-colors"
             />
           </form>
 
@@ -165,7 +165,7 @@ export const CasesPage: React.FC = () => {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 font-bold focus:outline-none focus:border-blue-500 shadow-2xs"
+            className="text-xs border border-[#E5E7EB] rounded-xl px-3 py-2 bg-white text-[#475569] font-bold focus:outline-none focus:border-[#3B5BDB] shadow-2xs"
           >
             <option value="">All Failure Types</option>
             <option value="TEMPORARY">Soft Decline (Insufficient Funds)</option>
@@ -178,26 +178,26 @@ export const CasesPage: React.FC = () => {
           <button
             onClick={handleExportCsv}
             disabled={isExporting}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-2xs disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#475569] text-xs font-bold transition-colors shadow-2xs disabled:opacity-50"
             title="Export CSV"
           >
-            <Download className="w-3.5 h-3.5 text-blue-600" />
+            <Download className="w-3.5 h-3.5 text-[#3B5BDB]" />
             <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
           </button>
 
           {/* Refresh Button */}
           <button
             onClick={() => loadCases(pagination.page)}
-            className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors shadow-2xs"
+            className="p-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#64748B] hover:text-[#111827] transition-colors shadow-2xs"
             title="Refresh"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-blue-600' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#3B5BDB]' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Filter Tabs Navigation (Option B Royal Blue) */}
-      <div className="flex items-center border-b border-slate-200 space-x-1">
+      {/* Filter Tabs Navigation (Sapphire Theme) */}
+      <div className="flex items-center border-b border-[#E5E7EB] space-x-1">
         {[
           { id: 'all', label: 'All Ingested Cases', icon: Layers },
           { id: 'active', label: 'Active Pipeline', icon: Clock },
@@ -212,11 +212,11 @@ export const CasesPage: React.FC = () => {
               onClick={() => handleTabChange(t.id as TabType)}
               className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition-all ${
                 isActive
-                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs rounded-t-xl'
-                  : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+                  ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white shadow-2xs rounded-t-xl'
+                  : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-[#3B5BDB]' : 'text-[#64748B]'}`} />
               <span>{t.label}</span>
             </button>
           );
@@ -225,22 +225,22 @@ export const CasesPage: React.FC = () => {
 
       {/* Error Alert */}
       {error && (
-        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-center justify-between text-xs text-rose-800 shadow-sm">
+        <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-4 flex items-center justify-between text-xs text-[#9F1239] shadow-sm">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <AlertCircle className="w-4 h-4 text-[#E11D48] shrink-0" />
             <span>{error}</span>
           </div>
-          <button onClick={() => loadCases(pagination.page)} className="font-bold text-rose-900 underline">
+          <button onClick={() => loadCases(pagination.page)} className="font-bold text-[#BE123C] underline">
             Retry
           </button>
         </div>
       )}
 
       {/* Cases Table Container */}
-      <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+      <div className="bg-white rounded-2xl overflow-hidden border border-[#E5E7EB] shadow-sm">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
-            <thead className="bg-slate-50 text-slate-500 font-extrabold uppercase tracking-wider text-[10px]">
+          <table className="min-w-full divide-y divide-[#E5E7EB] text-left text-xs">
+            <thead className="bg-[#F7F9FC] text-[#64748B] font-extrabold uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="px-5 py-3.5">Invoice / Case ID</th>
                 <th className="px-5 py-3.5">Recovery Status</th>
@@ -252,7 +252,7 @@ export const CasesPage: React.FC = () => {
                 <th className="px-5 py-3.5 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
+            <tbody className="divide-y divide-[#E5E7EB] text-[#475569] font-medium">
               {loading ? (
                 <tr>
                   <td colSpan={8} className="py-6">
@@ -261,10 +261,10 @@ export const CasesPage: React.FC = () => {
                 </tr>
               ) : cases.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center text-slate-500">
-                    <Inbox className="w-10 h-10 mx-auto text-slate-400 mb-3" />
-                    <p className="font-bold text-slate-700 text-sm">No recovery cases found in this view</p>
-                    <p className="text-xs text-slate-500 mt-1">Try switching tabs or resetting search filters.</p>
+                  <td colSpan={8} className="py-16 text-center text-[#64748B]">
+                    <Inbox className="w-10 h-10 mx-auto text-[#94A3B8] mb-3" />
+                    <p className="font-bold text-[#111827] text-sm">No recovery cases found in this view</p>
+                    <p className="text-xs text-[#64748B] mt-1">Try switching tabs or resetting search filters.</p>
                   </td>
                 </tr>
               ) : (
@@ -273,43 +273,43 @@ export const CasesPage: React.FC = () => {
                   const catInfo = formatFailureCategory(c.failure_category);
 
                   return (
-                    <tr key={c.id} className="hover:bg-slate-50/80 transition-colors group">
+                    <tr key={c.id} className="hover:bg-[#F7F9FC] transition-colors group">
                       <td className="px-5 py-4">
-                        <div className="font-mono font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                        <div className="font-mono font-bold text-[#111827] group-hover:text-[#3B5BDB] transition-colors">
                           {c.invoice_id}
                         </div>
-                        <div className="text-[11px] text-slate-400 font-mono">{c.id.slice(0, 16)}...</div>
+                        <div className="text-[11px] text-[#64748B] font-mono">{c.id.slice(0, 16)}...</div>
                       </td>
                       <td className="px-5 py-4">
                         <Badge state={c.state} />
-                        <p className="text-[10px] text-slate-500 font-medium mt-1">{stateInfo.label}</p>
+                        <p className="text-[10px] text-[#64748B] font-medium mt-1">{stateInfo.label}</p>
                       </td>
                       <td className="px-5 py-4">
-                        <span className="text-xs font-bold text-slate-900">{catInfo.label}</span>
-                        <p className="text-[10px] font-mono text-slate-500">{c.failure_code}</p>
+                        <span className="text-xs font-bold text-[#111827]">{catInfo.label}</span>
+                        <p className="text-[10px] font-mono text-[#64748B]">{c.failure_code}</p>
                       </td>
                       <td className="px-5 py-4">
-                        <div className="font-black text-slate-900 text-sm font-sans">
+                        <div className="font-black text-[#111827] text-sm font-sans">
                           ₹{c.amount_inr?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </div>
                         {(c.recovered_amount_inr ?? 0) > 0 && (
-                          <div className="text-[11px] text-emerald-700 font-bold font-mono mt-0.5">
+                          <div className="text-[11px] text-[#059669] font-bold font-mono mt-0.5">
                             ✓ Settled ₹{(c.recovered_amount_inr ?? 0).toLocaleString('en-IN')}
                           </div>
                         )}
                       </td>
-                      <td className="px-5 py-4 text-slate-600">
-                        <span className="font-mono font-bold text-slate-900">{c.attempt_count}</span> retries •{' '}
-                        <span className="font-mono font-bold text-slate-900">{c.contacts_count}</span> contacts
+                      <td className="px-5 py-4 text-[#475569]">
+                        <span className="font-mono font-bold text-[#111827]">{c.attempt_count}</span> retries •{' '}
+                        <span className="font-mono font-bold text-[#111827]">{c.contacts_count}</span> contacts
                       </td>
                       <td className="px-5 py-4">{getDerivedPriority(c.amount_inr, c.state)}</td>
-                      <td className="px-5 py-4 text-slate-500 text-[11px]">
+                      <td className="px-5 py-4 text-[#64748B] text-[11px]">
                         {c.created_at ? new Date(c.created_at).toLocaleDateString() : '—'}
                       </td>
                       <td className="px-5 py-4 text-right">
                         <Link
                           to={`/cases/${c.id}`}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-blue-600 text-white font-bold text-xs transition-all shadow-2xs"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#111827] hover:bg-[#3B5BDB] text-white font-bold text-xs transition-all shadow-2xs"
                         >
                           Inspect
                           <ArrowUpRight className="w-3.5 h-3.5" />
@@ -324,23 +324,23 @@ export const CasesPage: React.FC = () => {
         </div>
 
         {/* Pagination Footer */}
-        <div className="px-5 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-600 font-medium">
+        <div className="px-5 py-3.5 border-t border-[#E5E7EB] bg-[#F7F9FC] flex items-center justify-between text-xs text-[#475569] font-medium">
           <div>
-            Showing page <span className="font-bold text-slate-900">{pagination.page}</span> of{' '}
-            <span className="font-bold text-slate-900">{pagination.pages || 1}</span> ({pagination.total} total cases)
+            Showing page <span className="font-bold text-[#111827]">{pagination.page}</span> of{' '}
+            <span className="font-bold text-[#111827]">{pagination.pages || 1}</span> ({pagination.total} total cases)
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => loadCases(pagination.page - 1)}
               disabled={pagination.page <= 1}
-              className="p-1.5 rounded-xl border border-slate-200 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-700 transition-colors shadow-2xs"
+              className="p-1.5 rounded-xl border border-[#E5E7EB] bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F1F5F9] text-[#475569] transition-colors shadow-2xs"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => loadCases(pagination.page + 1)}
               disabled={pagination.page >= pagination.pages}
-              className="p-1.5 rounded-xl border border-slate-200 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-700 transition-colors shadow-2xs"
+              className="p-1.5 rounded-xl border border-[#E5E7EB] bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F1F5F9] text-[#475569] transition-colors shadow-2xs"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

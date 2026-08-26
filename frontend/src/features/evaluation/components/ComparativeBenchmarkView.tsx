@@ -21,7 +21,7 @@ const MODES: ModeConfig[] = [
     id: 'SMART_MANDATE',
     name: 'SmartMandateRetry',
     badge: 'SYSTEM UNDER TEST',
-    badgeColor: 'bg-blue-50 text-blue-800 border-blue-200',
+    badgeColor: 'bg-[#EEF2FF] text-[#3B5BDB] border-[#C7D2FE]',
     description: 'Deterministic P0–P4 policy safety gates with customer-aware recovery selection',
     isSut: true,
   },
@@ -29,21 +29,21 @@ const MODES: ModeConfig[] = [
     id: 'RAZORPAY_NATIVE',
     name: 'Razorpay Native',
     badge: 'BASELINE A',
-    badgeColor: 'bg-cyan-50 text-cyan-800 border-cyan-200',
+    badgeColor: 'bg-[#ECFEFF] text-[#0891B2] border-[#A5F3FC]',
     description: 'Standard 3-retry naive fixed schedule blindly executed on all active errors',
   },
   {
     id: 'RULE_BASED',
     name: 'Rule-Based Heuristic',
     badge: 'BASELINE B',
-    badgeColor: 'bg-amber-50 text-amber-800 border-amber-200',
+    badgeColor: 'bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]',
     description: 'Static 48-hour single retry rule for recoverable errors, stopping thereafter',
   },
   {
     id: 'AI_UNGUARDED',
     name: 'AI Unguarded (Ablation)',
     badge: 'ABLATION CONTROL',
-    badgeColor: 'bg-rose-50 text-rose-800 border-rose-200',
+    badgeColor: 'bg-[#FFF1F2] text-[#E11D48] border-[#FECDD3]',
     description: 'Raw LLM recommendations bypassing all merchant policy caps and safety gates',
   },
 ];
@@ -68,8 +68,8 @@ export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> =
               key={mode.id}
               className={`rounded-2xl p-5 border transition-all ${
                 mode.isSut
-                  ? 'bg-white border-blue-300 shadow-md ring-2 ring-blue-50/70'
-                  : 'bg-white border-slate-200 shadow-sm'
+                  ? 'bg-white border-[#C7D2FE] shadow-md ring-2 ring-[#EEF2FF]'
+                  : 'bg-white border-[#E5E7EB] shadow-sm'
               }`}
             >
               <div className="flex items-center justify-between gap-2">
@@ -77,30 +77,30 @@ export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> =
                   {mode.badge}
                 </span>
                 {isSafe ? (
-                  <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700">
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-[#059669]">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Safe
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1 text-[11px] font-bold text-rose-700">
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-[#E11D48]">
                     <XCircle className="w-3.5 h-3.5" /> {violations} Violations
                   </span>
                 )}
               </div>
 
-              <h3 className="text-base font-black text-slate-900 mt-3 flex items-center gap-1.5 font-sans">
+              <h3 className="text-base font-black text-[#111827] mt-3 flex items-center gap-1.5 font-sans">
                 {mode.name}
-                {mode.isSut && <Award className="w-4 h-4 text-amber-500" />}
+                {mode.isSut && <Award className="w-4 h-4 text-[#D97706]" />}
               </h3>
-              <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 min-h-[32px]">{mode.description}</p>
+              <p className="text-[11px] text-[#64748B] mt-1 line-clamp-2 min-h-[32px]">{mode.description}</p>
 
-              <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100">
+              <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-[#E5E7EB]">
                 <div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Accuracy</div>
-                  <div className="text-lg font-black text-slate-900 mt-0.5 font-mono">{accuracy}%</div>
+                  <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">Accuracy</div>
+                  <div className="text-lg font-black text-[#111827] mt-0.5 font-mono">{accuracy}%</div>
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recovery Rate</div>
-                  <div className="text-lg font-black text-emerald-700 mt-0.5 font-mono">{recoveryRate}%</div>
+                  <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">Recovery Rate</div>
+                  <div className="text-lg font-black text-[#059669] mt-0.5 font-mono">{recoveryRate}%</div>
                 </div>
               </div>
             </div>
@@ -109,22 +109,22 @@ export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> =
       </div>
 
       {/* Full Comparative Metric Table */}
-      <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-4.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+      <div className="rounded-2xl bg-white border border-[#E5E7EB] overflow-hidden shadow-sm">
+        <div className="p-4.5 bg-[#F7F9FC] border-b border-[#E5E7EB] flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 font-sans">Comparative Benchmark Performance Matrix</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <h3 className="text-sm font-bold text-[#111827] font-sans">Comparative Benchmark Performance Matrix</h3>
+            <p className="text-xs text-[#64748B] mt-0.5">
               Empirical decision accuracy, recovery efficiency, and safety compliance across all 4 modes
             </p>
           </div>
-          <div className="text-xs font-bold text-slate-500">
-            Baseline Reference: <span className="text-blue-600 font-mono">{(baselineRecoveryRate * 100).toFixed(1)}%</span>
+          <div className="text-xs font-bold text-[#64748B]">
+            Baseline Reference: <span className="text-[#3B5BDB] font-mono">{(baselineRecoveryRate * 100).toFixed(1)}%</span>
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-slate-500 text-[10px] font-extrabold uppercase tracking-wider border-b border-slate-200">
+            <thead className="bg-[#F7F9FC] text-[#64748B] text-[10px] font-extrabold uppercase tracking-wider border-b border-[#E5E7EB]">
               <tr>
                 <th className="py-3.5 px-4">Evaluation Mode</th>
                 <th className="py-3.5 px-4 text-right">Label Acc</th>
@@ -137,7 +137,7 @@ export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> =
                 <th className="py-3.5 px-4 text-center">Governance Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+            <tbody className="divide-y divide-[#E5E7EB] font-medium text-[#475569]">
               {MODES.map((mode) => {
                 const m = modeMetrics[mode.id];
                 if (!m) return null;
@@ -155,25 +155,25 @@ export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> =
                 return (
                   <tr
                     key={mode.id}
-                    className={`hover:bg-slate-50/80 transition-colors ${
-                      mode.isSut ? 'bg-blue-50/40 font-semibold' : ''
+                    className={`hover:bg-[#F7F9FC] transition-colors ${
+                      mode.isSut ? 'bg-[#EEF2FF]/40 font-semibold' : ''
                     }`}
                   >
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-slate-900 font-bold">{mode.name}</span>
+                        <span className="text-[#111827] font-bold">{mode.name}</span>
                         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${mode.badgeColor}`}>
                           {mode.badge}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 text-right font-mono text-slate-900 font-bold">{labelAcc}%</td>
-                    <td className="py-3.5 px-4 text-right font-mono text-slate-600">{polAcc}%</td>
-                    <td className="py-3.5 px-4 text-right font-mono text-slate-600">{actAcc}%</td>
-                    <td className="py-3.5 px-4 text-right font-mono text-slate-600">{macroF1}</td>
-                    <td className="py-3.5 px-4 text-right font-mono text-emerald-700 font-bold">{recRate}%</td>
+                    <td className="py-3.5 px-4 text-right font-mono text-[#111827] font-bold">{labelAcc}%</td>
+                    <td className="py-3.5 px-4 text-right font-mono text-[#475569]">{polAcc}%</td>
+                    <td className="py-3.5 px-4 text-right font-mono text-[#475569]">{actAcc}%</td>
+                    <td className="py-3.5 px-4 text-right font-mono text-[#475569]">{macroF1}</td>
+                    <td className="py-3.5 px-4 text-right font-mono text-[#059669] font-bold">{recRate}%</td>
                     <td className="py-3.5 px-4 text-right font-mono font-bold">
-                      <span className={m.recovery_uplift_pp && m.recovery_uplift_pp > 0 ? 'text-emerald-700' : 'text-slate-500'}>
+                      <span className={m.recovery_uplift_pp && m.recovery_uplift_pp > 0 ? 'text-[#059669]' : 'text-[#64748B]'}>
                         {uplift}
                       </span>
                     </td>
@@ -181,8 +181,8 @@ export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> =
                       <span
                         className={`inline-block px-2 py-0.5 rounded-full font-mono text-xs font-bold ${
                           violations === 0
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                            : 'bg-rose-50 text-rose-800 border border-rose-200'
+                            ? 'bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]'
+                            : 'bg-[#FFF1F2] text-[#E11D48] border border-[#FECDD3]'
                         }`}
                       >
                         {violations}
@@ -190,11 +190,11 @@ export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> =
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       {violations === 0 ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#059669]">
                           <ShieldCheck className="w-3.5 h-3.5" /> PASSED
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#E11D48]">
                           <AlertTriangle className="w-3.5 h-3.5" /> REJECTED
                         </span>
                       )}

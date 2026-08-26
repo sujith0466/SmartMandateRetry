@@ -37,21 +37,21 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
   return (
     <div className="space-y-4">
       {/* Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4.5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4.5 rounded-2xl bg-white border border-[#E5E7EB] shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shadow-2xs">
+          <div className="w-10 h-10 rounded-xl bg-[#EEF2FF] border border-[#C7D2FE] flex items-center justify-center text-[#3B5BDB] shadow-2xs">
             <Database className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-slate-900 font-sans">
+              <h2 className="text-sm font-bold text-[#111827] font-sans">
                 {activeRun?.dataset_name || summary?.dataset.name || 'eval_dataset_42_5000'}
               </h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-mono">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE] font-mono">
                 SEED {summary?.dataset.seed || 42}
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-[#64748B] mt-0.5">
               5,000 synthetic failure scenarios across 14 failure families & 4 difficulty tiers
             </p>
           </div>
@@ -59,15 +59,15 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
 
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Split Selector */}
-          <div className="flex items-center rounded-xl bg-slate-100 border border-slate-200 p-1 shadow-2xs">
+          <div className="flex items-center rounded-xl bg-[#F1F5F9] border border-[#E5E7EB] p-1 shadow-2xs">
             {(['TEST', 'VALIDATION', 'TRAIN', 'ALL'] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => onSplitChange(s)}
                 className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
                   selectedSplit === s
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900'
+                    ? 'bg-white text-[#111827] shadow-xs'
+                    : 'text-[#64748B] hover:text-[#111827]'
                 }`}
               >
                 {s}
@@ -77,15 +77,15 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
 
           <button
             onClick={onOpenHistory}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold transition-all shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-[#F7F9FC] text-[#475569] border border-[#E5E7EB] text-xs font-bold transition-all shadow-2xs"
           >
-            <History className="w-3.5 h-3.5 text-slate-400" />
+            <History className="w-3.5 h-3.5 text-[#64748B]" />
             Runs ({summary?.total_runs || 0})
           </button>
 
           <button
             onClick={onRefresh}
-            className="p-2 rounded-xl bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition-all shadow-2xs"
+            className="p-2 rounded-xl bg-white hover:bg-[#F7F9FC] text-[#64748B] hover:text-[#111827] border border-[#E5E7EB] transition-all shadow-2xs"
             title="Refresh Evaluation Data"
           >
             <RotateCw className="w-3.5 h-3.5" />
@@ -94,7 +94,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
           <button
             onClick={onRunBenchmark}
             disabled={isRunningBenchmark}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#3B5BDB] hover:bg-[#3048B8] text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isRunningBenchmark ? (
               <>
@@ -118,7 +118,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
           value={`${labelAccuracy}%`}
           subtitle={`${totalEvaluated.toLocaleString()} scenarios (${selectedSplit} split)`}
           icon={ShieldCheck}
-          variant="blue"
+          variant="sapphire"
         />
 
         <StatCard
@@ -134,7 +134,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
           value={upliftPp}
           subtitle="Percentage points over 3-retry baseline"
           icon={Layers}
-          variant="indigo"
+          variant="violet"
         />
 
         <StatCard

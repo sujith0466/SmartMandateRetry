@@ -200,21 +200,21 @@ export const EvaluationPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight font-sans">
+            <h1 className="text-2xl font-black text-[#111827] tracking-tight font-sans">
               Recovery Intelligence Benchmark
             </h1>
-            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE]">
               5,000 SCENARIOS
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Empirical evaluation and zero-tolerance safety governance across 5,000 synthetic failure scenarios
           </p>
         </div>
 
         {/* Mode Selector for Detailed Views */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 font-bold">Active Inspector Mode:</span>
+          <span className="text-xs text-[#64748B] font-bold">Active Inspector Mode:</span>
           <select
             value={selectedMode}
             onChange={(e) => {
@@ -228,7 +228,7 @@ export const EvaluationPage: React.FC = () => {
                 loadScenarioResultsForRun(runId, 1, scenarioFilters);
               }
             }}
-            className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs"
+            className="px-3 py-2 rounded-xl bg-white border border-[#E5E7EB] text-xs font-bold text-[#111827] focus:outline-none focus:border-[#3B5BDB] shadow-2xs"
           >
             <option value="SMART_MANDATE">SmartMandateRetry (System Under Test)</option>
             <option value="RAZORPAY_NATIVE">Razorpay Native (Baseline A)</option>
@@ -240,8 +240,8 @@ export const EvaluationPage: React.FC = () => {
 
       {/* Error Alert */}
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-3">
-          <AlertTriangle className="w-5 h-5 flex-shrink-0 text-rose-600" />
+        <div className="p-4 rounded-xl bg-[#FFF1F2] border border-[#FECDD3] text-[#9F1239] text-xs flex items-center gap-3">
+          <AlertTriangle className="w-5 h-5 flex-shrink-0 text-[#E11D48]" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -259,17 +259,17 @@ export const EvaluationPage: React.FC = () => {
         onOpenHistory={() => setIsHistoryOpen(true)}
       />
 
-      {/* Navigation Sub-Tabs (Option B Royal Blue) */}
-      <div className="flex items-center gap-1 border-b border-slate-200 pb-px overflow-x-auto">
+      {/* Navigation Sub-Tabs (Sapphire Active Treatment) */}
+      <div className="flex items-center gap-1 border-b border-[#E5E7EB] pb-px overflow-x-auto">
         <button
           onClick={() => setActiveTab('COMPARATIVE')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'COMPARATIVE'
-              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
+              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
           }`}
         >
-          <Scale className="w-4 h-4 text-blue-600" />
+          <Scale className="w-4 h-4 text-[#3B5BDB]" />
           Comparative Benchmark
         </button>
 
@@ -277,11 +277,11 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('SAFETY')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'SAFETY'
-              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
+              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
           }`}
         >
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <ShieldCheck className="w-4 h-4 text-[#059669]" />
           Safety & Governance
         </button>
 
@@ -289,11 +289,11 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('CONFUSION_MATRIX')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'CONFUSION_MATRIX'
-              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
+              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
           }`}
         >
-          <Target className="w-4 h-4 text-cyan-600" />
+          <Target className="w-4 h-4 text-[#0891B2]" />
           Confusion Matrix & F1
         </button>
 
@@ -301,11 +301,11 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('FINANCIAL')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'FINANCIAL'
-              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
+              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
           }`}
         >
-          <IndianRupee className="w-4 h-4 text-amber-600" />
+          <IndianRupee className="w-4 h-4 text-[#D97706]" />
           Recovery & Financials
         </button>
 
@@ -313,11 +313,11 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('DIMENSIONAL')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'DIMENSIONAL'
-              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
+              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
           }`}
         >
-          <Layers className="w-4 h-4 text-purple-600" />
+          <Layers className="w-4 h-4 text-[#7C3AED]" />
           Dimensional Breakdowns
         </button>
 
@@ -325,11 +325,11 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('TRENDS')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'TRENDS'
-              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
+              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
           }`}
         >
-          <Activity className="w-4 h-4 text-emerald-600" />
+          <Activity className="w-4 h-4 text-[#059669]" />
           Longitudinal Trends & Drift
         </button>
 
@@ -337,11 +337,11 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('SCENARIO_EXPLORER')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'SCENARIO_EXPLORER'
-              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+              ? 'border-[#3B5BDB] text-[#3B5BDB] bg-white rounded-t-xl shadow-2xs'
+              : 'border-transparent text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]'
           }`}
         >
-          <Search className="w-4 h-4 text-pink-600" />
+          <Search className="w-4 h-4 text-[#7C3AED]" />
           Scenario Results Explorer
         </button>
       </div>

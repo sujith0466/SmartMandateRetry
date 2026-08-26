@@ -1,90 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  RefreshCw,
-  AlertCircle,
-  Lock,
-  ShieldAlert,
   ShieldCheck,
-  Scale,
-  Clock,
-  Award,
+  RefreshCw,
   Edit3,
-  History,
-  CheckCircle2,
-  Users,
+  AlertTriangle,
+  RotateCcw,
   Sparkles,
+  Lock,
 } from 'lucide-react';
-import { fetchPolicies, fetchPolicyHistory } from '../../services/api';
-import { MerchantPolicy, PolicyHistoryItem } from '../../types';
-import { Skeleton } from '../../components/ui/SkeletonLoader';
-import { ToastContainer, ToastMessage } from '../../components/ui/Toast';
+import { fetchPolicies, updatePolicy } from '../../services/api';
+import { MerchantPolicy } from '../../types';
 import { PolicyEditorModal } from './PolicyEditorModal';
 import { PolicySimulationModal } from './PolicySimulationModal';
-
-const DETERMINISTIC_RULES = [
-  {
-    id: 'HARD_DECLINE_VETO',
-    name: 'Hard Decline Safety Veto',
-    priority: 'P0 (Highest)',
-    desc: 'Immediately halts recovery on non-recoverable error codes (account closed, stolen card).',
-    status: 'ACTIVE',
-  },
-  {
-    id: 'MAX_RETRIES_CAP',
-    name: 'Maximum Retries Cap',
-    priority: 'P1',
-    desc: 'Vetoes execution if case attempt count reaches merchant threshold.',
-    status: 'ACTIVE',
-  },
-  {
-    id: 'MIN_RETRY_INTERVAL',
-    name: 'Minimum Spacing Interval',
-    priority: 'P2',
-    desc: 'Delays retry dispatch until minimum elapsed hours have passed.',
-    status: 'ACTIVE',
-  },
-  {
-    id: 'HIGH_VALUE_ESCALATION',
-    name: 'High-Value Escalation',
-    priority: 'P2',
-    desc: 'Routes high-value invoices to manual merchant review.',
-    status: 'ACTIVE',
-  },
-  {
-    id: 'LOW_CONFIDENCE_VETO',
-    name: 'Low Confidence AI Gate',
-    priority: 'P3',
-    desc: 'Overrides low-confidence AI proposals with safe deterministic fallbacks.',
-    status: 'ACTIVE',
-  },
-];
+import { Skeleton } from '../../components/ui/SkeletonLoader';
+import { ToastContainer, ToastMessage } from '../../components/ui/Toast';
 
 export const PoliciesPage: React.FC = () => {
   const [policy, setPolicy] = useState<MerchantPolicy | null>(null);
-  const [history, setHistory] = useState<PolicyHistoryItem[]>([]);
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [isSimulationOpen, setIsSimulationOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const showToast = (message: string) => {
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isSimulationOpen, setIsSimulationOpen] = useState(false);
+  const [draftFromSimulation, setDraftFromSimulation] = useState<Partial<MerchantPolicy> | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, message, type: 'success' }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 2500);
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 2500);
   };
 
-  const loadData = async () => {
+  const loadPolicy = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [policyData, histData] = await Promise.all([
-        fetchPolicies(),
-        fetchPolicyHistory().catch(() => ({ history: [] })),
-      ]);
-      setPolicy(policyData);
-      setHistory(histData.history);
+      const data = await fetchPolicies();
+      setPolicy(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load merchant safety policies');
     } finally {
@@ -93,26 +48,46 @@ export const PoliciesPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
+    loadPolicy();
   }, []);
 
-  const handlePolicySaved = (updated: MerchantPolicy) => {
-    setPolicy(updated);
-    setIsEditorOpen(false);
-    showToast('Merchant safety policy updated successfully!');
-    fetchPolicyHistory()
-      .then((h) => setHistory(h.history))
-      .catch(() => {});
+  const handleResetPolicy = async () => {
+    if (!window.confirm('Reset all policy guardrails to platform certified defaults?')) return;
+    try {
+      setLoading(true);
+      const res = await updatePolicy({
+        max_retries_per_case: 3,
+        min_retry_interval_hours: 24,
+        max_recovery_window_days: 14,
+        min_confidence_threshold: 0.75,
+        high_value_threshold_inr: 10000,
+        max_customer_contacts_per_cycle: 3,
+        hard_decline_auto_stop: true,
+      });
+      setPolicy(res);
+      showToast('Policy guardrails reset to platform defaults!', 'info');
+    } catch (err: any) {
+      showToast(err.message || 'Failed to reset policy', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) {
+  const handleApplyFromSimulation = (simulatedDraft: Partial<MerchantPolicy>) => {
+    setDraftFromSimulation(simulatedDraft);
+    setIsSimulationOpen(false);
+    setIsEditorOpen(true);
+    showToast('Simulation parameters imported into editor. Review diff and click Save.', 'info');
+  };
+
+  if (loading && !policy) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-64" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-44 rounded-2xl" />
-          ))}
+        <Skeleton className="h-32 rounded-2xl" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Skeleton className="h-48 rounded-2xl" />
+          <Skeleton className="h-48 rounded-2xl" />
         </div>
       </div>
     );
@@ -127,22 +102,28 @@ export const PoliciesPage: React.FC = () => {
     >
       <ToastContainer toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
 
+      {/* Modals */}
       {policy && (
         <>
           <PolicyEditorModal
-            currentPolicy={policy}
             isOpen={isEditorOpen}
-            onClose={() => setIsEditorOpen(false)}
-            onSuccess={handlePolicySaved}
+            onClose={() => {
+              setIsEditorOpen(false);
+              setDraftFromSimulation(null);
+            }}
+            currentPolicy={policy}
+            initialDraft={draftFromSimulation || undefined}
+            onPolicyUpdated={(newPol) => {
+              setPolicy(newPol);
+              showToast('Policy guardrails updated & audit event logged!', 'success');
+              setDraftFromSimulation(null);
+            }}
           />
           <PolicySimulationModal
-            currentPolicy={policy}
             isOpen={isSimulationOpen}
             onClose={() => setIsSimulationOpen(false)}
-            onApplyToDraft={() => {
-              setIsSimulationOpen(false);
-              setIsEditorOpen(true);
-            }}
+            currentPolicy={policy}
+            onApplyToDraft={handleApplyFromSimulation}
           />
         </>
       )}
@@ -151,240 +132,202 @@ export const PoliciesPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight font-sans">
-              Merchant Safety Policies & Governance
+            <h1 className="text-2xl font-black text-[#111827] tracking-tight font-sans">
+              Merchant Safety Policy Guardrails
             </h1>
-            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-              Safety Control Center
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]">
+              P0–P4 Enforced
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Configure deterministic recovery guardrails, contact limits, and inspect immutable policy revision history
+          <p className="text-xs text-[#64748B] mt-1">
+            Deterministic business guardrails governing automated retries, customer contact caps & risk thresholds
           </p>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Action Controls */}
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={() => setIsSimulationOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition-all shadow-2xs"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F5F3FF] hover:bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE] text-xs font-bold transition-colors shadow-2xs"
           >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-            What-If Studio
+            <Sparkles className="w-3.5 h-3.5 text-[#7C3AED]" />
+            <span>What-If Simulator</span>
           </button>
+
           <button
             onClick={() => setIsEditorOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#3B5BDB] hover:bg-[#3048B8] text-white text-xs font-bold transition-colors shadow-xs"
           >
             <Edit3 className="w-3.5 h-3.5" />
-            Edit Policy
+            <span>Edit Policy Parameters</span>
           </button>
+
           <button
-            onClick={loadData}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-2xs"
+            onClick={handleResetPolicy}
+            className="p-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#64748B] hover:text-[#111827] transition-colors shadow-2xs"
+            title="Reset to Platform Defaults"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
-            Refresh
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={loadPolicy}
+            className="p-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#64748B] hover:text-[#111827] transition-colors shadow-2xs"
+            title="Refresh"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#3B5BDB]' : ''}`} />
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-center justify-between text-xs text-rose-800 shadow-sm">
+        <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-4 flex items-center justify-between text-xs text-[#9F1239] shadow-sm">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-[#E11D48] shrink-0" />
             <span>{error}</span>
           </div>
-          <button onClick={loadData} className="font-bold text-rose-900 underline">
+          <button onClick={loadPolicy} className="font-bold text-[#BE123C] underline">
             Retry
           </button>
         </div>
       )}
 
-      {/* Policy Parameters Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {/* Max Retries */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-3 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Max Retries Per Case</span>
-            <div className="p-2 rounded-xl bg-slate-50 text-slate-600 border border-slate-200">
-              <Lock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-3xl font-black text-slate-900 font-mono">{policy?.max_retries_per_case || 3} Attempts</div>
-          <p className="text-xs text-slate-500">Maximum execution attempts before auto-stopping a failed mandate.</p>
-          <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-500">
-            <span>Rule: `MAX_RETRIES_CAP`</span>
-            <span className="text-emerald-700 font-bold">Active</span>
-          </div>
-        </div>
-
-        {/* Retry Interval */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-3 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Min Retry Spacing</span>
-            <div className="p-2 rounded-xl bg-slate-50 text-slate-600 border border-slate-200">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-3xl font-black text-slate-900 font-mono">{policy?.min_retry_interval_hours || 24} Hours</div>
-          <p className="text-xs text-slate-500">Minimum spacing interval between successive recovery actions.</p>
-          <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-500">
-            <span>Rule: `MIN_RETRY_INTERVAL`</span>
-            <span className="text-emerald-700 font-bold">Active</span>
-          </div>
-        </div>
-
-        {/* Recovery Window */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-3 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Recovery Window</span>
-            <div className="p-2 rounded-xl bg-slate-50 text-slate-600 border border-slate-200">
-              <Scale className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-3xl font-black text-slate-900 font-mono">{policy?.max_recovery_window_days || 14} Days</div>
-          <p className="text-xs text-slate-500">Maximum lifespan before an unrecovered case expires.</p>
-          <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-500">
-            <span>Rule: `RECOVERY_WINDOW_LIMIT`</span>
-            <span className="text-emerald-700 font-bold">Active</span>
-          </div>
-        </div>
-
-        {/* High Value Threshold */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-3 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">High-Value Threshold</span>
-            <div className="p-2 rounded-xl bg-blue-50 text-blue-700 border border-blue-200">
-              <Award className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-3xl font-black text-blue-700 font-sans">
-            ₹{policy?.high_value_threshold_inr?.toLocaleString('en-IN') || '10,000'}
-          </div>
-          <p className="text-xs text-slate-500">Invoices at or above this amount require human escalation.</p>
-          <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-500">
-            <span>Rule: `HIGH_VALUE_ESCALATION`</span>
-            <span className="text-blue-700 font-bold">Protected</span>
-          </div>
-        </div>
-
-        {/* AI Confidence Minimum */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-3 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Min AI Confidence</span>
-            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-3xl font-black text-emerald-700 font-mono">
-            {((policy?.min_confidence_threshold || 0.75) * 100).toFixed(0)}%
-          </div>
-          <p className="text-xs text-slate-500">AI decisions below this confidence score are automatically vetoed.</p>
-          <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-500">
-            <span>Rule: `LOW_CONFIDENCE_VETO`</span>
-            <span className="text-emerald-700 font-bold">Active</span>
-          </div>
-        </div>
-
-        {/* Max Customer Contacts */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-3 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Max Contacts Per Cycle</span>
-            <div className="p-2 rounded-xl bg-slate-50 text-slate-600 border border-slate-200">
-              <Users className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-3xl font-black text-slate-900 font-mono">
-            {policy?.max_customer_contacts_per_cycle || 3} Contacts
-          </div>
-          <p className="text-xs text-slate-500">Cap on customer communication triggers per subscription cycle.</p>
-          <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-500">
-            <span>Rule: `CUSTOMER_CONTACT_FREQUENCY`</span>
-            <span className="text-emerald-700 font-bold">Active</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Deterministic Safety Rules */}
-      <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm space-y-4 p-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-sm font-bold text-slate-900 font-sans">Active Deterministic Safety Rules</h3>
-          </div>
-          <span className="text-xs font-mono font-bold text-slate-500">Policy Engine Safety Gates</span>
-        </div>
-
-        <div className="divide-y divide-slate-100">
-          {DETERMINISTIC_RULES.map((rule) => (
-            <div key={rule.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-900">{rule.name}</span>
-                  <span className="text-[10px] font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full font-bold">
-                    {rule.id}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-500">[{rule.priority}]</span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">{rule.desc}</p>
-              </div>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Enforced
+      {/* Active Parameters Grid */}
+      {policy && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Max Retries */}
+          <div className="p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider">Retry Cap (P1)</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE] font-bold">
+                Configurable
               </span>
             </div>
-          ))}
-        </div>
-      </div>
+            <div className="text-3xl font-black text-[#111827] font-mono">
+              {policy.max_retries_per_case} <span className="text-xs text-[#64748B] font-sans font-medium">attempts max</span>
+            </div>
+            <p className="text-xs text-[#64748B] pt-2 border-t border-[#E5E7EB]">
+              Limits automated debit retries per failure cycle. Cases exceeding this transition to EXHAUSTED.
+            </p>
+          </div>
 
-      {/* Policy Revision History */}
-      <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          {/* Min Interval */}
+          <div className="p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider">Retry Interval (P1)</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE] font-bold">
+                Configurable
+              </span>
+            </div>
+            <div className="text-3xl font-black text-[#111827] font-mono">
+              {policy.min_retry_interval_hours} <span className="text-xs text-[#64748B] font-sans font-medium">hours minimum</span>
+            </div>
+            <p className="text-xs text-[#64748B] pt-2 border-t border-[#E5E7EB]">
+              Enforces cooldown between retry attempts to prevent bank debit frequency penalty fees.
+            </p>
+          </div>
+
+          {/* Recovery Window */}
+          <div className="p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider">Recovery Window (P2)</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE] font-bold">
+                Configurable
+              </span>
+            </div>
+            <div className="text-3xl font-black text-[#111827] font-mono">
+              {policy.max_recovery_window_days} <span className="text-xs text-[#64748B] font-sans font-medium">days cutoff</span>
+            </div>
+            <p className="text-xs text-[#64748B] pt-2 border-t border-[#E5E7EB]">
+              Elapsed time from original failure. Beyond this window, recovery actions cease.
+            </p>
+          </div>
+
+          {/* AI Confidence Threshold */}
+          <div className="p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider">AI Confidence Gate (P3)</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F5F3FF] text-[#7C3AED] border border-[#DDD6FE] font-bold">
+                AI Safety
+              </span>
+            </div>
+            <div className="text-3xl font-black text-[#7C3AED] font-mono">
+              {((policy.min_confidence_threshold ?? 0.75) * 100).toFixed(0)}%
+            </div>
+            <p className="text-xs text-[#64748B] pt-2 border-t border-[#E5E7EB]">
+              AI recommendations below this threshold are held for human operator review.
+            </p>
+          </div>
+
+          {/* High Value Escalation Cap */}
+          <div className="p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider">High Value Gate (P2b)</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A] font-bold">
+                Escalation
+              </span>
+            </div>
+            <div className="text-3xl font-black text-[#111827] font-mono">
+              ₹{(policy.high_value_threshold_inr ?? 10000).toLocaleString('en-IN')}
+            </div>
+            <p className="text-xs text-[#64748B] pt-2 border-t border-[#E5E7EB]">
+              Invoices exceeding this amount require explicit operator approval before debit retry dispatch.
+            </p>
+          </div>
+
+          {/* Customer Contact Cap */}
+          <div className="p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider">Contact Cap (P3b)</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE] font-bold">
+                Anti-Fatigue
+              </span>
+            </div>
+            <div className="text-3xl font-black text-[#111827] font-mono">
+              {policy.max_customer_contacts_per_cycle} <span className="text-xs text-[#64748B] font-sans font-medium">messages</span>
+            </div>
+            <p className="text-xs text-[#64748B] pt-2 border-t border-[#E5E7EB]">
+              Protects customer experience by capping total WhatsApp/SMS links per billing period.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Immutable Deterministic Safety Guardrails Card */}
+      <div className="p-6 rounded-2xl bg-white border border-[#E5E7EB] shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
           <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-blue-600" />
-            <h3 className="text-sm font-bold text-slate-900 font-sans">Policy Revision History</h3>
+            <ShieldCheck className="w-5 h-5 text-[#059669]" />
+            <h3 className="text-sm font-bold text-[#111827] font-sans">
+              Immutable Zero-Tolerance Safety Rules (P0 & P4)
+            </h3>
           </div>
-          <span className="text-xs font-mono font-bold text-slate-500">{history.length} Revisions Recorded</span>
+          <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#F1F5F9] text-[#475569] border border-[#E5E7EB] font-mono font-bold flex items-center gap-1">
+            <Lock className="w-3 h-3" /> HARDCODED SAFETY
+          </span>
         </div>
 
-        {history.length === 0 ? (
-          <div className="py-12 text-center text-xs text-slate-500 font-medium">
-            No policy revision events recorded yet. Updates made via the editor will appear here in the append-only audit trail.
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div className="p-4 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] space-y-1.5 shadow-2xs">
+            <div className="flex items-center gap-2 font-bold text-[#111827]">
+              <span className="w-2 h-2 rounded-full bg-[#E11D48]" />
+              P0 — Hard Decline Auto-Stop
+            </div>
+            <p className="text-[#475569] leading-relaxed text-[11px]">
+              Terminal errors (account closed, card stolen, fraudulent mandate) trigger immediate HALT. Retries are strictly blocked with 0 exceptions.
+            </p>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {history.map((h, idx) => (
-              <div key={h.id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 shadow-2xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900">Policy Updated</span>
-                    <span className="px-2 py-0.5 rounded-full bg-white border border-slate-200 font-mono text-[10px] text-slate-700 font-bold">
-                      Actor: {h.actor}
-                    </span>
-                    {h.correlation_id && (
-                      <span className="font-mono text-[10px] text-slate-400">({h.correlation_id})</span>
-                    )}
-                  </div>
-                  <span className="text-slate-500 text-[11px] font-mono">
-                    {new Date(h.created_at).toLocaleString()}
-                  </span>
-                </div>
 
-                {h.payload?.changed_fields && (
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {h.payload.changed_fields.map((f: string) => (
-                      <span
-                        key={f}
-                        className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-blue-50 text-blue-800 border border-blue-200 font-bold"
-                      >
-                        {f}: {h.payload.previous_state?.[f]} → {h.payload.new_state?.[f]}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="p-4 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] space-y-1.5 shadow-2xs">
+            <div className="flex items-center gap-2 font-bold text-[#111827]">
+              <span className="w-2 h-2 rounded-full bg-[#059669]" />
+              P4 — Bank Working Hours Optimization
+            </div>
+            <p className="text-[#475569] leading-relaxed text-[11px]">
+              Bank retry execution is dynamically aligned with clearing house processing windows (06:00 IST) to maximize mandate debit clearance.
+            </p>
           </div>
-        )}
+        </div>
       </div>
     </motion.div>
   );

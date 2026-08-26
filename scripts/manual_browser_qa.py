@@ -1,4 +1,4 @@
-"""Manual Browser Interactive QA Automation for SmartMandateRetry (Phase 21 Baseline)."""
+"""Manual Browser Interactive QA Automation for SmartMandateRetry (Phase 21 / Pre-Phase-D Baseline)."""
 
 import json
 import os
@@ -42,7 +42,7 @@ def run_browser_qa():
         page.on("requestfailed", lambda req: network_errors.append(f"{req.method} {req.url}: {req.failure}"))
 
         # -------------------------------------------------------------
-        # 1. Dashboard Flow
+        # 1. Dashboard Flow (Operations: Recovery Dashboard)
         # -------------------------------------------------------------
         print("\n--- 1. Dashboard Flow ---")
         page.goto(f"{FRONTEND_URL}/")
@@ -59,7 +59,7 @@ def run_browser_qa():
         record_result("Dashboard", "Macro KPI Render", "PASS", f"Found {len(kpis)} data containers")
 
         # -------------------------------------------------------------
-        # 2. Cases Listing & Navigation Flow
+        # 2. Cases Listing & Navigation Flow (Operations: Recovery Cases)
         # -------------------------------------------------------------
         print("\n--- 2. Cases Listing & Navigation Flow ---")
         page.click("a[href='/cases']")
@@ -98,9 +98,19 @@ def run_browser_qa():
         record_result("Case Detail", "Customer Context & Settlement", "PASS", "Masked customer data and reconciliation status verified")
 
         # -------------------------------------------------------------
-        # 4. Policies & Phase 21 What-If Studio Modal Flow
+        # 4. Analytics Flow (Intelligence: Revenue Analytics)
         # -------------------------------------------------------------
-        print("\n--- 4. Policies & What-If Studio Flow ---")
+        print("\n--- 4. Analytics Flow ---")
+        page.click("a[href='/analytics']")
+        page.wait_for_load_state("networkidle")
+        time.sleep(1)
+        assert "/analytics" in page.url, f"Expected /analytics, got {page.url}"
+        record_result("Analytics", "Analytics Dashboard Flow", "PASS", "Analytics conversion intelligence charts and recovery KPIs rendered")
+
+        # -------------------------------------------------------------
+        # 5. Policies & Phase 21 What-If Studio Modal Flow (Intelligence: Safety Policies)
+        # -------------------------------------------------------------
+        print("\n--- 5. Policies & What-If Studio Flow ---")
         page.click("a[href='/policies']")
         page.wait_for_load_state("networkidle")
         time.sleep(1)
@@ -108,13 +118,13 @@ def run_browser_qa():
         record_result("Policies Console", "Sidebar Navigation", "PASS", f"Navigated to {page.url}")
 
         # Verify Policy Configuration Display
-        page_header = page.locator("h1:has-text('Merchant Safety Policies')")
+        page_header = page.locator("h1:has-text('Merchant Safety Policy Guardrails')")
         assert page_header.count() > 0, "Policies page header missing"
         record_result("Policies Console", "Policy Guardrails Display", "PASS", "Active policy parameters and deterministic safety rules rendered")
 
         # Open What-If Simulation Studio Modal (Phase 21)
-        whatif_btn = page.locator("button:has-text('What-If Studio')").first
-        assert whatif_btn.count() > 0, "What-If Studio button not found on Policies page"
+        whatif_btn = page.locator("button:has-text('What-If Simulator')").first
+        assert whatif_btn.count() > 0, "What-If Simulator button not found on Policies page"
         whatif_btn.click()
         time.sleep(0.8)
 
@@ -145,35 +155,19 @@ def run_browser_qa():
         record_result("What-If Studio (P21)", "Modal Dismissal", "PASS", "Modal closed cleanly")
 
         # -------------------------------------------------------------
-        # 5. Audit Trail Flow
+        # 6. Audit Trail Flow (Governance: Audit Trail)
         # -------------------------------------------------------------
-        print("\n--- 5. Audit Trail Flow ---")
+        print("\n--- 6. Audit Trail Flow ---")
         page.click("a[href='/audit']")
         page.wait_for_load_state("networkidle")
         time.sleep(1)
         assert "/audit" in page.url, f"Expected /audit, got {page.url}"
-        record_result("Audit Trail", "Sidebar Navigation & Table", "PASS", "Audit log trail rendered with correlation IDs")
+        record_result("Audit Trail", "Sidebar Navigation & Table", "PASS", "Immutable audit ledger rendered with correlation IDs")
 
         # -------------------------------------------------------------
-        # 5b. Analytics & Observability Flow
+        # 7. Evaluation Lab & Multi-Tab Workflows (Governance: Evaluation Lab)
         # -------------------------------------------------------------
-        print("\n--- 5b. Analytics & Observability Flow ---")
-        page.click("a[href='/analytics']")
-        page.wait_for_load_state("networkidle")
-        time.sleep(1)
-        assert "/analytics" in page.url, f"Expected /analytics, got {page.url}"
-        record_result("Analytics", "Analytics Dashboard Flow", "PASS", "Analytics performance charts and recovery KPIs rendered")
-
-        page.click("a[href='/observability']")
-        page.wait_for_load_state("networkidle")
-        time.sleep(1)
-        assert "/observability" in page.url, f"Expected /observability, got {page.url}"
-        record_result("Observability", "System Observability Flow", "PASS", "Health gauges, system telemetry, and latency monitors rendered")
-
-        # -------------------------------------------------------------
-        # 6. Evaluation Lab & Multi-Tab Workflows
-        # -------------------------------------------------------------
-        print("\n--- 6. Evaluation Lab & Multi-Tab Workflows ---")
+        print("\n--- 7. Evaluation Lab & Multi-Tab Workflows ---")
         with page.expect_response(lambda r: "/api/v1/evaluation/benchmark" in r.url, timeout=20000):
             page.click("a[href='/evaluation']")
         page.wait_for_load_state("networkidle")
@@ -182,7 +176,7 @@ def run_browser_qa():
         record_result("Evaluation Lab", "Sidebar Navigation", "PASS", f"Navigated to {page.url}")
 
         # Overview Header Cards
-        overview_card = page.locator("h1:has-text('Recovery Intelligence Benchmark'), h1:has-text('Evaluation Lab')")
+        overview_card = page.locator("h1:has-text('Recovery Intelligence Benchmark')")
         assert overview_card.count() > 0, "Evaluation Lab header missing"
         record_result("Evaluation Lab", "Overview & Split Selector", "PASS", "Dataset manifest metrics and run controls rendered")
 
@@ -249,9 +243,9 @@ def run_browser_qa():
             record_result("Evaluation Lab", "Run History Drawer", "PASS", "Historical benchmark run drawer toggled cleanly")
 
         # -------------------------------------------------------------
-        # 7. Responsive Layout & Viewport Verification
+        # 8. Responsive Layout & Viewport Verification
         # -------------------------------------------------------------
-        print("\n--- 7. Responsive Viewport Check ---")
+        print("\n--- 8. Responsive Viewport Check ---")
         page.set_viewport_size({"width": 375, "height": 667})  # Mobile viewport
         time.sleep(0.5)
         page.set_viewport_size({"width": 1440, "height": 900})  # Restore Desktop viewport
