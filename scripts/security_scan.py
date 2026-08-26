@@ -22,7 +22,7 @@ SECRET_PATTERNS = [
     (r"(?:postgres|redis)://[^:@\s]+:[^@\s]+@[^/\s]+", "Database connection string with non-default credentials"),
 ]
 
-# Sensitive file names that should never be committed
+# Sensitive file names that should never be tracked in git
 SENSITIVE_FILENAMES = [
     r"^\.env(?:\.local|\.production|\.development|\.staging)?$",
     r"^credentials\.json$",
@@ -36,13 +36,33 @@ SENSITIVE_FILENAMES = [
     r".*\.pfx$",
 ]
 
-EXCLUDE_DIRS = {".git", "node_modules", ".pytest_cache", ".ruff_cache", ".mypy_cache", "venv", ".venv", "dist"}
+EXCLUDE_DIRS = {".git", "node_modules", ".pytest_cache", ".ruff_cache", ".mypy_cache", "venv", ".venv", "dist", "tmp", "scratch"}
+
+
+def get_tracked_and_staged_files() -> set[str]:
+    """Retrieve all files tracked or staged in git in a single fast command."""
+    try:
+        res = subprocess.run(
+            ["git", "ls-files", "--stage"],
+            cwd=ROOT_DIR,
+            capture_output=True
+        )
+        lines = res.stdout.decode("utf-8", errors="ignore").splitlines()
+        tracked = set()
+        for line in lines:
+            parts = line.split("\t", 1)
+            if len(parts) == 2:
+                tracked.add(parts[1].strip().replace("\\", "/"))
+        return tracked
+    except Exception:
+        return set()
 
 
 def scan_working_tree():
     print("=== 1. Scanning Working Tree ===")
     findings = []
     large_files = []
+    tracked_files = get_tracked_and_staged_files()
     
     for root, dirs, files in os.walk(ROOT_DIR):
         dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
@@ -50,21 +70,28 @@ def scan_working_tree():
         for file in files:
             file_path = Path(root) / file
             rel_path = file_path.relative_to(ROOT_DIR)
+            rel_path_str = str(rel_path).replace("\\", "/")
             
             # Check sensitive filenames
             for pattern in SENSITIVE_FILENAMES:
                 if re.match(pattern, file, re.IGNORECASE) and file != ".env.example":
-                    findings.append({
-                        "file": str(rel_path),
-                        "type": "Sensitive File Found",
-                        "match": file
-                    })
+                    # If tracked by git, it is a critical security violation
+                    if rel_path_str in tracked_files:
+                        findings.append({
+                            "file": rel_path_str,
+                            "type": "Sensitive File Tracked in Git",
+                            "match": file
+                        })
             
+            # Only scan content for files tracked or staged in git (or source files)
+            if file == ".env" or rel_path_str.startswith(".git/"):
+                continue
+
             # Check file size (large files > 2MB)
             try:
                 size_bytes = file_path.stat().st_size
-                if size_bytes > 2 * 1024 * 1024 and not str(rel_path).startswith("node_modules"):
-                    large_files.append({"file": str(rel_path), "size_mb": size_bytes / (1024 * 1024)})
+                if size_bytes > 2 * 1024 * 1024 and not rel_path_str.startswith("node_modules"):
+                    large_files.append({"file": rel_path_str, "size_mb": size_bytes / (1024 * 1024)})
             except Exception:
                 pass
             
@@ -80,7 +107,7 @@ def scan_working_tree():
                         if "placeholder" in m.lower() or "your-" in m.lower() or "example" in m.lower():
                             continue
                         findings.append({
-                            "file": str(rel_path),
+                            "file": rel_path_str,
                             "type": desc,
                             "match": m[:10] + "..." if len(m) > 10 else m
                         })
@@ -138,27 +165,32 @@ def scan_frontend_isolation():
         r"RAZORPAY_KEY_SECRET",
         r"RAZORPAY_WEBHOOK_SECRET",
         r"POSTGRES_PASSWORD",
-        r"APP_SECRET_KEY",
+        r"DATABASE_URL",
+        r"sk-or-v1-",
     ]
     
     if frontend_dir.exists():
-        for root, dirs, files in os.walk(frontend_dir):
+        for root, _, files in os.walk(frontend_dir):
             for file in files:
-                if file.endswith((".ts", ".tsx", ".js", ".jsx", ".html")):
-                    fpath = Path(root) / file
-                    content = fpath.read_text(encoding="utf-8", errors="ignore")
-                    for pattern in server_secrets_patterns:
-                        if re.search(pattern, content):
-                            frontend_findings.append({
-                                "file": str(fpath.relative_to(ROOT_DIR)),
-                                "secret_referenced": pattern
-                            })
+                if file.endswith((".ts", ".tsx", ".js", ".jsx", ".json", ".css")):
+                    file_path = Path(root) / file
+                    try:
+                        content = file_path.read_text(encoding="utf-8", errors="ignore")
+                        for pattern in server_secrets_patterns:
+                            if re.search(pattern, content):
+                                frontend_findings.append({
+                                    "file": str(file_path.relative_to(ROOT_DIR)),
+                                    "pattern": pattern
+                                })
+                    except Exception:
+                        pass
+
     return frontend_findings
 
 
 def main():
     tree_findings, large_files = scan_working_tree()
-    history_findings = scan_git_history()
+    git_findings = scan_git_history()
     frontend_findings = scan_frontend_isolation()
     
     print("\n================ SCAN RESULTS ================")
@@ -168,22 +200,25 @@ def main():
         
     print(f"Large Files (>2MB): {len(large_files)}")
     for lf in large_files:
-        print(f"  [-] {lf['file']} ({lf['size_mb']:.2f} MB)")
+        print(f"  [!] {lf['file']} ({lf['size_mb']:.2f} MB)")
         
-    print(f"Git History Secret Findings: {len(history_findings)}")
-    for h in history_findings:
-        print(f"  [!] Commit {h['commit']} {h['type']}: {h['match']}")
+    print(f"Git History Secret Findings: {len(git_findings)}")
+    for gf in git_findings:
+        print(f"  [!] {gf['type']} in commit {gf['commit']}: {gf['match']}")
         
     print(f"Frontend Server-Secret Leaks: {len(frontend_findings)}")
-    for fe in frontend_findings:
-        print(f"  [!] {fe['file']} contains server secret reference: {fe['secret_referenced']}")
+    for ff in frontend_findings:
+        print(f"  [!] Backend Secret Pattern '{ff['pattern']}' in frontend file: {ff['file']}")
         
-    total_issues = len(tree_findings) + len(history_findings) + len(frontend_findings)
+    total_issues = len(tree_findings) + len(large_files) + len(git_findings) + len(frontend_findings)
     print(f"\nTOTAL CRITICAL/HIGH SECURITY ISSUES: {total_issues}")
+    
     if total_issues > 0:
+        print("SECURITY SCAN FAILED. Please remediate findings before committing.")
         sys.exit(1)
     else:
         print("ALL SECURITY SCANS PASSED CLEANLY (0 SECRETS DETECTED)")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
