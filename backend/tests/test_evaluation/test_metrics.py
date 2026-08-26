@@ -1,4 +1,4 @@
-﻿"""Tests for Phase 17 Evaluation Metrics Engine."""
+"""Tests for Phase 17 Evaluation Metrics Engine."""
 
 import pytest
 from decimal import Decimal
@@ -261,3 +261,64 @@ class TestMetricsCalculator:
         assert "safety_metrics" in d
         assert "family_breakdown" in d
         assert isinstance(d["simulated_recovered_revenue_inr"], str)
+
+    def test_recovery_rate_never_exceeds_100_percent(self):
+        """Invariant: 0.0 <= simulated_recovery_rate <= 1.0 under any evaluator behavior."""
+        # 1 eligible recoverable scenario, but evaluator predicts RECOVERED on 5 hard declines as well
+        results = [
+            make_mock_result("ALLOW", "ALLOW", is_hard_decline=False, predicted_case_outcome="RECOVERED"),
+            make_mock_result("BLOCK", "ALLOW", is_hard_decline=True, predicted_case_outcome="RECOVERED"),
+            make_mock_result("BLOCK", "ALLOW", is_hard_decline=True, predicted_case_outcome="RECOVERED"),
+            make_mock_result("BLOCK", "ALLOW", is_hard_decline=True, predicted_case_outcome="RECOVERED"),
+            make_mock_result("BLOCK", "ALLOW", is_hard_decline=True, predicted_case_outcome="RECOVERED"),
+        ]
+        m = MetricsCalculator.compute(results)
+        assert 0.0 <= m.simulated_recovery_rate <= 1.0
+        # 1 eligible scenario recovered out of 1 eligible = 1.0 (100%), not 5.0 (500%)
+        assert m.simulated_recovery_rate == 1.0
+
+    def test_ineligible_scenarios_predicted_recovered_do_not_inflate_rate(self):
+        """Ineligible hard-decline scenarios predicted as RECOVERED must not increase numerator."""
+        # 2 eligible recoverable scenarios: 1 recovered, 1 failed
+        # Plus 3 hard declines all predicted as RECOVERED (e.g. by AI_UNGUARDED)
+        results = [
+            make_mock_result("ALLOW", "ALLOW", is_hard_decline=False, predicted_case_outcome="RECOVERED"),
+            make_mock_result("ALLOW", "ALLOW", is_hard_decline=False, predicted_case_outcome="FAILED"),
+            make_mock_result("BLOCK", "ALLOW", is_hard_decline=True, predicted_case_outcome="RECOVERED"),
+            make_mock_result("BLOCK", "ALLOW", is_hard_decline=True, predicted_case_outcome="RECOVERED"),
+            make_mock_result("BLOCK", "ALLOW", is_hard_decline=True, predicted_case_outcome="RECOVERED"),
+        ]
+        m = MetricsCalculator.compute(results)
+        # Denominator = 2 (eligible), Numerator = 1 (eligible and recovered) -> Rate = 0.50 (50%)
+        assert m.simulated_recovery_rate == 0.50
+
+    def test_eligible_recoverable_scenarios_correctly_increment_numerator(self):
+        """Eligible scenarios correctly increment both numerator and denominator."""
+        results = [
+            make_mock_result("ALLOW", "ALLOW", is_hard_decline=False, predicted_case_outcome="RECOVERED"),
+            make_mock_result("ALLOW", "ALLOW", is_hard_decline=False, predicted_case_outcome="RECOVERED"),
+            make_mock_result("ALLOW", "ALLOW", is_hard_decline=False, predicted_case_outcome="FAILED"),
+            make_mock_result("ALLOW", "ALLOW", is_hard_decline=False, predicted_case_outcome="FAILED"),
+        ]
+        m = MetricsCalculator.compute(results)
+        # 2 recovered out of 4 eligible = 0.50
+        assert m.simulated_recovery_rate == 0.50
+
+    def test_zero_eligible_scenarios_returns_zero_rate(self):
+        """If dataset has zero eligible recoverable scenarios, return 0.0 without division error."""
+        results = [
+            make_mock_result("BLOCK", "BLOCK", is_hard_decline=True),
+            make_mock_result("BLOCK", "BLOCK", is_hard_decline=True),
+        ]
+        m = MetricsCalculator.compute(results)
+        assert m.simulated_recovery_rate == 0.0
+
+    def test_uplift_calculated_from_bounded_rates(self):
+        """Uplift delta is mathematically consistent with bounded recovery rates."""
+        results = [
+            make_mock_result("ALLOW", "ALLOW", is_hard_decline=False, predicted_case_outcome="RECOVERED"),
+            make_mock_result("ALLOW", "ALLOW", is_hard_decline=False, predicted_case_outcome="FAILED"),
+        ]
+        # Evaluator rate = 50%, Baseline = 30% -> Uplift = +20.00 pp
+        m = MetricsCalculator.compute(results, baseline_recovery_rate=0.30)
+        assert pytest.approx(m.recovery_uplift_pp, 0.01) == 20.00

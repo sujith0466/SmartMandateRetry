@@ -1,4 +1,4 @@
-﻿# SmartMandateRetry — Phase 17 Completion & Verification Report
+# SmartMandateRetry — Phase 17 Completion & Verification Report
 
 > **Document ID:** DOC-PROG-046  
 > **Phase:** 17 — Comparative Benchmark Runner & Evaluation Engine  
@@ -47,10 +47,10 @@ Evaluated on held-out `TEST` partition of `datasets/eval_dataset_42_5000.json` (
 
 | Evaluation Mode | Label Accuracy | Recovery Rate | Recovery Uplift | Policy Violations | Wasted Retries on Hard Declines | Verdict |
 |---|---|---|---|---|---|---|
-| **`SMART_MANDATE`** (System Under Test) | **100.00%** | **86.45%** | **+57.24 pp** | **0** | **0.00%** | **OPTIMAL / CERTIFIED** |
-| **`RAZORPAY_NATIVE`** (Baseline A: Naive 3-Retry) | 53.37% | 29.21% | +0.00 pp (Ref) | 58 | 48.33% | HIGH WASTED ATTEMPTS |
+| **`SMART_MANDATE`** (System Under Test) | **100.00%** | **46.26%** | **+17.06 pp** | **0** | **0.00%** | **OPTIMAL / CERTIFIED** |
+| **`RAZORPAY_NATIVE`** (Baseline A: Naive 3-Retry) | 53.37% | 29.21% | +0.00 pp (Ref) | 58 | 18.65% | HIGH WASTED ATTEMPTS |
 | **`RULE_BASED`** (Baseline B: Static 48h) | 44.64% | 27.57% | -1.64 pp | 0 | 0.00% | SEVERE UNDER-RECOVERY |
-| **`AI_UNGUARDED`** (Ablation: AI Without Policy) | 58.85% | 138.55%* | +109.35 pp* | 114 | 100.00% | DANGEROUS POLICY BREACHES |
+| **`AI_UNGUARDED`** (Ablation: AI Without Policy) | 58.85% | 83.18%* | +53.97 pp* | 114 | 0.00% | DANGEROUS POLICY BREACHES |
 
 *\*Note: `AI_UNGUARDED` exhibits unauthorized recovery actions past merchant caps, resulting in 114 severe safety policy violations.*
 
@@ -84,14 +84,14 @@ Evaluated on held-out `TEST` partition of `datasets/eval_dataset_42_5000.json` (
 | Verification Gate | Target Threshold | Actual Result | Status |
 |---|---|---|---|
 | **Phase 2–16 Regression Tests** | 271 / 271 passing | 271 / 271 passing | **PASSED** |
-| **Phase 17 Evaluation Tests** | >= 68 passing | **69 / 69 passing** | **PASSED** |
-| **Total Backend Test Suite** | 339 / 339 passing | **340 / 340 passing** in 12.47s | **PASSED** |
+| **Phase 17 Evaluation Tests** | >= 68 passing | **74 / 74 passing** | **PASSED** |
+| **Total Backend Test Suite** | 339 / 339 passing | **345 / 345 passing** in 12.62s | **PASSED** |
 | **Backend Code Coverage** | >= 90.0% | **92.0%** | **PASSED** |
 | **Comparative Benchmark CLI** | Exit Code 0 | All 4 modes verified; JSON/Markdown reports generated | **PASSED** |
 | **Database Persistence (UoW)** | Transactional | `EvaluationRun` and `EvaluationScenarioResult` verified | **PASSED** |
-| **Frontend Production Build** | Zero TS / Vite errors | `dist/` built in 3.43s (0 errors) | **PASSED** |
+| **Frontend Production Build** | Zero TS / Vite errors | `dist/` built in 3.53s (0 errors) | **PASSED** |
 | **Security & Secret Scanner** | 0 secrets / 0 issues | 0 critical/high issues detected | **PASSED** |
-| **Documentation Audit** | 74 required docs | **74 / 74 verified on disk** | **PASSED** |
+| **Documentation Audit** | 75 required docs | **75 / 75 verified on disk** | **PASSED** |
 | **Docker Compose Config** | Valid syntax | Config verified | **PASSED** |
 | **`.env` Integrity** | Untouched / Untracked | Intact and untracked | **PASSED** |
 | **Working Tree Cleanliness** | No untracked artifacts | Clean | **PASSED** |

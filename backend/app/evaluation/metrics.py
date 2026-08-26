@@ -1,4 +1,4 @@
-﻿"""Evaluation Metrics Engine for Phase 17 Comparative Benchmark.
+"""Evaluation Metrics Engine for Phase 17 Comparative Benchmark.
 
 Computes comprehensive deterministic classification, safety compliance,
 operational efficiency, and comparative uplift metrics from scenario evaluation results.
@@ -209,14 +209,20 @@ class MetricsCalculator:
             r for r in results
             if r.scenario.recoverability == "RECOVERABLE" and not r.scenario.is_hard_decline
         ]
-        recovered_count = sum(1 for r in results if r.prediction.predicted_case_outcome == "RECOVERED")
+        recovered_count = sum(
+            1 for r in rec_eligible if r.prediction.predicted_case_outcome == "RECOVERED"
+        )
         sim_rec_rate = (
             recovered_count / len(rec_eligible) if len(rec_eligible) > 0 else 0.0
         )
 
         total_rev = sum((r.scenario.recovery_case.amount_inr for r in results), Decimal("0"))
         recovered_rev = sum(
-            (r.scenario.recovery_case.amount_inr for r in results if r.prediction.predicted_case_outcome == "RECOVERED"),
+            (
+                r.scenario.recovery_case.amount_inr
+                for r in rec_eligible
+                if r.prediction.predicted_case_outcome == "RECOVERED"
+            ),
             Decimal("0"),
         )
         rev_rate = float(recovered_rev / total_rev) if total_rev > 0 else 0.0
@@ -342,11 +348,20 @@ class MetricsCalculator:
         for group_name, group_results in sorted(groups.items()):
             n = len(group_results)
             correct = sum(1 for r in group_results if r.is_label_correct)
-            recovered = sum(1 for r in group_results if r.prediction.predicted_case_outcome == "RECOVERED")
+            group_eligible = [
+                r for r in group_results
+                if r.scenario.recoverability == "RECOVERABLE" and not r.scenario.is_hard_decline
+            ]
+            recovered = sum(
+                1 for r in group_eligible
+                if r.prediction.predicted_case_outcome == "RECOVERED"
+            )
+            rec_rate = (recovered / len(group_eligible)) if group_eligible else 0.0
             breakdown[str(group_name)] = {
                 "total": n,
                 "label_accuracy": round(correct / n, 4) if n > 0 else 0.0,
                 "recovered_count": recovered,
+                "recovery_rate": round(rec_rate, 4),
             }
         return breakdown
 
