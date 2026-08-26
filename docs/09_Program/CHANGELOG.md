@@ -11,7 +11,7 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 - **Leakage-Safe Dataset Splitter (`dataset_splitter.py`):** Implemented entity-grouped dataset partitioning (by `synthetic_customer_id`) guaranteeing 0% cross-split leakage across `TRAIN` (70%), `VALIDATION` (15%), and `TEST` (15%) splits.
 - **Manifest Serialization & Integrity (`dataset_manifest.py`):** Added `DatasetManifestManager` with schema validation, family/tier/split distribution summaries, and SHA-256 manifest checksums.
 - **Evaluation CLI Tool (`scripts/generate_eval_dataset.py`):** Added CLI interface with `--seed`, `--n-scenarios`, `--output`, and `--validate` commands.
-- **Comprehensive Evaluation Test Suite (`backend/tests/test_evaluation/`):** 100 new unit tests covering schemas, determinism, scenario families, difficulty tiers, P0–P4 ground truth, leakage safety, manifest round-trips, and performance (<1s for 5,000 scenarios).
+- **Comprehensive Evaluation Test Suite (`backend/tests/test_evaluation/`):** 101 new unit tests covering schemas, determinism, scenario families, difficulty tiers, P0–P4 ground truth, leakage safety, manifest round-trips, full-manifest SHA-256 mutation sensitivity, and performance (<1s for 5,000 scenarios).
 - **Phase Documentation:** Authored `docs/09_Program/PHASE_16_IMPLEMENTATION_PLAN.md` and `docs/09_Program/PHASE_16_COMPLETION_REPORT.md`.
 
 ---

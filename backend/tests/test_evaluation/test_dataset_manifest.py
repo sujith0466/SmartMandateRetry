@@ -1,4 +1,4 @@
-﻿"""Tests for Phase 16 DatasetManifest — serialization, deserialization, integrity."""
+"""Tests for Phase 16 DatasetManifest — serialization, deserialization, integrity."""
 
 import json
 import os
@@ -144,3 +144,12 @@ class TestManifestIntegrity:
         manifest1, manager1 = make_manifest(seed=42, n=50)
         manifest2, manager2 = make_manifest(seed=42, n=50)
         assert manager1.compute_checksum(manifest1) == manager2.compute_checksum(manifest2)
+
+    def test_checksum_changes_on_scenario_mutation(self):
+        manifest1, manager = make_manifest(seed=42, n=50)
+        chk1 = manager.compute_checksum(manifest1)
+        # Modify scenario field in copy
+        manifest2 = manifest1.model_copy(deep=True)
+        manifest2.scenarios[0].customer_profile.tenure_months += 1
+        chk2 = manager.compute_checksum(manifest2)
+        assert chk1 != chk2, "Mutating a scenario field must change the full manifest checksum"

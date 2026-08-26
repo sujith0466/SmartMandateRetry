@@ -1,4 +1,4 @@
-﻿# SmartMandateRetry — Phase 16 Completion & Verification Report
+# SmartMandateRetry — Phase 16 Completion & Verification Report
 
 > **Document ID:** DOC-PROG-044  
 > **Phase:** 16 — Synthetic Scenario Generator & Benchmark Dataset Split  
@@ -33,8 +33,8 @@ All Phase 2–15 functionality remains 100% frozen, untouched, and intact. Phase
 | `TSK-025-10` | Schema & Seed Tests | **COMPLETED** | 26 schema validation tests and 18 seed manager tests in `backend/tests/test_evaluation/`. |
 | `TSK-025-11` | Generator Tests | **COMPLETED** | 22 generator tests covering families, tiers, P0–P4 ground-truth rules, determinism, and performance (<10s). |
 | `TSK-025-12` | Splitter Tests | **COMPLETED** | 14 splitter tests verifying zero entity leakage, split ratios, and family/tier distribution. |
-| `TSK-025-13` | Manifest Tests | **COMPLETED** | 20 manifest tests covering JSON round-trip, corruption rejection, and byte-identical determinism. |
-| `TSK-025-14` | QA & Release Certification | **COMPLETED** | 270/270 backend tests passing, 92% backend coverage, frontend build passed, 0 secrets detected, Docker config valid. |
+| `TSK-025-13` | Manifest Tests | **COMPLETED** | 21 manifest tests covering JSON round-trip, corruption rejection, full-manifest SHA-256 mutation sensitivity, and byte-identical determinism. |
+| `TSK-025-14` | QA & Release Certification | **COMPLETED** | 271/271 backend tests passing, 92% backend coverage, frontend build passed, 0 secrets detected, Docker config valid. |
 
 **Master Task: `TSK-025` — COMPLETED.**
 
@@ -105,8 +105,8 @@ All Phase 2–15 functionality remains 100% frozen, untouched, and intact. Phase
 | Verification Suite | Target Threshold | Actual Result | Verdict |
 |---|---|---|---|
 | **Phase 2–15 Backend Tests** | 170 / 170 passing | 170 / 170 passing | **PASSED** |
-| **Phase 16 Evaluation Tests** | >= 53 passing | **100 / 100 passing** | **PASSED** |
-| **Total Backend Test Suite** | 270 / 270 passing | 270 / 270 passing in 4.10s | **PASSED** |
+| **Phase 16 Evaluation Tests** | >= 53 passing | **101 / 101 passing** | **PASSED** |
+| **Total Backend Test Suite** | 270 / 270 passing | **271 / 271 passing** in 4.15s | **PASSED** |
 | **Backend Code Coverage** | >= 90.0% | **92.0%** | **PASSED** |
 | **Frontend Production Build** | Zero TS / Vite errors | `dist/` built in 3.38s (0 errors) | **PASSED** |
 | **Security & Secret Scanner** | 0 secrets / 0 issues | 0 critical/high issues detected | **PASSED** |

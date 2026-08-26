@@ -1,4 +1,4 @@
-﻿"""Dataset manifest serialization, deserialization, and integrity validation.
+"""Dataset manifest serialization, deserialization, and integrity validation.
 
 The manifest is the authoritative output artifact of Phase 16:
   datasets/eval_dataset_{seed}_{n}.json
@@ -171,15 +171,8 @@ class DatasetManifestManager:
             )
 
     def compute_checksum(self, manifest: DatasetManifest) -> str:
-        """Compute SHA-256 checksum of manifest (excluding scenarios for speed)."""
-        summary = {
-            "seed": manifest.generation_seed,
-            "total_scenarios": manifest.total_scenarios,
-            "split_counts": manifest.split_counts,
-            "family_distribution": manifest.family_distribution,
-            "phase_16_version": manifest.phase_16_version,
-        }
-        content = json.dumps(summary, sort_keys=True)
+        """Compute authoritative SHA-256 checksum across the entire manifest content."""
+        content = json.dumps(manifest.to_dict(), ensure_ascii=False, sort_keys=True)
         return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
     def print_summary(self, manifest: DatasetManifest) -> None:
