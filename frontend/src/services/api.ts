@@ -104,6 +104,16 @@ export async function previewPolicyChanges(proposedData: Partial<MerchantPolicy>
   });
 }
 
+export async function simulatePolicy(
+  proposedData: Partial<MerchantPolicy>,
+  split: string = 'TEST'
+): Promise<import('../types').PolicySimulationResponse> {
+  return request(`/policies/simulate?split=${split}`, {
+    method: 'POST',
+    body: JSON.stringify(proposedData),
+  });
+}
+
 export async function fetchPolicyHistory(limit: number = 20): Promise<import('../types').PolicyHistoryResponse> {
   return request(`/policies/history?limit=${limit}`);
 }

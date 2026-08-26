@@ -136,6 +136,32 @@ export interface PolicyHistoryResponse {
   history: PolicyHistoryItem[];
 }
 
+export interface PolicySimulationResponse {
+  dataset_name: string;
+  split: string;
+  total_scenarios: number;
+  eligible_scenarios: number;
+  recovered_count: number;
+  simulated_recovery_rate: number;
+  baseline_recovery_rate: number;
+  recovery_uplift_pp: number;
+  total_revenue_inr: number;
+  recovered_revenue_inr: number;
+  revenue_recovery_rate: number;
+  veto_count: number;
+  veto_breakdown: {
+    hard_decline_stops: number;
+    retry_cap_vetoes: number;
+    high_value_escalations: number;
+    confidence_vetoes: number;
+    contact_cap_vetoes: number;
+    window_expiry_vetoes: number;
+  };
+  policy_violations: number;
+  simulation_duration_ms: number;
+  policy_config: Record<string, any>;
+}
+
 export interface OverviewMetrics {
   merchant_id?: string;
   total_cases_count: number;

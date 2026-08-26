@@ -65,3 +65,19 @@ def get_policy_history():
     service = _get_service()
     history = service.get_policy_history(merchant_id, limit=limit)
     return jsonify({"merchant_id": merchant_id, "history": history}), 200
+
+
+@policies_bp.route("/simulate", methods=["POST"])
+@require_merchant_auth
+def simulate_policy():
+    """Simulate draft policy against synthetic benchmark dataset without database mutations."""
+    merchant_id = g.merchant_id
+    payload = request.get_json(silent=True)
+    if not payload or not isinstance(payload, dict):
+        raise ValidationError("Request body must be a valid JSON object")
+
+    split = request.args.get("split", "TEST")
+    from app.services.policy_simulation_service import PolicySimulationService
+    sim_service = PolicySimulationService()
+    result = sim_service.simulate(policy_config=payload, split=split)
+    return jsonify(result.to_dict()), 200

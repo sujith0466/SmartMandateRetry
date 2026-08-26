@@ -13,12 +13,14 @@ import {
   History,
   CheckCircle2,
   Users,
+  Sparkles,
 } from 'lucide-react';
 import { fetchPolicies, fetchPolicyHistory } from '../../services/api';
 import { MerchantPolicy, PolicyHistoryItem } from '../../types';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
 import { ToastContainer, ToastMessage } from '../../components/ui/Toast';
 import { PolicyEditorModal } from './PolicyEditorModal';
+import { PolicySimulationModal } from './PolicySimulationModal';
 
 const DETERMINISTIC_RULES = [
   {
@@ -62,6 +64,7 @@ export const PoliciesPage: React.FC = () => {
   const [policy, setPolicy] = useState<MerchantPolicy | null>(null);
   const [history, setHistory] = useState<PolicyHistoryItem[]>([]);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isSimulationOpen, setIsSimulationOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -95,6 +98,7 @@ export const PoliciesPage: React.FC = () => {
 
   const handlePolicySaved = (updated: MerchantPolicy) => {
     setPolicy(updated);
+    setIsEditorOpen(false);
     showToast('Merchant safety policy updated successfully!');
     fetchPolicyHistory()
       .then((h) => setHistory(h.history))
@@ -124,12 +128,23 @@ export const PoliciesPage: React.FC = () => {
       <ToastContainer toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
 
       {policy && (
-        <PolicyEditorModal
-          currentPolicy={policy}
-          isOpen={isEditorOpen}
-          onClose={() => setIsEditorOpen(false)}
-          onSuccess={handlePolicySaved}
-        />
+        <>
+          <PolicyEditorModal
+            currentPolicy={policy}
+            isOpen={isEditorOpen}
+            onClose={() => setIsEditorOpen(false)}
+            onSuccess={handlePolicySaved}
+          />
+          <PolicySimulationModal
+            currentPolicy={policy}
+            isOpen={isSimulationOpen}
+            onClose={() => setIsSimulationOpen(false)}
+            onApplyToDraft={() => {
+              setIsSimulationOpen(false);
+              setIsEditorOpen(true);
+            }}
+          />
+        </>
       )}
 
       {/* Header */}
@@ -146,6 +161,13 @@ export const PoliciesPage: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsSimulationOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-violet-600/20 border border-violet-500/30 hover:bg-violet-600/30 text-violet-300 text-xs font-bold transition-all shadow-sm"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+            What-If Studio
+          </button>
           <button
             onClick={() => setIsEditorOpen(true)}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md transition-colors"
