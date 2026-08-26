@@ -2,6 +2,20 @@
 
 All notable changes to the SmartMandateRetry codebase, specifications, and architecture are documented in this file.
 
+## [Phase 17 Complete] - 2026-08-26
+### Added
+- **Comparative Benchmark Runner & Evaluation Engine (`backend/app/evaluation/`):** Implemented multi-mode evaluation engine evaluating synthetic failure scenarios against certified ground truth without mutating production state.
+- **Four Distinct Evaluation Modes (`evaluation_modes.py`):** Added `SmartMandateEvaluator` (System Under Test with P0–P4 safety gates), `RazorpayNativeEvaluator` (Baseline A naive 3-retry), `RuleBasedEvaluator` (Baseline B static 48h heuristic), and `AIUnguardedEvaluator` (Ablation control bypassing policy gates).
+- **Comprehensive Metrics Engine (`metrics.py`):** Implemented exact policy/action/outcome accuracies, 4-class confusion matrix, precision/recall/F1, macro/weighted F1, zero-tolerance safety rates (`hard_decline_safety_rate`, `retry_cap_safety_rate`, etc.), and comparative recovery uplift calculations.
+- **Evaluation Engine Core (`evaluation_engine.py`):** Implemented scenario runner with split filtering (`TRAIN`, `VALIDATION`, `TEST`, `ALL`), ground-truth comparison, and sub-second execution (<0.04s for 802 test scenarios, <0.3s for 5,000 scenarios).
+- **Database Persistence Service (`persistence.py`):** Implemented `EvaluationPersistenceService` storing `EvaluationRun` and `EvaluationScenarioResult` records transactionally via `UnitOfWork` with expunged detached entity access and zero migrations.
+- **Standardized Report Generator (`report.py`):** Implemented `BenchmarkReportGenerator` producing machine-readable JSON reports and human-readable Markdown summaries ready for Phase 18 Evaluation Lab UI.
+- **Benchmark CLI Tool (`scripts/run_eval_benchmark.py`):** Added standalone CLI supporting `--dataset`, `--split`, `--mode`, `--compare`, `--persist`, `--validate`, and `--output`.
+- **Phase 17 Unit Test Suite (`backend/tests/test_evaluation/`):** Added 69 new unit tests covering mode adapters, metrics calculations, engine execution, persistence, benchmark orchestrator, and CLI exit codes (340 total backend tests, 92% coverage).
+- **Phase Documentation:** Authored `docs/09_Program/PHASE_17_IMPLEMENTATION_PLAN.md` and `docs/09_Program/PHASE_17_COMPLETION_REPORT.md`.
+
+---
+
 ## [Phase 16 Complete] - 2026-08-26
 ### Added
 - **Synthetic Evaluation Scenario Generator Subsystem (`backend/app/evaluation/`):** Implemented deterministic, reproducible, leakage-safe synthetic scenario generator producing realistic failure scenarios across 14 failure families and 4 difficulty tiers (`EASY`, `MEDIUM`, `HARD`, `EDGE`).

@@ -36,7 +36,7 @@ SENSITIVE_FILENAMES = [
     r".*\.pfx$",
 ]
 
-EXCLUDE_DIRS = {".git", "node_modules", ".pytest_cache", ".ruff_cache", ".mypy_cache", "venv", ".venv", "dist", "tmp", "scratch", "datasets"}
+EXCLUDE_DIRS = {".git", "node_modules", ".pytest_cache", ".ruff_cache", ".mypy_cache", "venv", ".venv", "dist", "tmp", "scratch", "datasets", "reports"}
 
 
 def get_tracked_and_staged_files() -> set[str]:

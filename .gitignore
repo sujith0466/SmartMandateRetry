@@ -81,5 +81,6 @@ Thumbs.db
 # Docker
 docker-compose.override.yml
 
-# Phase 16 — Synthetic Evaluation Datasets (never commit generated manifests)
+# Phase 16 & 17 — Evaluation Datasets & Generated Benchmark Reports
 datasets/
+reports/
