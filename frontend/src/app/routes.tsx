@@ -13,21 +13,21 @@ import { LandingPage } from '../features/landing/LandingPage';
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Public Enterprise Landing Page Route */}
-      <Route path="/landing" element={<LandingPage />} />
+      {/* Public Flagship Enterprise Landing Page at root */}
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/landing" element={<Navigate to="/" replace />} />
 
       {/* Merchant Console Operational App Shell */}
-      <Route path="/" element={<Layout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="dashboard" element={<Navigate to="/" replace />} />
-        <Route path="cases" element={<CasesPage />} />
-        <Route path="cases/:caseId" element={<CaseDetailPage />} />
-        <Route path="analytics" element={<AnalyticsPage />} />
-        <Route path="policies" element={<PoliciesPage />} />
-        <Route path="audit" element={<AuditPage />} />
-        <Route path="evaluation" element={<EvaluationPage />} />
-        {/* Redirect legacy /observability to dashboard */}
-        <Route path="observability" element={<Navigate to="/" replace />} />
+      <Route element={<Layout />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/cases" element={<CasesPage />} />
+        <Route path="/cases/:caseId" element={<CaseDetailPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/policies" element={<PoliciesPage />} />
+        <Route path="/audit" element={<AuditPage />} />
+        <Route path="/evaluation" element={<EvaluationPage />} />
+        {/* Legacy redirect */}
+        <Route path="/observability" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>
   );

@@ -32,7 +32,7 @@ const NAV_SECTIONS = [
   {
     title: 'Operations',
     items: [
-      { path: '/', label: 'Recovery Dashboard', icon: LayoutDashboard },
+      { path: '/dashboard', label: 'Recovery Dashboard', icon: LayoutDashboard },
       { path: '/cases', label: 'Recovery Cases', icon: Inbox },
     ],
   },
@@ -80,11 +80,11 @@ export const Layout: React.FC = () => {
       {/* Premium Light-First Sidebar Rail */}
       <aside className="w-64 bg-white border-r border-[#E5E7EB] flex flex-col z-20 select-none shadow-xs">
         {/* Brand Identity Header with Controlled Gradient */}
-        <div className="p-5 border-b border-[#E5E7EB] flex items-center space-x-3">
+        <Link to="/dashboard" className="p-5 border-b border-[#E5E7EB] flex items-center space-x-3 group">
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.15 }}
-            className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#3B5BDB] via-[#7C3AED] to-[#0891B2] flex items-center justify-center text-white font-black text-sm shadow-sm shadow-[#3B5BDB]/20 cursor-default"
+            className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#3B5BDB] via-[#7C3AED] to-[#0891B2] flex items-center justify-center text-white font-black text-sm shadow-sm shadow-[#3B5BDB]/20"
           >
             <Zap className="w-4 h-4 text-white fill-white" />
           </motion.div>
@@ -97,7 +97,7 @@ export const Layout: React.FC = () => {
             </h1>
             <p className="text-[11px] font-medium text-[#64748B]">Autonomous Mandate Recovery</p>
           </div>
-        </div>
+        </Link>
 
         {/* Merchant Workspace Switcher */}
         <div className="px-3 pt-3.5 pb-2 relative">
@@ -159,8 +159,8 @@ export const Layout: React.FC = () => {
               {section.items.map((item) => {
                 const Icon = item.icon;
                 const active =
-                  item.path === '/'
-                    ? location.pathname === '/' || location.pathname === '/dashboard'
+                  item.path === '/dashboard'
+                    ? location.pathname === '/dashboard' || location.pathname === '/dashboard/'
                     : location.pathname.startsWith(item.path);
 
                 return (
@@ -223,13 +223,13 @@ export const Layout: React.FC = () => {
 
           {/* Header Controls & Status */}
           <div className="flex items-center gap-3.5">
-            {/* View Product Landing Page Link */}
+            {/* View Flagship Public Website Link */}
             <Link
-              to="/landing"
+              to="/"
               className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#F7F9FC] border border-[#E5E7EB] text-xs font-bold text-[#475569] hover:text-[#111827] transition-colors shadow-2xs"
             >
               <Globe className="w-3.5 h-3.5 text-[#3B5BDB]" />
-              <span>Product Overview</span>
+              <span>Public Website</span>
             </Link>
 
             {/* Live Webhook Status Chip (Aqua Theme) */}

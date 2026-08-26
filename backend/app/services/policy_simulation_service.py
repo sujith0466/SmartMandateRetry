@@ -91,12 +91,12 @@ class PolicySimulationService:
         path = dataset_path or self.DEFAULT_DATASET_PATH
         if self._cached_manifest is None or dataset_path:
             if os.path.exists(path):
-                manifest = self.manifest_manager.load_manifest(path)
+                manifest = self.manifest_manager.load(path)
             else:
                 # Fallback path lookup in parent or current working dir
                 alt_path = os.path.join(os.getcwd(), "datasets", "eval_dataset_42_5000.json")
                 if os.path.exists(alt_path):
-                    manifest = self.manifest_manager.load_manifest(alt_path)
+                    manifest = self.manifest_manager.load(alt_path)
                 else:
                     from app.evaluation.scenario_generator import ScenarioGenerator
                     from app.evaluation.dataset_splitter import DatasetSplitter

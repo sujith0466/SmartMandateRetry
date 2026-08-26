@@ -29,13 +29,13 @@ export const LandingNavbar: React.FC = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
         scrolled
-          ? 'bg-white/85 backdrop-blur-md border-b border-[#E5E7EB] shadow-xs py-3'
+          ? 'bg-[#FAF8F3]/90 backdrop-blur-md border-b border-[#E8E1D5] shadow-xs py-3.5'
           : 'bg-transparent py-5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 flex items-center justify-between">
-        {/* Brand Logo */}
-        <Link to="/landing" className="flex items-center space-x-3 group select-none">
+        {/* Brand Identity */}
+        <Link to="/" className="flex items-center space-x-3 group select-none">
           <motion.div
             whileHover={reducedMotion ? {} : { scale: 1.05 }}
             transition={{ duration: 0.15 }}
@@ -53,30 +53,33 @@ export const LandingNavbar: React.FC = () => {
           </div>
         </Link>
 
-        {/* Desktop Nav Anchors */}
-        <nav className="hidden md:flex items-center space-x-7 text-xs font-bold text-[#475569]">
+        {/* Desktop Nav Links */}
+        <nav className="hidden lg:flex items-center space-x-8 text-xs font-bold text-[#475569]">
           <button onClick={() => scrollToSection('problem')} className="hover:text-[#111827] transition-colors">
             Problem
+          </button>
+          <button onClick={() => scrollToSection('intelligence')} className="hover:text-[#111827] transition-colors">
+            Intelligence
           </button>
           <button onClick={() => scrollToSection('architecture')} className="hover:text-[#111827] transition-colors">
             Dual-Brain Architecture
           </button>
-          <button onClick={() => scrollToSection('how-it-works')} className="hover:text-[#111827] transition-colors">
-            How It Works
+          <button onClick={() => scrollToSection('lifecycle')} className="hover:text-[#111827] transition-colors">
+            Lifecycle
           </button>
           <button onClick={() => scrollToSection('financials')} className="hover:text-[#111827] transition-colors">
             Financial Impact
           </button>
           <button onClick={() => scrollToSection('trust')} className="hover:text-[#111827] transition-colors">
-            Enterprise Trust
+            Trust & Safety
           </button>
         </nav>
 
-        {/* CTA Actions */}
-        <div className="hidden md:flex items-center space-x-3">
+        {/* Primary CTA Bridge to Merchant Console */}
+        <div className="hidden sm:flex items-center space-x-3">
           <Link
-            to="/"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#3B5BDB] hover:bg-[#3048B8] text-white text-xs font-bold shadow-xs transition-all duration-150"
+            to="/dashboard"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B5BDB] hover:bg-[#3048B8] text-white text-xs font-bold shadow-sm shadow-[#3B5BDB]/20 hover:shadow-md transition-all duration-150"
           >
             <LayoutDashboard className="w-3.5 h-3.5" />
             <span>Open Merchant Console</span>
@@ -87,7 +90,7 @@ export const LandingNavbar: React.FC = () => {
         {/* Mobile Hamburger Toggle */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 rounded-xl bg-white border border-[#E5E7EB] text-[#475569]"
+          className="lg:hidden p-2 rounded-xl bg-white border border-[#E8E1D5] text-[#475569]"
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -98,17 +101,20 @@ export const LandingNavbar: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden bg-white border-b border-[#E5E7EB] px-6 py-5 space-y-4 shadow-lg"
+          className="lg:hidden bg-[#FAF8F3] border-b border-[#E8E1D5] px-6 py-5 space-y-4 shadow-lg"
         >
           <nav className="flex flex-col space-y-3 text-sm font-bold text-[#475569]">
             <button onClick={() => scrollToSection('problem')} className="text-left py-1 hover:text-[#111827]">
               The Problem
             </button>
+            <button onClick={() => scrollToSection('intelligence')} className="text-left py-1 hover:text-[#111827]">
+              Product Intelligence
+            </button>
             <button onClick={() => scrollToSection('architecture')} className="text-left py-1 hover:text-[#111827]">
               Dual-Brain Architecture
             </button>
-            <button onClick={() => scrollToSection('how-it-works')} className="text-left py-1 hover:text-[#111827]">
-              How It Works
+            <button onClick={() => scrollToSection('lifecycle')} className="text-left py-1 hover:text-[#111827]">
+              Recovery Lifecycle
             </button>
             <button onClick={() => scrollToSection('financials')} className="text-left py-1 hover:text-[#111827]">
               Financial Impact
@@ -117,10 +123,10 @@ export const LandingNavbar: React.FC = () => {
               Enterprise Trust
             </button>
           </nav>
-          <div className="pt-3 border-t border-[#E5E7EB]">
+          <div className="pt-3 border-t border-[#E8E1D5]">
             <Link
-              to="/"
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#3B5BDB] text-white text-xs font-bold"
+              to="/dashboard"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#3B5BDB] text-white text-xs font-bold"
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
               <span>Open Merchant Console</span>
