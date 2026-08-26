@@ -34,7 +34,7 @@ export const DecisionAttributionCard: React.FC<DecisionAttributionCardProps> = (
 
   if (loading) {
     return (
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 animate-pulse space-y-3">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 animate-pulse space-y-3 shadow-2xs">
         <div className="h-4 bg-slate-200 rounded w-1/3"></div>
         <div className="h-20 bg-slate-100 rounded-xl"></div>
       </div>
@@ -53,11 +53,11 @@ export const DecisionAttributionCard: React.FC<DecisionAttributionCardProps> = (
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200">
+          <div className="p-2 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-sans">
               Decision Explainability & Factor Attribution
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-mono font-bold border border-slate-200">
                 {attribution.governing_authority}
@@ -72,23 +72,23 @@ export const DecisionAttributionCard: React.FC<DecisionAttributionCardProps> = (
 
       {/* Dual-Brain Decision Flow Pipeline */}
       <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
-        {/* 1. AI Recommendation */}
+        {/* 1. AI Recommendation (Indigo) */}
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 shadow-xs">
-            <Cpu className="w-4 h-4 text-purple-600" />
+          <div className="p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 shadow-2xs">
+            <Cpu className="w-4 h-4" />
           </div>
           <div>
             <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">1. AI Recommendation</span>
             <div className="font-mono font-bold text-slate-900 text-xs mt-0.5">{attribution.ai_action}</div>
-            <span className="text-[11px] font-bold text-purple-700 font-mono">{(attribution.ai_confidence * 100).toFixed(0)}% model confidence</span>
+            <span className="text-[11px] font-bold text-indigo-700 font-mono">{(attribution.ai_confidence * 100).toFixed(0)}% model confidence</span>
           </div>
         </div>
 
         <ArrowRight className="w-4 h-4 text-slate-400 hidden md:block shrink-0" />
 
-        {/* 2. Policy Engine Safety Gate */}
+        {/* 2. Policy Engine Safety Gate (Emerald/Amber/Rose) */}
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className={`p-2.5 rounded-xl border shadow-xs ${
+          <div className={`p-2.5 rounded-xl border shadow-2xs ${
             isBlocked ? 'bg-rose-50 border-rose-200 text-rose-700' :
             isModified ? 'bg-amber-50 border-amber-200 text-amber-700' :
             'bg-emerald-50 border-emerald-200 text-emerald-700'
@@ -108,10 +108,10 @@ export const DecisionAttributionCard: React.FC<DecisionAttributionCardProps> = (
 
         <ArrowRight className="w-4 h-4 text-slate-400 hidden md:block shrink-0" />
 
-        {/* 3. Final Authorized Action */}
+        {/* 3. Final Authorized Action (Royal Blue) */}
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 shadow-xs">
-            {isBlocked ? <ShieldAlert className="w-4 h-4 text-rose-600" /> : <ShieldCheck className="w-4 h-4 text-emerald-600" />}
+          <div className="p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 shadow-2xs">
+            {isBlocked ? <ShieldAlert className="w-4 h-4 text-rose-600" /> : <ShieldCheck className="w-4 h-4 text-blue-600" />}
           </div>
           <div>
             <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">3. Authorized Action</span>
@@ -129,7 +129,7 @@ export const DecisionAttributionCard: React.FC<DecisionAttributionCardProps> = (
             const isPos = fw.impact === 'POSITIVE';
             const isNeg = fw.impact === 'NEGATIVE';
             return (
-              <div key={fw.factor_name} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+              <div key={fw.factor_name} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900">{fw.label}</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
@@ -155,7 +155,7 @@ export const DecisionAttributionCard: React.FC<DecisionAttributionCardProps> = (
 
       {/* Policy Override Explanation / Veto Chain */}
       {attribution.policy_override_explanation && (
-        <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5 shadow-xs">
+        <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5 shadow-2xs">
           <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
           <div>
             <span className="font-bold block mb-0.5 text-amber-950">Safety Gate Override Audit Log</span>

@@ -21,7 +21,7 @@ const MODES: ModeConfig[] = [
     id: 'SMART_MANDATE',
     name: 'SmartMandateRetry',
     badge: 'SYSTEM UNDER TEST',
-    badgeColor: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+    badgeColor: 'bg-blue-50 text-blue-800 border-blue-200',
     description: 'Deterministic P0–P4 policy safety gates with customer-aware recovery selection',
     isSut: true,
   },
@@ -29,7 +29,7 @@ const MODES: ModeConfig[] = [
     id: 'RAZORPAY_NATIVE',
     name: 'Razorpay Native',
     badge: 'BASELINE A',
-    badgeColor: 'bg-blue-50 text-blue-800 border-blue-200',
+    badgeColor: 'bg-cyan-50 text-cyan-800 border-cyan-200',
     description: 'Standard 3-retry naive fixed schedule blindly executed on all active errors',
   },
   {
@@ -68,7 +68,7 @@ export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> =
               key={mode.id}
               className={`rounded-2xl p-5 border transition-all ${
                 mode.isSut
-                  ? 'bg-white border-indigo-300 shadow-md ring-2 ring-indigo-50/50'
+                  ? 'bg-white border-blue-300 shadow-md ring-2 ring-blue-50/70'
                   : 'bg-white border-slate-200 shadow-sm'
               }`}
             >
@@ -112,13 +112,13 @@ export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> =
       <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
         <div className="p-4.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Comparative Benchmark Performance Matrix</h3>
+            <h3 className="text-sm font-bold text-slate-900 font-sans">Comparative Benchmark Performance Matrix</h3>
             <p className="text-xs text-slate-500 mt-0.5">
               Empirical decision accuracy, recovery efficiency, and safety compliance across all 4 modes
             </p>
           </div>
           <div className="text-xs font-bold text-slate-500">
-            Baseline Reference: <span className="text-indigo-600 font-mono">{(baselineRecoveryRate * 100).toFixed(1)}%</span>
+            Baseline Reference: <span className="text-blue-600 font-mono">{(baselineRecoveryRate * 100).toFixed(1)}%</span>
           </div>
         </div>
 
@@ -156,7 +156,7 @@ export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> =
                   <tr
                     key={mode.id}
                     className={`hover:bg-slate-50/80 transition-colors ${
-                      mode.isSut ? 'bg-indigo-50/30 font-semibold' : ''
+                      mode.isSut ? 'bg-blue-50/40 font-semibold' : ''
                     }`}
                   >
                     <td className="py-3.5 px-4">

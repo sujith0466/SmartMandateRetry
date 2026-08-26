@@ -203,7 +203,7 @@ export const EvaluationPage: React.FC = () => {
             <h1 className="text-2xl font-black text-slate-900 tracking-tight font-sans">
               Recovery Intelligence Benchmark
             </h1>
-            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
               5,000 SCENARIOS
             </span>
           </div>
@@ -228,7 +228,7 @@ export const EvaluationPage: React.FC = () => {
                 loadScenarioResultsForRun(runId, 1, scenarioFilters);
               }
             }}
-            className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs"
+            className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500 shadow-2xs"
           >
             <option value="SMART_MANDATE">SmartMandateRetry (System Under Test)</option>
             <option value="RAZORPAY_NATIVE">Razorpay Native (Baseline A)</option>
@@ -259,17 +259,17 @@ export const EvaluationPage: React.FC = () => {
         onOpenHistory={() => setIsHistoryOpen(true)}
       />
 
-      {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-px overflow-x-auto">
+      {/* Navigation Sub-Tabs (Option B Royal Blue) */}
+      <div className="flex items-center gap-1 border-b border-slate-200 pb-px overflow-x-auto">
         <button
           onClick={() => setActiveTab('COMPARATIVE')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'COMPARATIVE'
-              ? 'border-indigo-600 text-indigo-600 bg-white rounded-t-xl shadow-xs'
+              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
               : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
           }`}
         >
-          <Scale className="w-4 h-4 text-indigo-600" />
+          <Scale className="w-4 h-4 text-blue-600" />
           Comparative Benchmark
         </button>
 
@@ -277,7 +277,7 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('SAFETY')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'SAFETY'
-              ? 'border-indigo-600 text-indigo-600 bg-white rounded-t-xl shadow-xs'
+              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
               : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
           }`}
         >
@@ -289,11 +289,11 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('CONFUSION_MATRIX')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'CONFUSION_MATRIX'
-              ? 'border-indigo-600 text-indigo-600 bg-white rounded-t-xl shadow-xs'
+              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
               : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
           }`}
         >
-          <Target className="w-4 h-4 text-sky-600" />
+          <Target className="w-4 h-4 text-cyan-600" />
           Confusion Matrix & F1
         </button>
 
@@ -301,7 +301,7 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('FINANCIAL')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'FINANCIAL'
-              ? 'border-indigo-600 text-indigo-600 bg-white rounded-t-xl shadow-xs'
+              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
               : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
           }`}
         >
@@ -313,7 +313,7 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('DIMENSIONAL')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'DIMENSIONAL'
-              ? 'border-indigo-600 text-indigo-600 bg-white rounded-t-xl shadow-xs'
+              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
               : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
           }`}
         >
@@ -325,7 +325,7 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('TRENDS')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'TRENDS'
-              ? 'border-indigo-600 text-indigo-600 bg-white rounded-t-xl shadow-xs'
+              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
               : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
           }`}
         >
@@ -337,7 +337,7 @@ export const EvaluationPage: React.FC = () => {
           onClick={() => setActiveTab('SCENARIO_EXPLORER')}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'SCENARIO_EXPLORER'
-              ? 'border-indigo-600 text-indigo-600 bg-white rounded-t-xl shadow-xs'
+              ? 'border-blue-600 text-blue-600 bg-white rounded-t-xl shadow-2xs'
               : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
           }`}
         >

@@ -154,7 +154,7 @@ export const PoliciesPage: React.FC = () => {
             <h1 className="text-2xl font-black text-slate-900 tracking-tight font-sans">
               Merchant Safety Policies & Governance
             </h1>
-            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
               Safety Control Center
             </span>
           </div>
@@ -165,21 +165,21 @@ export const PoliciesPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsSimulationOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-50 border border-purple-200 hover:bg-purple-100 text-purple-700 text-xs font-bold transition-all shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition-all shadow-2xs"
           >
-            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
             What-If Studio
           </button>
           <button
             onClick={() => setIsEditorOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors"
           >
             <Edit3 className="w-3.5 h-3.5" />
             Edit Policy
           </button>
           <button
             onClick={loadData}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-2xs"
           >
             <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
             Refresh
@@ -253,17 +253,17 @@ export const PoliciesPage: React.FC = () => {
         <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-3 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">High-Value Threshold</span>
-            <div className="p-2 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200">
+            <div className="p-2 rounded-xl bg-blue-50 text-blue-700 border border-blue-200">
               <Award className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-3xl font-black text-indigo-700 font-sans">
+          <div className="text-3xl font-black text-blue-700 font-sans">
             ₹{policy?.high_value_threshold_inr?.toLocaleString('en-IN') || '10,000'}
           </div>
           <p className="text-xs text-slate-500">Invoices at or above this amount require human escalation.</p>
           <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[11px] text-slate-500">
             <span>Rule: `HIGH_VALUE_ESCALATION`</span>
-            <span className="text-indigo-700 font-bold">Protected</span>
+            <span className="text-blue-700 font-bold">Protected</span>
           </div>
         </div>
 
@@ -309,7 +309,7 @@ export const PoliciesPage: React.FC = () => {
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-sm font-bold text-slate-900">Active Deterministic Safety Rules</h3>
+            <h3 className="text-sm font-bold text-slate-900 font-sans">Active Deterministic Safety Rules</h3>
           </div>
           <span className="text-xs font-mono font-bold text-slate-500">Policy Engine Safety Gates</span>
         </div>
@@ -320,7 +320,7 @@ export const PoliciesPage: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-slate-900">{rule.name}</span>
-                  <span className="text-[10px] font-mono text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full font-bold">
                     {rule.id}
                   </span>
                   <span className="text-[10px] font-bold text-slate-500">[{rule.priority}]</span>
@@ -340,8 +340,8 @@ export const PoliciesPage: React.FC = () => {
       <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-indigo-600" />
-            <h3 className="text-sm font-bold text-slate-900">Policy Revision History</h3>
+            <History className="w-4 h-4 text-blue-600" />
+            <h3 className="text-sm font-bold text-slate-900 font-sans">Policy Revision History</h3>
           </div>
           <span className="text-xs font-mono font-bold text-slate-500">{history.length} Revisions Recorded</span>
         </div>
@@ -353,7 +353,7 @@ export const PoliciesPage: React.FC = () => {
         ) : (
           <div className="space-y-3">
             {history.map((h, idx) => (
-              <div key={h.id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div key={h.id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 shadow-2xs">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-slate-900">Policy Updated</span>
@@ -374,7 +374,7 @@ export const PoliciesPage: React.FC = () => {
                     {h.payload.changed_fields.map((f: string) => (
                       <span
                         key={f}
-                        className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-indigo-50 text-indigo-800 border border-indigo-200 font-bold"
+                        className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-blue-50 text-blue-800 border border-blue-200 font-bold"
                       >
                         {f}: {h.payload.previous_state?.[f]} → {h.payload.new_state?.[f]}
                       </span>

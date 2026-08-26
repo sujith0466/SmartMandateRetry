@@ -75,7 +75,7 @@ export const ObservabilityPage: React.FC = () => {
         </div>
         <button
           onClick={loadData}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-xs"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-2xs"
         >
           <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
           Refresh
@@ -96,12 +96,12 @@ export const ObservabilityPage: React.FC = () => {
 
       {/* Infrastructure Readiness Status */}
       <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
-        <h3 className="text-sm font-bold text-slate-900 tracking-tight">Infrastructure Component Readiness</h3>
+        <h3 className="text-sm font-bold text-slate-900 tracking-tight font-sans">Infrastructure Component Readiness</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between shadow-2xs">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-xs">
-                <Database className="w-5 h-5 text-indigo-600" />
+              <div className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-2xs">
+                <Database className="w-5 h-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-900">PostgreSQL (Neon)</p>
@@ -111,30 +111,30 @@ export const ObservabilityPage: React.FC = () => {
             <Badge state="HEALTHY" variant="emerald" />
           </div>
 
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between shadow-2xs">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-xs">
-                <Server className="w-5 h-5 text-sky-600" />
+              <div className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-2xs">
+                <Server className="w-5 h-5 text-cyan-600" />
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-900">Redis / Celery</p>
                 <p className="text-[11px] text-slate-500 font-mono">{readiness?.checks?.redis || 'Connected'}</p>
               </div>
             </div>
-            <Badge state="READY" variant="indigo" />
+            <Badge state="READY" variant="blue" />
           </div>
 
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between shadow-2xs">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-xs">
-                <Cpu className="w-5 h-5 text-purple-600" />
+              <div className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-2xs">
+                <Cpu className="w-5 h-5 text-indigo-600" />
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-900">OpenRouter AI Provider</p>
                 <p className="text-[11px] text-slate-500 font-mono">{readiness?.checks?.llm_provider || 'Active'}</p>
               </div>
             </div>
-            <Badge state="ACTIVE" variant="emerald" />
+            <Badge state="ACTIVE" variant="indigo" />
           </div>
         </div>
       </div>
@@ -142,7 +142,7 @@ export const ObservabilityPage: React.FC = () => {
       {/* Telemetry Histograms & Operation Latency */}
       <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-sm font-bold text-slate-900">Operation Timing Distributions (ms)</h3>
+          <h3 className="text-sm font-bold text-slate-900 font-sans">Operation Timing Distributions (ms)</h3>
           <span className="text-xs font-mono font-bold text-slate-500">P50 / Latency Profile</span>
         </div>
 
@@ -153,7 +153,7 @@ export const ObservabilityPage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(histograms).map(([name, stat]) => (
-              <div key={name} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div key={name} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 shadow-2xs">
                 <div className="flex justify-between items-center text-xs font-bold">
                   <span className="font-mono text-slate-900">{name}</span>
                   <span className="text-emerald-700 font-mono">{stat.avg} ms avg</span>
@@ -171,7 +171,7 @@ export const ObservabilityPage: React.FC = () => {
       {/* Telemetry Counters Snapshot */}
       <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-sm font-bold text-slate-900">System Telemetry Counters</h3>
+          <h3 className="text-sm font-bold text-slate-900 font-sans">System Telemetry Counters</h3>
           <span className="text-xs font-mono font-bold text-slate-500">Event Frequency</span>
         </div>
 
@@ -184,12 +184,12 @@ export const ObservabilityPage: React.FC = () => {
             {Object.entries(counters).map(([metricKey, val]) => (
               <div
                 key={metricKey}
-                className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs"
+                className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs shadow-2xs"
               >
                 <span className="font-mono font-medium text-slate-700 truncate max-w-[200px]" title={metricKey}>
                   {metricKey}
                 </span>
-                <span className="font-mono font-bold text-indigo-700">{val}</span>
+                <span className="font-mono font-bold text-blue-700">{val}</span>
               </div>
             ))}
           </div>

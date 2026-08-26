@@ -157,7 +157,7 @@ export const CasesPage: React.FC = () => {
               placeholder="Search invoice, customer..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="text-xs pl-8 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 w-44 sm:w-56 shadow-xs transition-colors"
+              className="text-xs pl-8 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 w-44 sm:w-56 shadow-2xs transition-colors"
             />
           </form>
 
@@ -165,7 +165,7 @@ export const CasesPage: React.FC = () => {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 font-bold focus:outline-none focus:border-indigo-500 shadow-xs"
+            className="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 font-bold focus:outline-none focus:border-blue-500 shadow-2xs"
           >
             <option value="">All Failure Types</option>
             <option value="TEMPORARY">Soft Decline (Insufficient Funds)</option>
@@ -178,25 +178,25 @@ export const CasesPage: React.FC = () => {
           <button
             onClick={handleExportCsv}
             disabled={isExporting}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-xs disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-2xs disabled:opacity-50"
             title="Export CSV"
           >
-            <Download className="w-3.5 h-3.5 text-indigo-600" />
+            <Download className="w-3.5 h-3.5 text-blue-600" />
             <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
           </button>
 
           {/* Refresh Button */}
           <button
             onClick={() => loadCases(pagination.page)}
-            className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors shadow-xs"
+            className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors shadow-2xs"
             title="Refresh"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-blue-600' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Filter Tabs Navigation */}
+      {/* Filter Tabs Navigation (Option B Royal Blue) */}
       <div className="flex items-center border-b border-slate-200 space-x-1">
         {[
           { id: 'all', label: 'All Ingested Cases', icon: Layers },
@@ -212,11 +212,11 @@ export const CasesPage: React.FC = () => {
               onClick={() => handleTabChange(t.id as TabType)}
               className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition-all ${
                 isActive
-                  ? 'border-indigo-600 text-indigo-600 bg-white shadow-xs rounded-t-xl'
+                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs rounded-t-xl'
                   : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
               <span>{t.label}</span>
             </button>
           );
@@ -275,7 +275,7 @@ export const CasesPage: React.FC = () => {
                   return (
                     <tr key={c.id} className="hover:bg-slate-50/80 transition-colors group">
                       <td className="px-5 py-4">
-                        <div className="font-mono font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                        <div className="font-mono font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                           {c.invoice_id}
                         </div>
                         <div className="text-[11px] text-slate-400 font-mono">{c.id.slice(0, 16)}...</div>
@@ -309,7 +309,7 @@ export const CasesPage: React.FC = () => {
                       <td className="px-5 py-4 text-right">
                         <Link
                           to={`/cases/${c.id}`}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white font-bold text-xs transition-all shadow-xs"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-blue-600 text-white font-bold text-xs transition-all shadow-2xs"
                         >
                           Inspect
                           <ArrowUpRight className="w-3.5 h-3.5" />
@@ -333,14 +333,14 @@ export const CasesPage: React.FC = () => {
             <button
               onClick={() => loadCases(pagination.page - 1)}
               disabled={pagination.page <= 1}
-              className="p-1.5 rounded-xl border border-slate-200 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-700 transition-colors shadow-xs"
+              className="p-1.5 rounded-xl border border-slate-200 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-700 transition-colors shadow-2xs"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => loadCases(pagination.page + 1)}
               disabled={pagination.page >= pagination.pages}
-              className="p-1.5 rounded-xl border border-slate-200 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-700 transition-colors shadow-xs"
+              className="p-1.5 rounded-xl border border-slate-200 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-700 transition-colors shadow-2xs"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

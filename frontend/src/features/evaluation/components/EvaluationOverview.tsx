@@ -39,15 +39,15 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
       {/* Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4.5 rounded-2xl bg-white border border-slate-200 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shadow-2xs">
             <Database className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-slate-900">
+              <h2 className="text-sm font-bold text-slate-900 font-sans">
                 {activeRun?.dataset_name || summary?.dataset.name || 'eval_dataset_42_5000'}
               </h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-mono">
                 SEED {summary?.dataset.seed || 42}
               </span>
             </div>
@@ -59,7 +59,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
 
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Split Selector */}
-          <div className="flex items-center rounded-xl bg-slate-100 border border-slate-200 p-1">
+          <div className="flex items-center rounded-xl bg-slate-100 border border-slate-200 p-1 shadow-2xs">
             {(['TEST', 'VALIDATION', 'TRAIN', 'ALL'] as const).map((s) => (
               <button
                 key={s}
@@ -77,7 +77,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
 
           <button
             onClick={onOpenHistory}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold transition-all shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold transition-all shadow-2xs"
           >
             <History className="w-3.5 h-3.5 text-slate-400" />
             Runs ({summary?.total_runs || 0})
@@ -85,7 +85,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
 
           <button
             onClick={onRefresh}
-            className="p-2 rounded-xl bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition-all shadow-xs"
+            className="p-2 rounded-xl bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 transition-all shadow-2xs"
             title="Refresh Evaluation Data"
           >
             <RotateCw className="w-3.5 h-3.5" />
@@ -94,7 +94,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
           <button
             onClick={onRunBenchmark}
             disabled={isRunningBenchmark}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isRunningBenchmark ? (
               <>
@@ -118,7 +118,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
           value={`${labelAccuracy}%`}
           subtitle={`${totalEvaluated.toLocaleString()} scenarios (${selectedSplit} split)`}
           icon={ShieldCheck}
-          variant="indigo"
+          variant="blue"
         />
 
         <StatCard
@@ -134,7 +134,7 @@ export const EvaluationOverview: React.FC<EvaluationOverviewProps> = ({
           value={upliftPp}
           subtitle="Percentage points over 3-retry baseline"
           icon={Layers}
-          variant="violet"
+          variant="indigo"
         />
 
         <StatCard

@@ -77,54 +77,56 @@ export const Layout: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] text-slate-900 antialiased overflow-hidden font-sans">
-      {/* Premium Deep-Navy Sidebar Rail */}
-      <aside className="w-64 bg-[#0B132B] border-r border-[#1C2541] flex flex-col z-20 shadow-xl select-none">
+      {/* Light-First Premium Sidebar Rail */}
+      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col z-20 select-none shadow-xs">
         {/* Brand Identity Header */}
-        <div className="p-5 border-b border-[#1C2541] flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-indigo-500 flex items-center justify-center text-slate-950 font-black text-sm shadow-glow-emerald">
-            <Zap className="w-4 h-4 text-slate-950 fill-slate-950" />
+        <div className="p-5 border-b border-slate-100 flex items-center space-x-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-blue-500 to-cyan-400 flex items-center justify-center text-white font-black text-sm shadow-sm shadow-blue-500/20">
+            <Zap className="w-4 h-4 text-white fill-white" />
           </div>
           <div>
-            <h1 className="text-sm font-extrabold tracking-tight text-white flex items-center gap-1.5 font-sans">
+            <h1 className="text-sm font-extrabold tracking-tight text-slate-900 flex items-center gap-1.5 font-sans">
               SmartMandate
-              <span className="text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
                 PRO
               </span>
             </h1>
-            <p className="text-[11px] font-medium text-slate-400">Autonomous Mandate Recovery</p>
+            <p className="text-[11px] font-medium text-slate-500">Autonomous Mandate Recovery</p>
           </div>
         </div>
 
-        {/* Merchant Workspace Switcher */}
+        {/* Merchant Workspace Switcher (Light-First) */}
         <div className="px-3 pt-3.5 pb-2 relative">
           <button
             onClick={() => setIsTenantOpen(!isTenantOpen)}
-            className="w-full px-3 py-2.5 rounded-xl bg-[#1C2541]/70 hover:bg-[#1C2541] border border-slate-700/60 hover:border-slate-600 flex items-center justify-between transition-colors text-left group"
+            className="w-full px-3 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200 flex items-center justify-between transition-colors text-left group shadow-2xs"
           >
             <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
+              <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
                 <Building2 className="w-3.5 h-3.5" />
               </div>
               <div className="truncate">
-                <div className="text-xs font-bold text-slate-100 truncate group-hover:text-white">{currentMerchant.name}</div>
-                <div className="text-[10px] font-medium text-slate-400">{currentMerchant.badge}</div>
+                <div className="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                  {currentMerchant.name}
+                </div>
+                <div className="text-[10px] font-medium text-slate-500">{currentMerchant.badge}</div>
               </div>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0 group-hover:text-white" />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0 group-hover:text-slate-600 transition-colors" />
           </button>
 
           {isTenantOpen && (
-            <div className="absolute top-full left-3 right-3 mt-1.5 bg-[#0F172A] border border-slate-700 rounded-xl shadow-2xl z-50 py-1 overflow-hidden">
+            <div className="absolute top-full left-3 right-3 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1 overflow-hidden">
               {AVAILABLE_MERCHANTS.map((m) => (
                 <button
                   key={m.id}
                   onClick={() => handleSelectMerchant(m.id)}
-                  className={`w-full px-3 py-2.5 text-left text-xs flex items-center justify-between hover:bg-slate-800 transition-colors ${
-                    m.id === activeMerchant ? 'text-indigo-300 font-bold bg-indigo-950/40' : 'text-slate-300'
+                  className={`w-full px-3 py-2.5 text-left text-xs flex items-center justify-between hover:bg-slate-50 transition-colors ${
+                    m.id === activeMerchant ? 'text-blue-600 font-bold bg-blue-50/80' : 'text-slate-700'
                   }`}
                 >
                   <span className="truncate">{m.name}</span>
-                  <span className="text-[10px] text-slate-500 font-mono shrink-0 ml-2">{m.badge}</span>
+                  <span className="text-[10px] text-slate-400 font-mono shrink-0 ml-2">{m.badge}</span>
                 </button>
               ))}
             </div>
@@ -149,15 +151,15 @@ export const Layout: React.FC = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center px-3 py-2 text-xs font-bold rounded-xl transition-all duration-150 ${
+                    className={`flex items-center px-3 py-2 text-xs font-bold rounded-xl transition-all duration-150 group ${
                       active
-                        ? 'bg-indigo-600 text-white shadow-sm'
-                        : 'text-slate-300 hover:bg-[#1C2541]/70 hover:text-white'
+                        ? 'bg-blue-50 text-blue-600 border border-blue-200/80 shadow-xs'
+                        : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
                     }`}
                   >
                     <Icon
                       className={`w-4 h-4 mr-2.5 transition-colors ${
-                        active ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'
+                        active ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'
                       }`}
                     />
                     <span>{item.label}</span>
@@ -168,14 +170,14 @@ export const Layout: React.FC = () => {
           ))}
         </nav>
 
-        {/* Integration Environment Status Footer */}
-        <div className="p-3 border-t border-[#1C2541] bg-[#070D1E]">
+        {/* Integration Environment Status Footer (Light-First) */}
+        <div className="p-3 border-t border-slate-200 bg-slate-50/80">
           <div className="flex items-center justify-between text-xs font-medium">
-            <span className="flex items-center gap-1.5 text-emerald-400 font-bold text-[11px]">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="flex items-center gap-1.5 text-emerald-700 font-bold text-[11px]">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               Gateway: Active
             </span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-bold font-mono">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200 font-bold font-mono shadow-2xs">
               Sandbox
             </span>
           </div>
@@ -194,17 +196,17 @@ export const Layout: React.FC = () => {
               placeholder="Search invoice, customer email, case ID..."
               value={globalSearch}
               onChange={(e) => setGlobalSearch(e.target.value)}
-              className="w-full text-xs pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
+              className="w-full text-xs pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
             />
           </form>
 
           {/* Header Controls & Status */}
           <div className="flex items-center gap-4">
-            {/* Live Webhook Health Chip */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            {/* Live Webhook Health Chip (Cyan Accent) */}
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-50/50 border border-cyan-200 text-xs">
+              <span className="w-2 h-2 rounded-full bg-cyan-500" />
               <span className="font-semibold text-slate-700">Webhook Engine:</span>
-              <span className="font-mono font-bold text-emerald-700">Online (SSL)</span>
+              <span className="font-mono font-bold text-cyan-800">Online (SSL)</span>
             </div>
 
             {/* Notification Bell */}
@@ -219,7 +221,7 @@ export const Layout: React.FC = () => {
 
             {/* Merchant User Profile Avatar */}
             <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
-              <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm shadow-blue-500/20">
                 SM
               </div>
               <div className="hidden lg:block text-left">

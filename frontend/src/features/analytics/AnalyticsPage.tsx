@@ -87,7 +87,7 @@ export const AnalyticsPage: React.FC = () => {
         </div>
         <button
           onClick={loadData}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-xs"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors shadow-2xs"
         >
           <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
           Refresh
@@ -121,7 +121,7 @@ export const AnalyticsPage: React.FC = () => {
           value={`${recoveryRate.toFixed(1)}%`}
           subtitle={`${recoveredCases} settled of ${totalCases} mandate failures`}
           icon={Percent}
-          variant="indigo"
+          variant="blue"
           delay={0.05}
         />
         <StatCard
@@ -137,7 +137,7 @@ export const AnalyticsPage: React.FC = () => {
           value="14.2 hrs"
           subtitle="Optimal timing window attribution"
           icon={Activity}
-          variant="amber"
+          variant="cyan"
           delay={0.15}
         />
       </div>
@@ -148,18 +148,18 @@ export const AnalyticsPage: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-indigo-600" />
-              <h3 className="text-sm font-bold text-slate-900">Recovery Strategy Performance</h3>
+              <Zap className="w-4 h-4 text-blue-600" />
+              <h3 className="text-sm font-bold text-slate-900 font-sans">Recovery Strategy Performance</h3>
             </div>
             <span className="text-xs text-slate-500 font-mono font-semibold">By Channel</span>
           </div>
 
           <div className="space-y-4">
             {/* Smart Payment Link */}
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5 shadow-2xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-indigo-100 text-indigo-700">
+                  <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
                     <Smartphone className="w-4 h-4" />
                   </div>
                   <div>
@@ -169,7 +169,7 @@ export const AnalyticsPage: React.FC = () => {
                 </div>
                 <span className="text-xs font-black font-mono text-emerald-700">₹24,498 Recovered</span>
               </div>
-              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200/80 text-center">
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200 text-center">
                 <div>
                   <span className="text-[10px] text-slate-500 uppercase font-bold">Dispatched</span>
                   <p className="text-xs font-bold text-slate-800">6 links</p>
@@ -186,10 +186,10 @@ export const AnalyticsPage: React.FC = () => {
             </div>
 
             {/* Automated Mandate Retry */}
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5 shadow-2xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700">
+                  <div className="p-2 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">
                     <RefreshCw className="w-4 h-4" />
                   </div>
                   <div>
@@ -199,7 +199,7 @@ export const AnalyticsPage: React.FC = () => {
                 </div>
                 <span className="text-xs font-black font-mono text-emerald-700">₹4,999 Recovered</span>
               </div>
-              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200/80 text-center">
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200 text-center">
                 <div>
                   <span className="text-[10px] text-slate-500 uppercase font-bold">Scheduled</span>
                   <p className="text-xs font-bold text-slate-800">4 attempts</p>
@@ -210,7 +210,7 @@ export const AnalyticsPage: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-500 uppercase font-bold">Frictionless</span>
-                  <p className="text-xs font-bold text-indigo-700">100% Zero-Touch CX</p>
+                  <p className="text-xs font-bold text-blue-700">100% Zero-Touch CX</p>
                 </div>
               </div>
             </div>
@@ -222,7 +222,7 @@ export const AnalyticsPage: React.FC = () => {
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
               <PieChart className="w-4 h-4 text-emerald-600" />
-              <h3 className="text-sm font-bold text-slate-900">Recovery Yield by Failure Type</h3>
+              <h3 className="text-sm font-bold text-slate-900 font-sans">Recovery Yield by Failure Type</h3>
             </div>
             <span className="text-xs text-slate-500 font-mono font-semibold">Conversion Matrix</span>
           </div>
@@ -234,7 +234,7 @@ export const AnalyticsPage: React.FC = () => {
               { label: 'Bank Server Downtime / Network Limit', total: 3, rec: 1, amt: '₹4,999', rate: '33.3%' },
               { label: 'Hard Decline (Account Closed / Stolen)', total: 2, rec: 0, amt: '₹0', rate: '0% (Auto-Stopped)' },
             ].map((cat) => (
-              <div key={cat.label} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+              <div key={cat.label} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 shadow-2xs">
                 <div className="flex justify-between text-xs font-bold">
                   <span className="text-slate-900">{cat.label}</span>
                   <span className="text-emerald-700 font-mono font-black">{cat.amt}</span>
@@ -255,27 +255,27 @@ export const AnalyticsPage: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-indigo-600" />
-              <h3 className="text-sm font-bold text-slate-900">Amount Tier Segmentation</h3>
+              <Layers className="w-4 h-4 text-blue-600" />
+              <h3 className="text-sm font-bold text-slate-900 font-sans">Amount Tier Segmentation</h3>
             </div>
             <span className="text-xs text-slate-500 font-mono font-semibold">Volume vs Yield</span>
           </div>
 
           <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1 shadow-2xs">
               <span className="text-[10px] text-slate-500 font-bold uppercase">Micro (&lt;₹2,000)</span>
               <p className="text-lg font-black text-slate-900">2 Cases</p>
-              <p className="text-xs font-bold text-emerald-700">₹1,499 (50%)</p>
+              <p className="text-xs font-bold text-emerald-700 font-mono">₹1,499 (50%)</p>
             </div>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1 shadow-2xs">
               <span className="text-[10px] text-slate-500 font-bold uppercase">Standard (₹2k-10k)</span>
               <p className="text-lg font-black text-slate-900">10 Cases</p>
-              <p className="text-xs font-bold text-emerald-700">₹15,998 (40%)</p>
+              <p className="text-xs font-bold text-emerald-700 font-mono">₹15,998 (40%)</p>
             </div>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1 shadow-2xs">
               <span className="text-[10px] text-slate-500 font-bold uppercase">High Value (&gt;₹10k)</span>
               <p className="text-lg font-black text-slate-900">4 Cases</p>
-              <p className="text-xs font-bold text-emerald-700">₹12,000 (25%)</p>
+              <p className="text-xs font-bold text-emerald-700 font-mono">₹12,000 (25%)</p>
             </div>
           </div>
         </div>
@@ -285,7 +285,7 @@ export const AnalyticsPage: React.FC = () => {
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <h3 className="text-sm font-bold text-slate-900">Safety & Compliance Guardrails</h3>
+              <h3 className="text-sm font-bold text-slate-900 font-sans">Safety & Compliance Guardrails</h3>
             </div>
             <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold font-mono">
               0 Violations
@@ -293,7 +293,7 @@ export const AnalyticsPage: React.FC = () => {
           </div>
 
           <div className="space-y-2.5">
-            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
               <div className="flex items-center gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span className="text-xs text-slate-800 font-bold">Hard Decline Penalty Saves</span>
@@ -301,15 +301,15 @@ export const AnalyticsPage: React.FC = () => {
               <span className="text-xs font-bold font-mono text-slate-900">2 Hard Stops Enforced</span>
             </div>
 
-            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
                 <span className="text-xs text-slate-800 font-bold">High-Value Enterprise Gate</span>
               </div>
               <span className="text-xs font-bold font-mono text-slate-900">3 Manual Approvals</span>
             </div>
 
-            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
               <div className="flex items-center gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
                 <span className="text-xs text-slate-800 font-bold">Customer Contact Fatigue Caps</span>

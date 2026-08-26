@@ -86,11 +86,11 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
           {/* Modal Header */}
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200">
+              <div className="p-2 rounded-xl bg-blue-50 text-blue-700 border border-blue-200">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-slate-900 font-sans">
                   {step === 'EDIT' ? 'Configure Recovery Safety Rules' : 'Review & Confirm Policy Updates'}
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -107,7 +107,7 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
 
           {/* Error Banner */}
           {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center gap-2">
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center gap-2 shadow-2xs">
               <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
               <span>{error}</span>
             </div>
@@ -118,9 +118,9 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
             <form onSubmit={handleProceedToPreview} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Max Retries */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-indigo-600" />
+                    <Lock className="w-3.5 h-3.5 text-blue-600" />
                     Max Retries Cap (1 - 10)
                   </label>
                   <input
@@ -129,16 +129,16 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
                     max={10}
                     value={formData.max_retries_per_case}
                     onChange={(e) => handleInputChange('max_retries_per_case', parseInt(e.target.value) || 1)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
                     required
                   />
                   <p className="text-[10px] text-slate-500 font-medium">Max execution attempts before auto-stop</p>
                 </div>
 
                 {/* Min Retry Interval */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-indigo-600" />
+                    <Clock className="w-3.5 h-3.5 text-blue-600" />
                     Min Spacing (Hours: 1 - 168)
                   </label>
                   <input
@@ -147,16 +147,16 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
                     max={168}
                     value={formData.min_retry_interval_hours}
                     onChange={(e) => handleInputChange('min_retry_interval_hours', parseInt(e.target.value) || 1)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
                     required
                   />
                   <p className="text-[10px] text-slate-500 font-medium">Spacing between successive retry executions</p>
                 </div>
 
                 {/* Recovery Window */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Scale className="w-3.5 h-3.5 text-indigo-600" />
+                    <Scale className="w-3.5 h-3.5 text-blue-600" />
                     Recovery Window (Days: 1 - 60)
                   </label>
                   <input
@@ -165,16 +165,16 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
                     max={60}
                     value={formData.max_recovery_window_days}
                     onChange={(e) => handleInputChange('max_recovery_window_days', parseInt(e.target.value) || 1)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
                     required
                   />
                   <p className="text-[10px] text-slate-500 font-medium">Days before an unrecovered case expires</p>
                 </div>
 
                 {/* High Value Escalation */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Award className="w-3.5 h-3.5 text-indigo-600" />
+                    <Award className="w-3.5 h-3.5 text-blue-600" />
                     High-Value Threshold (INR)
                   </label>
                   <input
@@ -183,16 +183,16 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
                     step={100}
                     value={formData.high_value_threshold_inr}
                     onChange={(e) => handleInputChange('high_value_threshold_inr', parseFloat(e.target.value) || 0)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
                     required
                   />
                   <p className="text-[10px] text-slate-500 font-medium">Invoices at or above this require review</p>
                 </div>
 
                 {/* AI Confidence Minimum */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
                     Min AI Confidence (0.00 - 1.00)
                   </label>
                   <input
@@ -202,16 +202,16 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
                     step={0.05}
                     value={formData.min_confidence_threshold}
                     onChange={(e) => handleInputChange('min_confidence_threshold', parseFloat(e.target.value) || 0.0)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
                     required
                   />
                   <p className="text-[10px] text-slate-500 font-medium">AI decisions below this score are vetoed</p>
                 </div>
 
                 {/* Max Customer Contacts */}
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
                   <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-indigo-600" />
+                    <Users className="w-3.5 h-3.5 text-blue-600" />
                     Max Contacts Per Cycle (1 - 10)
                   </label>
                   <input
@@ -220,7 +220,7 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
                     max={10}
                     value={formData.max_customer_contacts_per_cycle}
                     onChange={(e) => handleInputChange('max_customer_contacts_per_cycle', parseInt(e.target.value) || 1)}
-                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs font-mono px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-blue-500 shadow-2xs"
                     required
                   />
                   <p className="text-[10px] text-slate-500 font-medium">Cap on customer communication triggers</p>
@@ -228,7 +228,7 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
               </div>
 
               {/* Hard Decline Auto Stop */}
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between shadow-2xs">
                 <div className="space-y-0.5">
                   <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                     <ShieldAlert className="w-4 h-4 text-rose-600" />
@@ -242,7 +242,7 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
                   type="checkbox"
                   checked={formData.hard_decline_auto_stop}
                   onChange={(e) => handleInputChange('hard_decline_auto_stop', e.target.checked)}
-                  className="w-4 h-4 text-emerald-600 rounded bg-white border-slate-300 focus:ring-emerald-500"
+                  className="w-4 h-4 text-blue-600 rounded bg-white border-slate-300 focus:ring-blue-500"
                 />
               </div>
 
@@ -258,7 +258,7 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors disabled:opacity-50"
                 >
                   <span>Preview Changes</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -271,7 +271,7 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
           {step === 'PREVIEW' && (
             <div className="space-y-4">
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Parameter Diffs</h4>
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-sans">Parameter Diffs</h4>
                 {preview?.diffs.length === 0 ? (
                   <div className="p-4 bg-slate-50 rounded-xl text-xs text-slate-500 text-center">
                     No parameter changes detected.
@@ -281,7 +281,7 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
                     {preview?.diffs.map((d) => (
                       <div
                         key={d.field}
-                        className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs"
+                        className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs shadow-2xs"
                       >
                         <span className="font-bold text-slate-800">{d.label}</span>
                         <div className="flex items-center gap-2 font-mono">
@@ -301,11 +301,11 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
 
               {/* Safety Impact Analysis */}
               <div className="space-y-2">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Safety Impact Analysis</h4>
-                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-sans">Safety Impact Analysis</h4>
+                <div className="space-y-1.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 shadow-2xs">
                   {preview?.impact_notes.map((note, idx) => (
                     <div key={idx} className="flex items-start gap-2 text-xs text-slate-700 font-medium">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
                       <span>{note}</span>
                     </div>
                   ))}
@@ -333,7 +333,7 @@ export const PolicyEditorModal: React.FC<PolicyEditorModalProps> = ({
                     type="button"
                     onClick={handleConfirmSave}
                     disabled={loading}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors disabled:opacity-50"
                   >
                     {loading ? 'Saving...' : 'Confirm & Apply Policy'}
                   </button>
