@@ -64,6 +64,7 @@ REQUIRED_DOCS = [
     "docs/09_Program/PHASE_09_IMPLEMENTATION_PLAN.md",
     "docs/09_Program/PHASE_09_COMPLETION_REPORT.md",
     "docs/09_Program/PHASE_10_IMPLEMENTATION_PLAN.md",
+    "docs/09_Program/PHASE_10_COMPLETION_REPORT.md",
 ]
 
 

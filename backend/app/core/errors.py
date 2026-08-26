@@ -77,6 +77,42 @@ class IdempotencyConflictError(AppError):
         )
 
 
+class InvalidStateTransitionError(AppError):
+    """Raised when an invalid state machine transition is attempted."""
+
+    def __init__(self, from_state: str, to_state: str, details: Optional[Dict[str, Any]] = None) -> None:
+        super().__init__(
+            message=f"Invalid state transition from '{from_state}' to '{to_state}'",
+            status_code=422,
+            error_code="INVALID_STATE_TRANSITION",
+            details=details or {"from_state": from_state, "to_state": to_state}
+        )
+
+
+class TerminalStateError(AppError):
+    """Raised when a mutation is attempted on a case in a terminal state."""
+
+    def __init__(self, state: str, attempted_transition: Optional[str] = None) -> None:
+        super().__init__(
+            message=f"Cannot transition case in terminal state '{state}'",
+            status_code=422,
+            error_code="TERMINAL_STATE_VIOLATION",
+            details={"state": state, "attempted_transition": attempted_transition}
+        )
+
+
+class StateConsistencyError(AppError):
+    """Raised when cross-aggregate invariant validation fails."""
+
+    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None) -> None:
+        super().__init__(
+            message=f"State consistency violation: {message}",
+            status_code=422,
+            error_code="STATE_CONSISTENCY_VIOLATION",
+            details=details
+        )
+
+
 def register_error_handlers(app: Flask) -> None:
     """Attach global error handlers to the Flask application."""
 

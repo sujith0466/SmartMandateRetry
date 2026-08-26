@@ -7,6 +7,7 @@ from app.services.failure_intelligence_service import FailureIntelligenceService
 from app.services.policy_engine_service import PolicyEngineService
 from app.services.reconciliation_service import ReconciliationService
 from app.services.recovery_execution_service import RecoveryExecutionService
+from app.services.state_transition_service import StateTransitionService
 from app.services.webhook_service import WebhookIngestionService
 
 __all__ = [
@@ -19,4 +20,5 @@ __all__ = [
     "PolicyEngineService",
     "RecoveryExecutionService",
     "ReconciliationService",
+    "StateTransitionService",
 ]

@@ -4,6 +4,17 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 
 ---
 
+## [Phase 10 Complete] - 2026-08-26
+### Added
+- **Formal State Machine Contracts:** Formalized `CaseState` enum, `TERMINAL_STATES` (`RECOVERED`, `STOPPED`, `EXPIRED`), `VALID_TRANSITIONS` lifecycle matrix, and `StateTransitionResult` schema.
+- **State Transition Validator:** Built `StateTransitionValidator` validating state transitions against the formal lifecycle graph and rejecting invalid transitions with `InvalidStateTransitionError` and terminal violations with `TerminalStateError`.
+- **Cross-Aggregate Consistency Guard:** Built `CrossAggregateConsistencyGuard` guaranteeing invariants between `RecoveryCase` and `RecoveryAction` aggregates (such as rejecting active actions on `STOPPED` cases).
+- **Centralized State Transition Service:** Implemented `StateTransitionService` providing atomic lifecycle updates with UnitOfWork boundaries, OCC version checks, `ALREADY_APPLIED` idempotent duplicate no-op returns, and append-only `RECOVERY_STATE_TRANSITIONED` audit event logging in PostgreSQL.
+- **Concurrency & Race Test Suite:** Implemented unit, concurrency, and integration tests for OCC conflict detection, stale worker rejection, Celery vs. webhook race resolution, and terminal state immutability (**139 total passing backend tests** with 92% overall coverage).
+- **Phase Documentation:** Authored `docs/09_Program/PHASE_10_COMPLETION_REPORT.md`.
+
+---
+
 ## [Phase 9 Complete] - 2026-08-26
 ### Added
 - **Reconciliation Domain Schemas:** Defined `PaymentOutcome` (`PAYMENT_SUCCEEDED`, `PAYMENT_FAILED`, `PAYMENT_PENDING`, `PAYMENT_NOT_FOUND`, `PAYMENT_CANCELLED`, `UNKNOWN`), `ReconciliationStatus` (`RECONCILED`, `PENDING_VERIFICATION`, `MISMATCH`, `FAILED`, `DUPLICATE_IGNORED`, `UNKNOWN`), `ReconciliationEvidence`, and `ReconciliationResult` typed domain contracts with serialization.
