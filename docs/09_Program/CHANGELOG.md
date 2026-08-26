@@ -4,6 +4,20 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 
 ---
 
+## [Phase 6 Complete] - 2026-08-26
+### Added
+- **AI Decision Output & Result Contracts:** Defined `AIDecisionOutput` (Pydantic model) and `AIDecisionResult` domain contracts supporting 5 failure classes and 5 recommended recovery actions with delay/confidence bounds.
+- **AIPromptBuilder:** Implemented versioned system prompt (`1.0.0`) and structured user prompt consuming sanitized `CustomerRecoveryContext` (zero PII, zero credentials).
+- **OpenRouter Provider & Mock Provider:** Updated `OpenRouterProvider` with JSON mode, authentication headers, and 5s timeout, alongside `MockLLMProvider` for deterministic offline testing.
+- **AIDecisionValidator:** Implemented strict schema validation for raw LLM dictionary responses.
+- **AIRiskEvaluator:** Implemented contextual risk evaluator computing `LOW_CONFIDENCE`, `HIGH_VALUE_EXPOSURE`, `CONSECUTIVE_FAILURES_HIGH`, and `HARD_DECLINE_SUSPECTED`.
+- **FallbackDecisionEngine:** Built deterministic safe fallback routing hard declines to `STOP` (confidence 1.00) and timeouts/errors/low confidence ($<0.75$) to `MANUAL_ESCALATION` (confidence 0.50).
+- **AIDecisionEngine & AIDecisionService:** Implemented orchestration engine and service layer persisting `RecoveryDecision` in PostgreSQL with UnitOfWork isolation and logging append-only `AuditEvent` (`AI_DECISION_PRODUCED`).
+- **Phase 6 Test Suite:** Built 13 unit and integration tests across prompts, schemas, validators, risk evaluators, engines, and persistence (**79 total passing backend tests** with 89% overall coverage).
+- **Phase Documentation:** Authored `docs/09_Program/PHASE_06_COMPLETION_REPORT.md`.
+
+---
+
 ## [Phase 5 Complete] - 2026-08-26
 ### Added
 - **Customer Recovery Context Contract:** Defined `CustomerRecoveryContext`, `CaseContext`, `SubscriptionContext`, `CustomerProfileContext`, `PaymentHistoryContext`, `RecoveryHistoryContext`, and `DataQualityContext` domain models with full serialization.
@@ -12,7 +26,7 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 - **Payment & Recovery History Aggregators:** Implemented `HistoryAggregator` analyzing lifetime subscription cycles, 30-day failure recency, consecutive failure streaks, and prior recovery interventions.
 - **Customer Context Builder & Quality Evaluator:** Built `CustomerContextBuilder` with graceful Razorpay API enrichment fallback and `DataQualityEvaluator` computing completeness scores.
 - **Customer Context Service & Audit Trail:** Implemented `CustomerContextService` with UnitOfWork isolation, logging append-only `AuditEvent` (`CUSTOMER_CONTEXT_AGGREGATED`) in PostgreSQL.
-- **Phase 5 Test Suite:** Built 16 unit and integration tests across sanitizers, metrics, history aggregators, context builder, and service layer (**66 total passing backend tests** with 87% overall coverage).
+- **Phase 5 Test Suite:** Built 16 unit and integration tests across sanitizers, metrics, history aggregators, context builder, and service layer (66 total passing backend tests with 87% overall coverage).
 - **Phase Documentation:** Authored `docs/09_Program/PHASE_05_COMPLETION_REPORT.md`.
 
 ---
