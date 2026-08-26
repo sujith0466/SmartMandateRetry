@@ -59,6 +59,7 @@ REQUIRED_DOCS = [
     "docs/09_Program/AI_PROVIDER_HARDENING_PLAN.md",
     "docs/09_Program/FREE_MODEL_CATALOG.md",
     "docs/09_Program/AI_PROVIDER_HARDENING_REPORT.md",
+    "docs/09_Program/PHASE_08_IMPLEMENTATION_PLAN.md",
 ]
 
 
