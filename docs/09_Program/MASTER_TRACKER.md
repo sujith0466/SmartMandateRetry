@@ -1,8 +1,8 @@
 # SmartMandateRetry — Master Implementation Tracker & Traceability Matrix
 
 > **Document ID:** DOC-PROG-002  
-> **Version:** 1.6.0  
-> **Status:** APPROVED BASELINE (Phase 0, 1, 2, 3, and 4 COMPLETED)  
+> **Version:** 1.7.0  
+> **Status:** APPROVED BASELINE (Phase 0-4 COMPLETED; Phase 5 Granular Breakdown Added)  
 
 ---
 
@@ -54,7 +54,22 @@
 | `TSK-010-14` | Phase 4 | Intelligence | Unit Tests | Comprehensive unit tests for classifier rules & confidence logic | TSK-010-07, 13 | P0 | **COMPLETED** | All Phase 4 FRs | 100% branch coverage across all classification rules | Intelligence unit suite | `TEST_PLAN.md` |
 | `TSK-010-15` | Phase 4 | Intelligence | Integration | End-to-end webhook-to-classification integration tests | TSK-010-10, 11 | P0 | **COMPLETED** | All Phase 4 FRs | Webhook POST triggers classification & audit log cleanly | `test_webhook_intelligence_e2e.py` | `TEST_PLAN.md` |
 | `TSK-011` | Phase 4 | Intelligence | Ambiguity AI | OpenRouter fallback classifier for unknown error descriptions | TSK-010 | P1 | **NOT_STARTED** | FR-INT-003 | Ambiguous text categorized with confidence score | Mock AI unit tests | `OPENROUTER_INTEGRATION.md` |
-| `TSK-012` | Phase 5 | Context | Aggregator | Customer Profile & Subscription context aggregator service | TSK-008 | P1 | **NOT_STARTED** | FR-CTX-001 | Assembles tenure, success rate, retry history | Context builder tests | `PRD.md` |
+| `TSK-012` | Phase 5 | Context | Context Aggregation | Master task: Customer Profile & Recovery Context Aggregator | TSK-010 | P0 | **NOT_STARTED** | FR-CTX-001 | Assembles customer, subscription, failure, history context | Context test suite | `PHASE_05_IMPLEMENTATION_PLAN.md` |
+| `TSK-012-01` | Phase 5 | Context | Domain Model | Define `CustomerRecoveryContext` and sub-context dataclasses | Phase 4 | P0 | **NOT_STARTED** | FR-CTX-001 | Strict typing with complete serialization methods | Context unit tests | `DOMAIN_MODEL.md` |
+| `TSK-012-02` | Phase 5 | Context | Sanitizer | Implement `ContextSanitizer` with PII masking and secret scrubbing | `TSK-012-01` | P0 | **NOT_STARTED** | SEC-001 | Masks email/phone; strips all credentials | Sanitizer tests | `SECURITY_ARCHITECTURE.md` |
+| `TSK-012-03` | Phase 5 | Context | Metric Engine | Implement `DerivedMetricCalculator` for success rates and streaks | `TSK-012-01` | P0 | **NOT_STARTED** | FR-CTX-001 | Deterministic rate formulas & sample-size confidence tiers | Metric unit tests | `AI_DECISION_SPEC.md` |
+| `TSK-012-04` | Phase 5 | Context | Payment History| Implement `PaymentHistoryAggregator` querying past webhook/payments | `TSK-012-03` | P0 | **NOT_STARTED** | FR-CTX-001 | Aggregates lifetime & 30-day failure metrics | Payment history tests | `DATABASE_DESIGN.md` |
+| `TSK-012-05` | Phase 5 | Context | Recovery History| Implement `RecoveryHistoryAggregator` querying prior cases/decisions | `TSK-012-03` | P0 | **NOT_STARTED** | FR-CTX-001 | Aggregates prior recovery cases and success rates | Recovery history tests | `RECOVERY_STATE_MACHINE.md` |
+| `TSK-012-06` | Phase 5 | Context | Builder Engine | Implement `CustomerContextBuilder` orchestrating the pipeline | `TSK-012-01..05` | P0 | **NOT_STARTED** | FR-CTX-001 | Assembles complete immutable context object | Builder unit tests | `PHASE_05_IMPLEMENTATION_PLAN.md` |
+| `TSK-012-07` | Phase 5 | Context | API Enrichment | Implement optional Razorpay API enrichment client with 2s timeout | `TSK-012-06` | P1 | **NOT_STARTED** | FR-CTX-001 | Gracefully falls back to local DB on network timeout/error | API fallback tests | `RAZORPAY_CAPABILITY_MATRIX.md` |
+| `TSK-012-08` | Phase 5 | Context | Quality Engine | Implement `DataQualityEvaluator` computing completeness score | `TSK-012-06` | P0 | **NOT_STARTED** | FR-CTX-001 | Marks missing fields and API enrichment status | Quality tests | `PHASE_05_IMPLEMENTATION_PLAN.md` |
+| `TSK-012-09` | Phase 5 | Context | Service Layer | Implement `CustomerContextService` with UoW transaction isolation | `TSK-012-06` | P0 | **NOT_STARTED** | FR-CTX-001 | Coordinates DB queries and context assembly | Service DB tests | `PHASE_05_IMPLEMENTATION_PLAN.md` |
+| `TSK-012-10` | Phase 5 | Context | Audit Logger | Record `AuditEvent` (`CUSTOMER_CONTEXT_AGGREGATED`) in PostgreSQL | `TSK-012-09` | P0 | **NOT_STARTED** | NFR-AUD-001 | Immutably audits context creation with versioning | Audit DB tests | `OBSERVABILITY.md` |
+| `TSK-012-11` | Phase 5 | Context | Observability | Instrument builder with latency tracking & missing-data telemetry | `TSK-012-09` | P1 | **NOT_STARTED** | NFR-AUD-001 | Logs JSON telemetry with zero PII/secret exposure | Observability tests | `OBSERVABILITY.md` |
+| `TSK-012-12` | Phase 5 | Context | Test Fixtures | Build synthetic customer & history fixtures (new, established, etc.)| `TSK-012-01` | P0 | **NOT_STARTED** | All Phase 5 FRs | Realistic scenario fixtures covering all edge cases | Fixture validation tests | `TEST_PLAN.md` |
+| `TSK-012-13` | Phase 5 | Context | Unit Tests | Comprehensive unit tests for metrics, sample tiers, and masking | `TSK-012-02..08` | P0 | **NOT_STARTED** | All Phase 5 FRs | 100% branch coverage on metrics and sanitization | Context unit suite | `TEST_PLAN.md` |
+| `TSK-012-14` | Phase 5 | Context | Integration | Integration tests querying live PostgreSQL for context aggregation | `TSK-012-09, 10` | P0 | **NOT_STARTED** | All Phase 5 FRs | End-to-end DB aggregation & audit verification | Context DB tests | `TEST_PLAN.md` |
+| `TSK-012-15` | Phase 5 | Context | Resilience | Fault tolerance tests (API timeout, missing customer, empty history)| `TSK-012-07, 14` | P0 | **NOT_STARTED** | NFR-REL-001 | System degrades gracefully without raising uncaught errors | Resilience tests | `FAILURE_SCENARIOS.md` |
 | `TSK-013` | Phase 6 | AI Decision | Provider | `OpenRouterProvider` client with JSON mode & healing plugin | TSK-011, TSK-012 | P0 | **NOT_STARTED** | FR-AI-001, FR-AI-002 | Generates valid JSON adhering to schema | Schema validation tests | `OPENROUTER_INTEGRATION.md` |
 | `TSK-014` | Phase 6 | AI Decision | Confidence | Confidence evaluator & low-confidence fallback routing | TSK-013 | P0 | **NOT_STARTED** | FR-AI-004 | Confidence < 0.75 routes to `MANUAL_ESCALATION` | Confidence routing tests | `AI_DECISION_SPEC.md` |
 | `TSK-015` | Phase 7 | Safety Gate | Rules Engine | Deterministic Policy Engine (8 hard merchant rules) | TSK-014 | P0 | **NOT_STARTED** | FR-POL-001..007, SEC-002| Zero LLM dependencies, fail-closed enforcement | `TS-UNIT-POL` (100% branch) | `POLICY_ENGINE.md` |
