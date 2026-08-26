@@ -4,6 +4,20 @@ All notable changes to the SmartMandateRetry codebase, specifications, and archi
 
 ---
 
+## [Phase 13 Complete] - 2026-08-26
+### Added
+- **Merchant Console Frontend:** Built production-quality React/TypeScript/Tailwind CSS console consuming authenticated `/api/v1/*` Merchant APIs.
+- **Centralized API Client:** Created typed REST client (`frontend/src/services/api.ts`) supporting `X-Merchant-ID` and `X-Correlation-ID` header injection and structured `ApiError` normalization.
+- **Recovery Dashboard:** Implemented `DashboardPage.tsx` with macro revenue KPI cards, recovery success rate, case lifecycle distribution, and system readiness indicators.
+- **Recovery Cases Inbox:** Implemented `CasesPage.tsx` with bounded pagination, multi-state filtering, stage filtering, and derived presentation priorities.
+- **Case Detail & Lifecycle Progression:** Implemented `CaseDetailPage.tsx` with visual lifecycle progression steps, sanitized customer details, historical actions list, and settlement reconciliation card.
+- **Immutable Audit Trail:** Implemented `AuditPage.tsx` with paginated event table, event type filter, and JSON payload inspector modal.
+- **Safety Policies View:** Implemented `PoliciesPage.tsx` with read-only visibility into recovery limits and auto-stop safeguards.
+- **Analytics & Observability Views:** Implemented `AnalyticsPage.tsx` and `ObservabilityPage.tsx` showing macro conversion metrics, operation timing distributions, and infrastructure health.
+- **Phase Documentation:** Authored `docs/09_Program/PHASE_13_COMPLETION_REPORT.md`.
+
+---
+
 ## [Phase 12 Complete] - 2026-08-26
 ### Added
 - **Merchant Authentication Decorator:** Implemented `@require_merchant_auth` validating API Keys (`X-API-Key`), Merchant IDs (`X-Merchant-ID`), and Bearer tokens against PostgreSQL.

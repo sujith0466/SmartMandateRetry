@@ -7,7 +7,7 @@ export type CaseState =
   | 'POLICY_REVIEW'
   | 'SCHEDULED'
   | 'ACTION_PENDING'
-  | 'ACTION_EXECUTED'
+  | 'IN_PROGRESS'
   | 'WAITING_FOR_OUTCOME'
   | 'RECOVERED'
   | 'FAILED'
@@ -20,19 +20,67 @@ export type FailureCategory = 'TEMPORARY' | 'PERMANENT' | 'ACTION_REQUIRED' | 'R
 export interface RecoveryCase {
   id: string;
   subscription_id: string;
-  customer_email?: string;
+  invoice_id?: string;
+  payment_id?: string;
   amount_inr: number;
-  failure_category: FailureCategory;
-  failure_code: string;
+  recovered_amount_inr?: number;
+  currency: string;
   stage: RecoveryStage;
   state: CaseState;
-  ai_recommended_action?: string;
-  ai_confidence?: number;
+  failure_category?: FailureCategory;
+  failure_code?: string;
   attempt_count: number;
+  contacts_count: number;
+  version: number;
   created_at: string;
+  updated_at?: string;
+  resolved_at?: string;
+}
+
+export interface CustomerContext {
+  id: string;
+  email?: string;
+  contact?: string;
+  created_at?: string;
+}
+
+export interface SubscriptionInfo {
+  id: string;
+  plan_id: string;
+  status: string;
+  current_cycle?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CaseDetailResponse {
+  case: RecoveryCase;
+  customer?: CustomerContext | null;
+  subscription?: SubscriptionInfo | null;
+}
+
+export interface RecoveryActionItem {
+  id: string;
+  recovery_case_id: string;
+  action_type: string;
+  status: string;
+  external_reference_id?: string | null;
+  executed_at: string;
+}
+
+export interface ReconciliationStatusInfo {
+  case_id: string;
+  state: CaseState;
+  is_settled: boolean;
+  recovered_amount_inr: number;
+  currency: string;
+  resolved_at?: string | null;
+  reconciled_action_id?: string | null;
+  external_reference_id?: string | null;
 }
 
 export interface MerchantPolicy {
+  merchant_id?: string;
   max_retries_per_case: number;
   min_retry_interval_hours: number;
   max_recovery_window_days: number;
@@ -43,10 +91,53 @@ export interface MerchantPolicy {
 }
 
 export interface OverviewMetrics {
-  revenue_at_risk_inr: number;
+  merchant_id?: string;
+  total_cases_count: number;
+  active_cases_count: number;
+  recovered_cases_count: number;
+  escalated_cases_count: number;
   recovered_revenue_inr: number;
   recovery_rate_percent: number;
-  recovery_uplift_percent: number;
-  active_cases_count: number;
-  escalated_cases_count: number;
+  total_audit_events: number;
+}
+
+export interface AuditEventItem {
+  id: string;
+  recovery_case_id?: string | null;
+  event_type: string;
+  actor: string;
+  correlation_id?: string | null;
+  created_at: string;
+  payload: Record<string, any>;
+}
+
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+}
+
+export interface ObservabilitySummary {
+  recovery_pipeline: {
+    total_cases: number;
+    cases_by_state: Record<string, number>;
+    total_recovered_inr: number;
+    actions_by_status: Record<string, number>;
+    total_audit_events: number;
+  };
+  telemetry: {
+    counters: Record<string, number>;
+    gauges: Record<string, number>;
+    histograms: Record<string, { count: number; avg: number; min: number; max: number }>;
+  };
+}
+
+export interface ReadinessCheck {
+  status: string;
+  checks: {
+    database: string;
+    redis: string;
+    llm_provider: string;
+  };
 }
