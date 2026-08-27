@@ -2,7 +2,7 @@
 
 > **Document ID:** `DOC-UI-DATAFLOW-CERT-001`  
 > **Status:** **PASS — 100% DATAFLOW INTEGRITY & UI COMPLIANCE**  
-> **Baseline Commit:** `020eda4`  
+> **Baseline Commit:** `e5e7d3e`
 > **Certification Date:** 2026-08-27  
 
 ---
