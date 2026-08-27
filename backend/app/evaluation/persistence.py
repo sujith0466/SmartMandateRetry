@@ -108,7 +108,10 @@ class EvaluationPersistenceService:
         """Retrieve recent evaluation runs."""
         with self.uow:
             runs = self.uow.evaluations.get_latest_runs(limit=limit)
-            for r in runs:
-                _ = len(r.results)
             self.uow.session.expunge_all()
             return runs
+
+    def count_total_runs(self) -> int:
+        """Count total evaluation runs in the database."""
+        with self.uow:
+            return self.uow.evaluations.count()

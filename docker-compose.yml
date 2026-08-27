@@ -35,7 +35,7 @@ services:
       dockerfile: docker/Dockerfile.backend
     container_name: smartmandate-backend
     restart: unless-stopped
-    command: gunicorn -w 2 -b 0.0.0.0:5000 --access-logfile - --error-logfile - "app.main:create_app()"
+    command: gunicorn -w 2 -b 0.0.0.0:5000 --timeout 300 --access-logfile - --error-logfile - "app.main:create_app()"
     ports:
       - "5000:5000"
     environment:

@@ -74,12 +74,13 @@ export const EvaluationPage: React.FC = () => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      // 1. Fetch macro summary
-      const sum = await fetchEvaluationSummary();
-      setSummary(sum);
+      // 1. Fetch macro summary and recent runs in parallel
+      const [sum, runsResp] = await Promise.all([
+        fetchEvaluationSummary(),
+        fetchEvaluationRuns(1, 20),
+      ]);
 
-      // 2. Fetch recent runs
-      const runsResp = await fetchEvaluationRuns(1, 20);
+      setSummary(sum);
       setRuns(runsResp.data);
 
       if (runsResp.data && runsResp.data.length > 0) {
@@ -114,7 +115,7 @@ export const EvaluationPage: React.FC = () => {
 
   useEffect(() => {
     loadInitialData();
-  }, [selectedSplit]);
+  }, []);
 
   const handleRunBenchmark = async () => {
     setIsRunningBenchmark(true);

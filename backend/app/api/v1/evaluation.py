@@ -24,11 +24,19 @@ _DEFAULT_DATASET_PATH = os.path.join(
     "eval_dataset_42_5000.json",
 )
 
+_cached_manifest = None
+
 
 def _load_default_manifest():
+    global _cached_manifest
+    if _cached_manifest is not None:
+        return _cached_manifest
+
     manager = DatasetManifestManager()
     if os.path.exists(_DEFAULT_DATASET_PATH):
-        return manager.load(_DEFAULT_DATASET_PATH)
+        _cached_manifest = manager.load(_DEFAULT_DATASET_PATH)
+        return _cached_manifest
+
     # Generate on the fly if manifest file not present on disk
     from app.evaluation.seed_manager import SeedManager
     from app.evaluation.scenario_generator import ScenarioGenerator
@@ -38,7 +46,8 @@ def _load_default_manifest():
     scenarios = gen.generate(5000, n_customers=500, n_merchants=50)
     splitter = DatasetSplitter(sm)
     scenarios = splitter.split(scenarios)
-    return manager.build(42, scenarios)
+    _cached_manifest = manager.build(42, scenarios)
+    return _cached_manifest
 
 
 @evaluation_bp.route("/summary", methods=["GET"])
@@ -52,18 +61,22 @@ def get_evaluation_summary():
 
     latest_run_dict = None
     if latest_run:
+        results_count = (
+            latest_run.metrics_summary.get("total_evaluated", 0)
+            if latest_run.metrics_summary
+            else (len(latest_run.results) if latest_run.results else 0)
+        )
         latest_run_dict = {
             "id": latest_run.id,
             "dataset_name": latest_run.dataset_name,
             "baseline_mode": latest_run.baseline_mode,
             "metrics_summary": latest_run.metrics_summary,
             "created_at": latest_run.created_at.isoformat() if latest_run.created_at else None,
-            "results_count": len(latest_run.results) if latest_run.results else 0,
+            "results_count": results_count,
         }
 
     manifest = _load_default_manifest()
-
-    total_runs_count = len(persistence.list_latest_runs(limit=100))
+    total_runs_count = persistence.count_total_runs()
 
     return jsonify({
         "total_runs": total_runs_count,
@@ -91,11 +104,8 @@ def list_evaluation_runs():
 
     uow = get_uow()
     persistence = EvaluationPersistenceService(uow=uow)
-    all_runs = persistence.list_latest_runs(limit=100)
-
-    total = len(all_runs)
-    start_idx = (page - 1) * limit
-    paged_runs = all_runs[start_idx : start_idx + limit]
+    all_runs = persistence.list_latest_runs(limit=limit)
+    total = persistence.count_total_runs()
 
     data = [
         {
@@ -104,9 +114,13 @@ def list_evaluation_runs():
             "baseline_mode": r.baseline_mode,
             "metrics_summary": r.metrics_summary,
             "created_at": r.created_at.isoformat() if r.created_at else None,
-            "results_count": len(r.results) if r.results else 0,
+            "results_count": (
+                r.metrics_summary.get("total_evaluated", 0)
+                if r.metrics_summary
+                else (len(r.results) if r.results else 0)
+            ),
         }
-        for r in paged_runs
+        for r in all_runs
     ]
 
     return jsonify({
