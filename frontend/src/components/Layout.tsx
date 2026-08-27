@@ -12,8 +12,6 @@ import {
   Building2,
   ChevronDown,
   Search,
-  Bell,
-  Globe,
   Command,
 } from 'lucide-react';
 import { getActiveMerchantId, setActiveMerchantId } from '../services/api';
@@ -98,7 +96,7 @@ export const Layout: React.FC = () => {
       {/* Premium Light-First Sidebar Rail */}
       <aside className="w-64 bg-white border-r border-[#E5E7EB] flex flex-col z-20 select-none shadow-xs">
         {/* Brand Identity Header with Controlled Gradient */}
-        <Link to="/dashboard" className="p-5 border-b border-[#E5E7EB] flex items-center space-x-3 group">
+        <Link to="/" className="p-5 border-b border-[#E5E7EB] flex items-center space-x-3 group" title="SmartMandate Home">
           <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.15 }}
@@ -254,36 +252,8 @@ export const Layout: React.FC = () => {
 
           {/* Header Controls & Status */}
           <div className="flex items-center gap-2.5 sm:gap-3.5">
-            {/* View Flagship Public Website Link */}
-            <Link
-              to="/"
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-[#F7F9FC] border border-[#E5E7EB] text-xs font-bold text-[#475569] hover:text-[#111827] transition-colors shadow-2xs"
-            >
-              <Globe className="w-3.5 h-3.5 text-[#3B5BDB]" />
-              <span>Public Website</span>
-            </Link>
-
-            {/* Live Webhook Status Chip (Aqua Theme) */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#ECFEFF] border border-[#A5F3FC] text-xs">
-              <span className="w-2 h-2 rounded-full bg-[#0891B2] animate-pulse" />
-              <span className="font-semibold text-[#475569]">Webhook Engine:</span>
-              <span className="font-mono font-bold text-[#0891B2]">Online (SSL)</span>
-            </div>
-
-            {/* Escalations Notification Bell */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/cases?tab=escalations')}
-              className="p-2 rounded-xl border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#475569] hover:text-[#111827] transition-colors relative"
-              title="Escalations Queue"
-            >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#D97706] animate-pulse" />
-            </motion.button>
-
             {/* Merchant User Profile Avatar */}
-            <div className="flex items-center gap-2.5 pl-2 border-l border-[#E5E7EB]">
+            <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-[#3B5BDB] text-white flex items-center justify-center font-bold text-xs shadow-sm shadow-[#3B5BDB]/20">
                 SM
               </div>

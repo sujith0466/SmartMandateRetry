@@ -179,7 +179,7 @@ export const EvaluationPage: React.FC = () => {
       variants={staggerContainer}
       initial="initial"
       animate="animate"
-      className="space-y-6 text-left"
+      className="space-y-6 text-left -m-4 sm:-m-8 p-4 sm:p-8 bg-[#FAF8F5] min-h-[calc(100vh-4rem)]"
     >
       {/* Header with Certified Evidence Distinction Badge */}
       <motion.div variants={staggerItem} className="flex flex-col md:flex-row md:items-center justify-between gap-4">

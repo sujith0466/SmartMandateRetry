@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { BenchmarkMetricsType, DimensionBreakdownItem } from '../../../types';
 
@@ -27,13 +27,13 @@ export const DimensionalBreakdownView: React.FC<DimensionalBreakdownViewProps> =
     <div className="space-y-6">
       {/* Dimension Sub-Tabs */}
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center rounded-xl bg-slate-900 border border-slate-800 p-1">
+        <div className="flex items-center rounded-xl bg-white/90 backdrop-blur-md border border-[#E5E7EB] p-1 shadow-2xs">
           <button
             onClick={() => setActiveDimension('family')}
             className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
               activeDimension === 'family'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#3B5BDB] text-white shadow-xs'
+                : 'text-[#64748B] hover:text-[#111827]'
             }`}
           >
             Scenario Families (14)
@@ -42,8 +42,8 @@ export const DimensionalBreakdownView: React.FC<DimensionalBreakdownViewProps> =
             onClick={() => setActiveDimension('tier')}
             className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
               activeDimension === 'tier'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#3B5BDB] text-white shadow-xs'
+                : 'text-[#64748B] hover:text-[#111827]'
             }`}
           >
             Difficulty Tiers (4)
@@ -52,8 +52,8 @@ export const DimensionalBreakdownView: React.FC<DimensionalBreakdownViewProps> =
             onClick={() => setActiveDimension('category')}
             className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
               activeDimension === 'category'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#3B5BDB] text-white shadow-xs'
+                : 'text-[#64748B] hover:text-[#111827]'
             }`}
           >
             Failure Categories
@@ -62,25 +62,25 @@ export const DimensionalBreakdownView: React.FC<DimensionalBreakdownViewProps> =
             onClick={() => setActiveDimension('split')}
             className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
               activeDimension === 'split'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#3B5BDB] text-white shadow-xs'
+                : 'text-[#64748B] hover:text-[#111827]'
             }`}
           >
             Dataset Splits (3)
           </button>
         </div>
 
-        <div className="text-xs text-slate-400">
-          Showing <span className="font-semibold text-white">{entries.length}</span> partitions for{' '}
-          <span className="font-semibold text-indigo-400">{modeName}</span>
+        <div className="text-xs text-[#64748B]">
+          Showing <span className="font-semibold text-[#111827]">{entries.length}</span> partitions for{' '}
+          <span className="font-semibold text-[#3B5BDB]">{modeName}</span>
         </div>
       </div>
 
       {/* Dimensional Breakdown Table */}
-      <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 overflow-hidden shadow-xl">
+      <div className="rounded-2xl bg-white/90 backdrop-blur-md border border-[#E5E7EB] overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/80 text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-800/80">
+            <thead className="bg-[#F8FAFC] text-[#64748B] text-[11px] font-bold uppercase tracking-wider border-b border-[#E5E7EB]">
               <tr>
                 <th className="py-3.5 px-4">Partition Name</th>
                 <th className="py-3.5 px-4 text-right">Total Scenarios</th>
@@ -90,10 +90,10 @@ export const DimensionalBreakdownView: React.FC<DimensionalBreakdownViewProps> =
                 <th className="py-3.5 px-4 text-center">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
+            <tbody className="divide-y divide-[#E5E7EB] font-medium">
               {entries.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-500">
+                  <td colSpan={6} className="py-8 text-center text-[#94A3B8]">
                     No dimensional breakdown data available.
                   </td>
                 </tr>
@@ -106,29 +106,29 @@ export const DimensionalBreakdownView: React.FC<DimensionalBreakdownViewProps> =
                     : '--';
 
                   return (
-                    <tr key={name} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-bold text-white">
+                    <tr key={name} className="hover:bg-[#F8FAFC] transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-bold text-[#111827]">
                         {name}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-mono text-slate-300">
+                      <td className="py-3.5 px-4 text-right font-mono text-[#475569]">
                         {item.total.toLocaleString()}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-200">
+                      <td className="py-3.5 px-4 text-right font-mono font-bold text-[#111827]">
                         {accPct}%
                       </td>
-                      <td className="py-3.5 px-4 text-right font-mono text-emerald-400">
+                      <td className="py-3.5 px-4 text-right font-mono text-[#059669]">
                         {item.recovered_count.toLocaleString()}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-mono text-emerald-400 font-bold">
+                      <td className="py-3.5 px-4 text-right font-mono text-[#059669] font-bold">
                         {recRate}
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         {isPerfect ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/40">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded border border-[#A7F3D0]">
                             <CheckCircle2 className="w-3 h-3" /> 100% PASS
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#D97706] bg-[#FFFBEB] px-2 py-0.5 rounded border border-[#FDE68A]">
                             {accPct}%
                           </span>
                         )}
