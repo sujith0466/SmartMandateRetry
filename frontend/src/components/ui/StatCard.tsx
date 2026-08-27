@@ -53,7 +53,18 @@ export const StatCard: React.FC<StatCardProps> = ({
     slate: 'bg-[#F1F5F9] text-[#475569] border-[#E5E7EB]',
   };
 
+  const highlightThemes: Record<string, string> = {
+    emerald: 'border-[#6EE7B7] ring-2 ring-[#ECFDF5] bg-gradient-to-br from-white via-white to-[#ECFDF5]/50 shadow-md',
+    sapphire: 'border-[#C7D2FE] ring-2 ring-[#EEF2FF] bg-gradient-to-br from-white via-white to-[#EEF2FF]/50 shadow-md',
+    aqua: 'border-[#A5F3FC] ring-2 ring-[#ECFEFF] shadow-md',
+    violet: 'border-[#DDD6FE] ring-2 ring-[#F5F3FF] shadow-md',
+    amber: 'border-[#FDE68A] ring-2 ring-[#FFFBEB] shadow-md',
+    rose: 'border-[#FECDD3] ring-2 ring-[#FFF1F2] shadow-md',
+    slate: 'border-[#CBD5E1] ring-2 ring-[#F1F5F9] shadow-md',
+  };
+
   const themeClass = iconThemes[resolvedVariant] || iconThemes.sapphire;
+  const highlightClass = highlightThemes[resolvedVariant] || 'border-[#C7D2FE] ring-2 ring-[#EEF2FF]';
 
   return (
     <motion.div
@@ -65,16 +76,21 @@ export const StatCard: React.FC<StatCardProps> = ({
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      className={`bg-white border rounded-2xl p-5 shadow-sm transition-all duration-150 relative overflow-hidden group text-left ${
-        onClick ? 'cursor-pointer hover:shadow-md' : ''
+      className={`border rounded-2xl p-5 transition-all duration-150 relative overflow-hidden group text-left ${
+        onClick ? 'cursor-pointer hover:shadow-md' : 'shadow-sm'
       } ${
-        highlight ? 'border-[#C7D2FE] ring-2 ring-[#EEF2FF]' : 'border-[#E5E7EB]'
+        highlight ? highlightClass : 'bg-white border-[#E5E7EB]'
       }`}
     >
       <div className="flex justify-between items-start">
         <div className="space-y-1">
           <div className="flex items-center gap-1.5">
             <p className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">{title}</p>
+            {highlight && resolvedVariant === 'emerald' && (
+              <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] font-mono">
+                Primary
+              </span>
+            )}
             {tooltip && <InsightTooltip content={tooltip} title={title} />}
           </div>
 

@@ -226,10 +226,10 @@ export const Layout: React.FC = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Context-Aware Header */}
-        <header className="h-16 bg-white border-b border-[#E5E7EB] px-8 flex items-center justify-between z-10 shrink-0">
+        <header className="h-16 bg-white border-b border-[#E5E7EB] px-4 sm:px-8 flex items-center justify-between z-10 shrink-0">
           {/* Quick Search & Command Shortcut */}
           <div className="flex items-center gap-3">
-            <form onSubmit={handleGlobalSearch} className="relative w-64 sm:w-80">
+            <form onSubmit={handleGlobalSearch} className="relative w-48 sm:w-80">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
               <input
                 type="text"
@@ -253,7 +253,7 @@ export const Layout: React.FC = () => {
           </div>
 
           {/* Header Controls & Status */}
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-2.5 sm:gap-3.5">
             {/* View Flagship Public Website Link */}
             <Link
               to="/"
@@ -296,7 +296,7 @@ export const Layout: React.FC = () => {
         </header>
 
         {/* Scrollable Canvas */}
-        <main className="flex-1 overflow-y-auto bg-[#F7F9FC] p-8">
+        <main className="flex-1 overflow-y-auto bg-[#F7F9FC] p-4 sm:p-8">
           <div className="max-w-7xl mx-auto space-y-6">
             <Outlet />
           </div>

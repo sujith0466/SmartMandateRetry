@@ -262,19 +262,19 @@ export const AnalyticsPage: React.FC = () => {
             <span className="text-xs text-[#64748B] font-mono font-semibold">Conversion Matrix</span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {[
               { label: 'Insufficient Funds (Soft Decline)', total: 6, rec: 3, amt: '₹13,498', rate: '50.0%', pct: 50 },
               { label: 'Card Expired / Mandate Update', total: 3, rec: 1, amt: '₹12,000', rate: '33.3%', pct: 33.3 },
               { label: 'Bank Server Downtime / Network Limit', total: 3, rec: 1, amt: '₹4,999', rate: '33.3%', pct: 33.3 },
               { label: 'Hard Decline (Account Closed / Stolen)', total: 2, rec: 0, amt: '₹0', rate: '0% (Auto-Stopped)', pct: 0 },
             ].map((cat, index) => (
-              <div key={cat.label} className="p-3.5 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] space-y-1.5 shadow-2xs">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="text-[#111827]">{cat.label}</span>
-                  <span className="text-[#059669] font-mono font-black">{cat.amt}</span>
+              <div key={cat.label} className="p-3.5 sm:p-4 bg-[#F7F9FC] rounded-xl border border-[#E5E7EB] space-y-2.5 shadow-2xs">
+                <div className="flex justify-between items-center text-xs font-bold gap-2">
+                  <span className="text-[#111827] truncate">{cat.label}</span>
+                  <span className="text-[#059669] font-mono font-black shrink-0">{cat.amt}</span>
                 </div>
-                <div className="w-full bg-[#E5E7EB] rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-[#E5E7EB] rounded-full h-1.5 overflow-hidden my-0.5">
                   <motion.div
                     initial={reducedMotion ? { width: `${cat.pct}%` } : { width: 0 }}
                     animate={{ width: `${cat.pct}%` }}
@@ -282,7 +282,7 @@ export const AnalyticsPage: React.FC = () => {
                     className="h-full bg-[#059669] rounded-full"
                   />
                 </div>
-                <div className="flex justify-between text-[11px] text-[#64748B] font-medium">
+                <div className="flex justify-between items-center text-[11px] text-[#64748B] font-medium pt-0.5">
                   <span>{cat.rec} of {cat.total} cases recovered</span>
                   <span className="font-mono font-bold text-[#475569]">{cat.rate}</span>
                 </div>

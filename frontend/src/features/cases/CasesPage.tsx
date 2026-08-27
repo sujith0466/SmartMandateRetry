@@ -42,6 +42,7 @@ export const CasesPage: React.FC = () => {
   const [cases, setCases] = useState<RecoveryCase[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({ page: 1, limit: 20, total: 0, pages: 1 });
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+  const [selectedPriority, setSelectedPriority] = useState<'ALL' | 'HIGH' | 'MEDIUM' | 'STANDARD'>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>(initialSearch);
   const [loading, setLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
@@ -148,31 +149,82 @@ export const CasesPage: React.FC = () => {
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedCategory('');
+    setSelectedPriority('ALL');
     setActiveTab('all');
     setSearchParams({});
   };
 
+  const getPriorityTier = (amount: number, state: CaseState): 'HIGH' | 'MEDIUM' | 'STANDARD' => {
+    if (state === 'ESCALATED' || amount >= 10000) return 'HIGH';
+    if (amount >= 3000) return 'MEDIUM';
+    return 'STANDARD';
+  };
+
   const getDerivedPriority = (amount: number, state: CaseState) => {
-    if (state === 'ESCALATED' || amount >= 10000) {
+    const tier = getPriorityTier(amount, state);
+    const isActive = selectedPriority === tier;
+
+    if (tier === 'HIGH') {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FFF1F2] text-[#E11D48] border border-[#FECDD3]">
-          HIGH VALUE
-        </span>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedPriority((prev) => (prev === 'HIGH' ? 'ALL' : 'HIGH'));
+          }}
+          title={isActive ? 'Clear High Value filter' : 'Filter by High Value cases'}
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold cursor-pointer transition-all ${
+            isActive
+              ? 'bg-[#E11D48] text-white ring-2 ring-[#FECDD3] shadow-xs'
+              : 'bg-[#FFF1F2] text-[#E11D48] border border-[#FECDD3] hover:bg-[#FFE4E6]'
+          }`}
+        >
+          HIGH VALUE {isActive && '✓'}
+        </button>
       );
     }
-    if (amount >= 3000) {
+    if (tier === 'MEDIUM') {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A]">
-          MEDIUM
-        </span>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedPriority((prev) => (prev === 'MEDIUM' ? 'ALL' : 'MEDIUM'));
+          }}
+          title={isActive ? 'Clear Medium priority filter' : 'Filter by Medium priority cases'}
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-all ${
+            isActive
+              ? 'bg-[#D97706] text-white ring-2 ring-[#FDE68A] shadow-xs'
+              : 'bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A] hover:bg-[#FEF3C7]'
+          }`}
+        >
+          MEDIUM {isActive && '✓'}
+        </button>
       );
     }
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F1F5F9] text-[#475569] border border-[#E5E7EB]">
-        STANDARD
-      </span>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setSelectedPriority((prev) => (prev === 'STANDARD' ? 'ALL' : 'STANDARD'));
+        }}
+        title={isActive ? 'Clear Standard priority filter' : 'Filter by Standard priority cases'}
+        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold cursor-pointer transition-all ${
+          isActive
+            ? 'bg-[#475569] text-white ring-2 ring-[#CBD5E1] shadow-xs'
+            : 'bg-[#F1F5F9] text-[#475569] border border-[#E5E7EB] hover:bg-[#E2E8F0]'
+        }`}
+      >
+        STANDARD {isActive && '✓'}
+      </button>
     );
   };
+
+  const displayedCases = cases.filter((c) => {
+    if (selectedPriority === 'ALL') return true;
+    return getPriorityTier(c.amount_inr, c.state) === selectedPriority;
+  });
 
   return (
     <motion.div
@@ -231,6 +283,18 @@ export const CasesPage: React.FC = () => {
             <option value="PERMANENT">Hard Decline (Terminal Stop)</option>
             <option value="RISK_FLAGGED">Risk Flagged</option>
           </select>
+
+          {/* Active Priority Filter Indicator */}
+          {selectedPriority !== 'ALL' && (
+            <button
+              onClick={() => setSelectedPriority('ALL')}
+              className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE] hover:bg-[#E0E7FF] transition-colors shadow-2xs"
+              title="Clear Priority Filter"
+            >
+              <span>Priority: {selectedPriority === 'HIGH' ? 'HIGH VALUE' : selectedPriority}</span>
+              <X className="w-3 h-3" />
+            </button>
+          )}
 
           {/* Export CSV Button */}
           <motion.button
@@ -328,19 +392,19 @@ export const CasesPage: React.FC = () => {
                     <TableSkeleton rows={6} cols={8} />
                   </td>
                 </tr>
-              ) : cases.length === 0 ? (
+              ) : displayedCases.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="p-8">
                     <EmptyState
                       icon={Inbox}
                       title="No recovery cases found"
                       description={
-                        searchQuery || selectedCategory || activeTab !== 'all'
+                        searchQuery || selectedCategory || selectedPriority !== 'ALL' || activeTab !== 'all'
                           ? 'No cases match your active filters or search query.'
                           : 'No mandate failure cases have been ingested yet.'
                       }
                       actionLabel={
-                        searchQuery || selectedCategory || activeTab !== 'all' ? 'Reset All Filters' : undefined
+                        searchQuery || selectedCategory || selectedPriority !== 'ALL' || activeTab !== 'all' ? 'Reset All Filters' : undefined
                       }
                       onAction={handleResetFilters}
                       actionIcon={Filter}
@@ -349,7 +413,7 @@ export const CasesPage: React.FC = () => {
                 </tr>
               ) : (
                 <AnimatePresence mode="popLayout">
-                  {cases.map((c, index) => {
+                  {displayedCases.map((c, index) => {
                     const stateInfo = formatState(c.state);
                     const catInfo = formatFailureCategory(c.failure_category);
 
