@@ -18,10 +18,14 @@ import {
   Clock,
   ShieldCheck,
   Zap,
+  HandCoins,
+  Plus,
 } from 'lucide-react';
 import {
+  createCasePromise,
   fetchCaseActions,
   fetchCaseDetail,
+  fetchCasePromises,
   fetchCaseReconciliation,
   resolveEscalatedCase,
 } from '../../services/api';
@@ -39,6 +43,7 @@ export const CaseDetailPage: React.FC = () => {
   const reducedMotion = useReducedMotion();
   const [detail, setDetail] = useState<CaseDetailResponse | null>(null);
   const [actions, setActions] = useState<RecoveryActionItem[]>([]);
+  const [promises, setPromises] = useState<any[]>([]);
   const [reconciliation, setReconciliation] = useState<ReconciliationStatusInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -49,6 +54,12 @@ export const CaseDetailPage: React.FC = () => {
   // Intervention modal state
   const [interventionAction, setInterventionAction] = useState<'APPROVE_RETRY' | 'SEND_PAYMENT_LINK' | 'DISMISS' | null>(null);
   const [interventionNotes, setInterventionNotes] = useState('');
+
+  // Promise-to-Pay modal state
+  const [isPromiseModalOpen, setIsPromiseModalOpen] = useState(false);
+  const [promiseDate, setPromiseDate] = useState('');
+  const [promiseNotes, setPromiseNotes] = useState('');
+  const [promiseLoading, setPromiseLoading] = useState(false);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -70,14 +81,16 @@ export const CaseDetailPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [detailRes, actionsRes, reconRes] = await Promise.all([
+      const [detailRes, actionsRes, reconRes, promisesRes] = await Promise.all([
         fetchCaseDetail(caseId),
         fetchCaseActions(caseId).catch(() => ({ actions: [] })),
         fetchCaseReconciliation(caseId).catch(() => null),
+        fetchCasePromises(caseId).catch(() => ({ promises: [] })),
       ]);
       setDetail(detailRes);
       setActions(actionsRes.actions);
       setReconciliation(reconRes);
+      setPromises(promisesRes.promises || []);
     } catch (err: any) {
       setError(err.message || `Failed to load details for case ${caseId}`);
     } finally {
@@ -88,6 +101,27 @@ export const CaseDetailPage: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [caseId]);
+
+  const handleCreatePromise = async () => {
+    if (!caseId || !promiseDate) return;
+    try {
+      setPromiseLoading(true);
+      await createCasePromise(caseId, {
+        promise_due_at: new Date(promiseDate).toISOString(),
+        notes: promiseNotes,
+        source: 'OPERATOR_INPUT',
+      });
+      showToast('Promise-to-Pay recorded! Outbound contacts suppressed until due date.', 'success');
+      setIsPromiseModalOpen(false);
+      setPromiseDate('');
+      setPromiseNotes('');
+      await loadData();
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to record promise', 'error');
+    } finally {
+      setPromiseLoading(false);
+    }
+  };
 
   const handleExecuteIntervention = async () => {
     if (!caseId || !interventionAction) return;
@@ -350,7 +384,7 @@ export const CaseDetailPage: React.FC = () => {
                   {interventionAction === 'APPROVE_RETRY' &&
                     'Approving a retry authorizes an immediate mandate re-presentation request to NPCI clearing rails. Will count towards the merchant maximum attempt limit.'}
                   {interventionAction === 'SEND_PAYMENT_LINK' &&
-                    'Dispatches a dynamic UPI payment link via WhatsApp and SMS directly to the customer. Cleared amounts settle instantly to merchant escrow.'}
+                    'Dispatches a dynamic UPI/Card payment link for invoice balance. Cleared amounts settle instantly. Note: Stored card token update requires customer self-service 2FA on Razorpay-hosted portal.'}
                   {interventionAction === 'DISMISS' &&
                     'Terminates autonomous recovery for this mandate. No further retries or customer messages will be dispatched.'}
                 </p>
@@ -383,6 +417,90 @@ export const CaseDetailPage: React.FC = () => {
                 >
                   {actionLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                   <span>Authorize & Log Audit</span>
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Record Promise-to-Pay Modal */}
+      <AnimatePresence>
+        {isPromiseModalOpen && (
+          <motion.div
+            variants={backdropVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              variants={modalVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="bg-white border border-[#E5E7EB] rounded-2xl p-6 max-w-md w-full shadow-fintech-modal space-y-4 text-left"
+            >
+              <div className="flex items-center gap-2.5 border-b border-[#E5E7EB] pb-3">
+                <div className="p-2 rounded-xl bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]">
+                  <HandCoins className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#111827] font-sans">
+                    Record Customer Promise-to-Pay
+                  </h3>
+                  <p className="text-xs text-[#64748B]">Suppresses automated contacts until promised due date</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">
+                    Promised Payment Due Date & Time *
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={promiseDate}
+                    onChange={(e) => setPromiseDate(e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] focus:outline-none focus:border-[#059669] focus:bg-white transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">
+                    Promise Notes / Customer Agreement
+                  </label>
+                  <textarea
+                    value={promiseNotes}
+                    onChange={(e) => setPromiseNotes(e.target.value)}
+                    placeholder="e.g. Customer stated salary deposit arriving Friday afternoon..."
+                    rows={3}
+                    className="w-full text-xs p-2.5 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-[#111827] focus:outline-none focus:border-[#059669] focus:bg-white transition-colors"
+                  />
+                </div>
+
+                <div className="p-3 rounded-xl bg-[#ECFDF5] border border-[#A7F3D0] text-[11px] text-[#065F46] flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#059669] shrink-0" />
+                  <span>
+                    Deterministic policy gate POL-RULE-010 will suppress all outbound nudge calls/messages until this timestamp.
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#E5E7EB]">
+                <button
+                  onClick={() => setIsPromiseModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-[#F1F5F9] hover:bg-[#E5E7EB] text-[#475569] text-xs font-bold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreatePromise}
+                  disabled={!promiseDate || promiseLoading}
+                  className="px-4 py-2 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-colors disabled:opacity-50"
+                >
+                  {promiseLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Record Promise</span>
                 </button>
               </div>
             </motion.div>
@@ -549,6 +667,60 @@ export const CaseDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
+      </motion.div>
+
+      {/* Customer Promise-to-Pay & Engagement Schedule */}
+      <motion.div variants={staggerItem} className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
+          <div className="flex items-center gap-2">
+            <HandCoins className="w-4 h-4 text-[#059669]" />
+            <h3 className="text-sm font-bold text-[#111827]">Customer Promise-to-Pay & Engagement Schedule</h3>
+          </div>
+          <button
+            onClick={() => setIsPromiseModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#ECFDF5] hover:bg-[#D1FAE5] text-[#059669] text-xs font-bold transition-colors border border-[#A7F3D0] shadow-2xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Record Promise
+          </button>
+        </div>
+
+        {promises.length === 0 ? (
+          <div className="p-4 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] text-center text-xs text-[#64748B]">
+            No active promise recorded. Outbound nudges follow deterministic merchant policy schedule.
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {promises.map((prom) => {
+              const isActive = prom.status === 'ACTIVE';
+              return (
+                <div
+                  key={prom.id}
+                  className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
+                    isActive ? 'bg-[#ECFDF5]/50 border-[#A7F3D0]' : 'bg-[#F7F9FC] border-[#E5E7EB]'
+                  }`}
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-[#111827]">
+                        Promised Due Date: {new Date(prom.promise_due_at).toLocaleString()}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full font-mono border ${
+                        isActive ? 'bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]' : 'bg-[#F1F5F9] text-[#64748B] border-[#E2E8F0]'
+                      }`}>
+                        {prom.status} {isActive && '• OUTBOUND CONTACTS SUPPRESSED'}
+                      </span>
+                    </div>
+                    {prom.notes && <p className="text-[11px] text-[#475569]">{prom.notes}</p>}
+                  </div>
+                  <span className="text-[10px] text-[#64748B] font-mono shrink-0">
+                    Source: {prom.source}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </motion.div>
 
       {/* Execution Actions History */}

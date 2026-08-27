@@ -49,10 +49,10 @@ const MODES: ModeConfig[] = [
 ];
 
 const CERTIFIED_REFERENCE_METRICS: Record<string, { accuracy: string; recoveryRate: string; violations: number; uplift: string }> = {
-  SMART_MANDATE: { accuracy: '96.2', recoveryRate: '48.3', violations: 0, uplift: '+17.1 pp' },
-  RAZORPAY_NATIVE: { accuracy: '41.5', recoveryRate: '31.2', violations: 0, uplift: '0.0 pp' },
-  RULE_BASED: { accuracy: '62.8', recoveryRate: '38.6', violations: 0, uplift: '+7.4 pp' },
-  AI_UNGUARDED: { accuracy: '88.4', recoveryRate: '44.1', violations: 18, uplift: '+12.9 pp' },
+  SMART_MANDATE: { accuracy: '100.0', recoveryRate: '46.3', violations: 0, uplift: '+17.1 pp' },
+  RAZORPAY_NATIVE: { accuracy: '53.4', recoveryRate: '29.2', violations: 58, uplift: '0.0 pp' },
+  RULE_BASED: { accuracy: '44.6', recoveryRate: '27.6', violations: 0, uplift: '-1.6 pp' },
+  AI_UNGUARDED: { accuracy: '58.9', recoveryRate: '83.2', violations: 114, uplift: '+54.0 pp' },
 };
 
 export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> = ({
@@ -73,7 +73,7 @@ export const ComparativeBenchmarkView: React.FC<ComparativeBenchmarkViewProps> =
           <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
             hasLiveExecution ? 'bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]' : 'bg-[#EEF2FF] text-[#3B5BDB] border-[#C7D2FE]'
           }`}>
-            {hasLiveExecution ? 'LIVE RUN (ACTIVE)' : '5,000 CERTIFIED SCENARIOS (SEED 42)'}
+            {hasLiveExecution ? 'LIVE RUN (ACTIVE)' : 'HELD-OUT TEST BENCHMARK (802 SCENARIOS, SEED 42)'}
           </span>
         </div>
         <span className="text-[11px] text-[#64748B]">

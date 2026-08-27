@@ -9,7 +9,7 @@ from sqlalchemy import desc, or_
 
 from app.core.auth import get_uow, require_merchant_auth
 from app.core.sanitizer import mask_email, mask_phone
-from app.domain.models import Customer, RecoveryAction, RecoveryCase, RecoveryDecision, Subscription
+from app.domain.models import Customer, PromiseToPay, RecoveryAction, RecoveryCase, RecoveryDecision, Subscription
 
 cases_bp = Blueprint("cases", __name__)
 
@@ -222,6 +222,18 @@ def get_case(case_id: str):
             },
             "customer": customer_info,
             "subscription": subscription_info,
+            "promises": [
+                {
+                    "id": p.id,
+                    "status": p.status,
+                    "promised_at": p.promised_at.isoformat() if p.promised_at else None,
+                    "promise_due_at": p.promise_due_at.isoformat() if p.promise_due_at else None,
+                    "source": p.source,
+                    "notes": p.notes,
+                    "created_at": p.created_at.isoformat() if p.created_at else None,
+                }
+                for p in getattr(case, "promises", [])
+            ],
         }), 200
 
 
@@ -542,3 +554,142 @@ def resolve_escalated_case(case_id: str):
         "action_executed": action,
         "message": f"Human intervention '{action}' applied successfully"
     }), 200
+
+
+@cases_bp.route("/<case_id>/promises", methods=["GET"])
+@require_merchant_auth
+def list_case_promises(case_id: str):
+    """List all Promise-to-Pay records for a recovery case."""
+    merchant_id = g.merchant_id
+    uow = get_uow()
+    with uow:
+        case = uow.session.query(RecoveryCase).filter(
+            RecoveryCase.id == case_id,
+            RecoveryCase.merchant_id == merchant_id
+        ).first()
+
+        if not case:
+            return jsonify({
+                "error": {
+                    "code": "NOT_FOUND",
+                    "message": f"RecoveryCase '{case_id}' not found",
+                    "path": request.path
+                }
+            }), 404
+
+        promises = uow.session.query(PromiseToPay).filter(
+            PromiseToPay.recovery_case_id == case.id,
+            PromiseToPay.merchant_id == merchant_id
+        ).order_by(desc(PromiseToPay.created_at)).all()
+
+        data = [
+            {
+                "id": p.id,
+                "case_id": p.recovery_case_id,
+                "customer_id": p.customer_id,
+                "promised_at": p.promised_at.isoformat() if p.promised_at else None,
+                "promise_due_at": p.promise_due_at.isoformat() if p.promise_due_at else None,
+                "status": p.status,
+                "source": p.source,
+                "notes": p.notes,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+                "resolved_at": p.resolved_at.isoformat() if p.resolved_at else None,
+            }
+            for p in promises
+        ]
+
+    return jsonify({"promises": data}), 200
+
+
+@cases_bp.route("/<case_id>/promises", methods=["POST"])
+@require_merchant_auth
+def create_case_promise(case_id: str):
+    """Create a new Promise-to-Pay for a customer recovery case."""
+    merchant_id = g.merchant_id
+    payload = request.get_json() or {}
+
+    due_at_str = payload.get("promise_due_at")
+    notes = payload.get("notes", "")
+    source = payload.get("source", "OPERATOR_INPUT")
+
+    if not due_at_str:
+        return jsonify({
+            "error": {
+                "code": "BAD_REQUEST",
+                "message": "Field 'promise_due_at' (ISO timestamp) is required",
+                "path": request.path
+            }
+        }), 400
+
+    try:
+        due_at = datetime.fromisoformat(due_at_str.replace("Z", "+00:00"))
+    except ValueError:
+        return jsonify({
+            "error": {
+                "code": "BAD_REQUEST",
+                "message": "Invalid ISO timestamp for 'promise_due_at'",
+                "path": request.path
+            }
+        }), 400
+
+    uow = get_uow()
+    with uow:
+        case = uow.session.query(RecoveryCase).filter(
+            RecoveryCase.id == case_id,
+            RecoveryCase.merchant_id == merchant_id
+        ).first()
+
+        if not case:
+            return jsonify({
+                "error": {
+                    "code": "NOT_FOUND",
+                    "message": f"RecoveryCase '{case_id}' not found",
+                    "path": request.path
+                }
+            }), 404
+
+        now = datetime.now(timezone.utc)
+        promise = PromiseToPay(
+            recovery_case_id=case.id,
+            merchant_id=merchant_id,
+            customer_id=case.subscription.customer.id if (case.subscription and case.subscription.customer) else None,
+            promised_at=now,
+            promise_due_at=due_at,
+            status="ACTIVE",
+            source=source,
+            notes=notes,
+            created_at=now,
+        )
+        uow.session.add(promise)
+
+        # Record audit event
+        uow.audit_events.record_event(
+            merchant_id=merchant_id,
+            recovery_case_id=case.id,
+            event_type="PROMISE_TO_PAY_CREATED",
+            actor="MERCHANT_OPERATOR",
+            payload={
+                "promise_id": promise.id,
+                "promise_due_at": due_at.isoformat(),
+                "source": source,
+                "notes": notes,
+                "contact_suppression_active": True,
+            },
+            correlation_id=f"corr_prom_{case.id[:8]}",
+        )
+
+        uow.commit()
+
+        res_data = {
+            "id": promise.id,
+            "case_id": promise.recovery_case_id,
+            "customer_id": promise.customer_id,
+            "promised_at": promise.promised_at.isoformat(),
+            "promise_due_at": promise.promise_due_at.isoformat(),
+            "status": promise.status,
+            "source": promise.source,
+            "notes": promise.notes,
+            "created_at": promise.created_at.isoformat(),
+        }
+
+    return jsonify({"status": "success", "promise": res_data}), 201

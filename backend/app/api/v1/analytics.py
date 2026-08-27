@@ -36,3 +36,16 @@ def get_analytics_overview():
         "recovery_rate_percent": round(recovery_rate, 2),
         "total_audit_events": pipeline["total_audit_events"],
     }), 200
+
+
+@analytics_bp.route("/digest", methods=["GET", "POST"])
+@require_merchant_auth
+def get_or_send_digest():
+    """Generate or simulate delivery of the weekly recovery ROI digest."""
+    from app.services.digest_service import RecoveryDigestService
+    merchant_id = g.merchant_id
+    uow = get_uow()
+    digest_service = RecoveryDigestService(uow=uow)
+    digest_data = digest_service.generate_weekly_digest(merchant_id=merchant_id, period_days=7)
+    return jsonify(digest_data), 200
+

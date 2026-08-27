@@ -149,6 +149,7 @@ class CustomerRecoveryContext:
     recovery_history: RecoveryHistoryContext
     failure_assessment: FailureAssessment
     quality: DataQualityContext
+    active_promise_due_at: Optional[datetime] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize complete context tree into a clean dictionary."""
@@ -160,4 +161,5 @@ class CustomerRecoveryContext:
             "recovery_history": self.recovery_history.to_dict(),
             "failure_assessment": self.failure_assessment.to_dict(),
             "quality": self.quality.to_dict(),
+            "active_promise_due_at": self.active_promise_due_at.isoformat() if self.active_promise_due_at else None,
         }

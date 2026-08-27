@@ -325,3 +325,29 @@ class MinRetryIntervalRule(BasePolicyRule):
                 eval_ctx.adjusted_delay_hours = min_hours
                 if eval_ctx.status == PolicyStatusEnum.ALLOWED:
                     eval_ctx.reasons.append("DELAY_EXTENDED_TO_MIN_INTERVAL")
+
+
+class PromiseToPayProtectionRule(BasePolicyRule):
+    """POL-RULE-010: Active promise-to-pay contact suppression and scheduling."""
+
+    @property
+    def rule_id(self) -> str:
+        return "ACTIVE_PROMISE_PROTECTION"
+
+    @property
+    def precedence(self) -> int:
+        return 7
+
+    def evaluate(self, eval_ctx: PolicyRuleEvaluationContext) -> None:
+        if eval_ctx.current_action in ("STOP", "MANUAL_ESCALATION"):
+            return
+
+        due_at = getattr(eval_ctx.context, "active_promise_due_at", None)
+        if due_at and datetime.now(timezone.utc) < due_at:
+            eval_ctx.rules_applied.append(self.rule_id)
+            eval_ctx.reasons.append("ACTIVE_PROMISE_TO_PAY_WINDOW")
+            eval_ctx.status = PolicyStatusEnum.MODIFIED
+            eval_ctx.current_action = "SCHEDULE_RECOVERY_CHECK"
+            eval_ctx.execution_allowed = False
+            eval_ctx.adjusted_delay_hours = max(1, int((due_at - datetime.now(timezone.utc)).total_seconds() / 3600))
+

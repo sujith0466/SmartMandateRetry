@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   RefreshCw,
   AlertCircle,
@@ -13,19 +13,25 @@ import {
   PieChart,
   CheckCircle2,
   Layers,
+  Mail,
+  X,
+  Award,
 } from 'lucide-react';
-import { fetchOverviewMetrics } from '../../services/api';
+import { fetchOverviewMetrics, fetchWeeklyDigest } from '../../services/api';
 import { OverviewMetrics } from '../../types';
 import { StatCard } from '../../components/ui/StatCard';
 import { Skeleton } from '../../components/ui/SkeletonLoader';
 import { useReducedMotion } from '../../motion/useReducedMotion';
-import { staggerContainer, staggerItem } from '../../motion/motionTokens';
+import { modalVariants, backdropVariants, staggerContainer, staggerItem } from '../../motion/motionTokens';
 
 export const AnalyticsPage: React.FC = () => {
   const [metrics, setMetrics] = useState<OverviewMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRail, setSelectedRail] = useState<'all' | 'link' | 'retry'>('all');
+  const [isDigestOpen, setIsDigestOpen] = useState(false);
+  const [digestData, setDigestData] = useState<any>(null);
+  const [digestLoading, setDigestLoading] = useState(false);
   const reducedMotion = useReducedMotion();
 
   const loadData = async () => {
@@ -38,6 +44,19 @@ export const AnalyticsPage: React.FC = () => {
       setError(err.message || 'Failed to load analytics');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenDigest = async () => {
+    setIsDigestOpen(true);
+    setDigestLoading(true);
+    try {
+      const d = await fetchWeeklyDigest();
+      setDigestData(d);
+    } catch {
+      // Fallback
+    } finally {
+      setDigestLoading(false);
     }
   };
 
@@ -89,15 +108,124 @@ export const AnalyticsPage: React.FC = () => {
             Deep recovery conversion intelligence, channel effectiveness & safety guardrail attribution
           </p>
         </div>
-        <motion.button
-          whileTap={reducedMotion ? {} : { scale: 0.95 }}
-          onClick={loadData}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#475569] text-xs font-bold transition-colors shadow-2xs"
-        >
-          <RefreshCw className="w-3.5 h-3.5 text-[#64748B]" />
-          Refresh
-        </motion.button>
+        <div className="flex items-center gap-2">
+          <motion.button
+            whileTap={reducedMotion ? {} : { scale: 0.95 }}
+            onClick={handleOpenDigest}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#3B5BDB] text-xs font-bold transition-colors shadow-2xs"
+          >
+            <Mail className="w-3.5 h-3.5 text-[#3B5BDB]" />
+            Weekly ROI Digest
+          </motion.button>
+          <motion.button
+            whileTap={reducedMotion ? {} : { scale: 0.95 }}
+            onClick={loadData}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-[#E5E7EB] hover:bg-[#F7F9FC] text-[#475569] text-xs font-bold transition-colors shadow-2xs"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-[#64748B]" />
+            Refresh
+          </motion.button>
+        </div>
       </motion.div>
+
+      {/* Weekly Digest Modal */}
+      <AnimatePresence>
+        {isDigestOpen && (
+          <motion.div
+            variants={backdropVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              variants={modalVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="bg-white border border-[#E5E7EB] rounded-2xl p-6 max-w-lg w-full shadow-fintech-modal space-y-4 text-left"
+            >
+              <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-[#EEF2FF] text-[#3B5BDB] border border-[#C7D2FE]">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-[#111827] font-sans">
+                      Executive Weekly Recovery & ROI Digest
+                    </h3>
+                    <p className="text-xs text-[#64748B]">Automated financial intelligence snapshot for finance teams</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsDigestOpen(false)}
+                  className="p-1 rounded-lg text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {digestLoading ? (
+                <div className="py-12 text-center text-xs text-[#64748B] flex flex-col items-center gap-2">
+                  <RefreshCw className="w-5 h-5 animate-spin text-[#3B5BDB]" />
+                  <span>Compiling database-backed weekly recovery metrics...</span>
+                </div>
+              ) : digestData ? (
+                <div className="space-y-4 text-xs">
+                  {/* Provenance and delivery strip */}
+                  <div className="p-3 rounded-xl bg-[#F7F9FC] border border-[#E5E7EB] space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#111827]">Data Provenance: Live Merchant Ledger</span>
+                      <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] font-bold">
+                        {digestData.metrics?.total_cases_processed || 0} CASES AUDITED
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#64748B]">
+                      Covering 7-day period ending {new Date(digestData.period_end).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  {/* Macro Key Metrics */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-xl bg-white border border-[#E5E7EB] shadow-2xs">
+                      <div className="text-[10px] font-bold text-[#64748B] uppercase">Recovered Revenue</div>
+                      <div className="text-lg font-black text-[#059669] font-sans mt-0.5">
+                        ₹{(digestData.metrics?.recovered_revenue_inr || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white border border-[#E5E7EB] shadow-2xs">
+                      <div className="text-[10px] font-bold text-[#64748B] uppercase">Recovery Yield</div>
+                      <div className="text-lg font-black text-[#3B5BDB] font-sans mt-0.5">
+                        {digestData.metrics?.recovery_rate_percent || 0}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Delivery status disclosure */}
+                  <div className="p-3 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E] text-[11px] space-y-1">
+                    <div className="font-bold flex items-center gap-1.5">
+                      <Award className="w-3.5 h-3.5 text-[#D97706]" />
+                      Truthful Delivery Disclosure (Sandbox Environment)
+                    </div>
+                    <p className="leading-relaxed">
+                      {digestData.delivery?.note || 'Digest generated in sandbox environment; live SMTP delivery not configured.'}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="flex justify-end pt-3 border-t border-[#E5E7EB]">
+                <button
+                  onClick={() => setIsDigestOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-[#3B5BDB] hover:bg-[#3048B8] text-white text-xs font-bold transition-colors"
+                >
+                  Close Preview
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {error && (
         <motion.div

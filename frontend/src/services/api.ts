@@ -191,6 +191,24 @@ export async function resolveEscalatedCase(
   });
 }
 
+export async function fetchCasePromises(caseId: string): Promise<{ promises: any[] }> {
+  return request(`/cases/${caseId}/promises`);
+}
+
+export async function createCasePromise(
+  caseId: string,
+  data: { promise_due_at: string; notes?: string; source?: string }
+): Promise<{ status: string; promise: any }> {
+  return request(`/cases/${caseId}/promises`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function fetchWeeklyDigest(): Promise<any> {
+  return request('/analytics/digest');
+}
+
 export async function exportCasesCsv(state?: string, stage?: string): Promise<Blob> {
   const params = new URLSearchParams();
   if (state) params.append('state', state);

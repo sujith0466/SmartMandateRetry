@@ -174,6 +174,7 @@ class RecoveryCase(Base):
     subscription: Mapped["Subscription"] = relationship("Subscription", back_populates="cases")
     decisions: Mapped[List["RecoveryDecision"]] = relationship("RecoveryDecision", back_populates="recovery_case", cascade="all, delete-orphan")
     actions: Mapped[List["RecoveryAction"]] = relationship("RecoveryAction", back_populates="recovery_case", cascade="all, delete-orphan")
+    promises: Mapped[List["PromiseToPay"]] = relationship("PromiseToPay", back_populates="recovery_case", cascade="all, delete-orphan")
     audit_events: Mapped[List["AuditEvent"]] = relationship("AuditEvent", back_populates="recovery_case")
 
     __table_args__ = (
@@ -226,6 +227,30 @@ class RecoveryAction(Base):
     __table_args__ = (
         Index("ix_recovery_actions_case_id", "recovery_case_id"),
         Index("ix_recovery_actions_idempotency_key", "idempotency_key"),
+    )
+
+
+class PromiseToPay(Base):
+    __tablename__ = "promises_to_pay"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: generate_uuid("prom"))
+    recovery_case_id: Mapped[str] = mapped_column(String(36), ForeignKey("recovery_cases.id", ondelete="CASCADE"), nullable=False)
+    merchant_id: Mapped[str] = mapped_column(String(36), ForeignKey("merchants.id", ondelete="RESTRICT"), nullable=False)
+    customer_id: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    promised_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
+    promise_due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), default="ACTIVE", nullable=False)  # ACTIVE, FULFILLED, MISSED, CANCELLED
+    source: Mapped[str] = mapped_column(String(64), default="OPERATOR_INPUT", nullable=False)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, nullable=False)
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    recovery_case: Mapped["RecoveryCase"] = relationship("RecoveryCase", back_populates="promises")
+
+    __table_args__ = (
+        Index("ix_promises_to_pay_case_id", "recovery_case_id"),
+        Index("ix_promises_to_pay_merchant_id", "merchant_id"),
+        Index("ix_promises_to_pay_status", "status"),
     )
 
 

@@ -14,7 +14,7 @@ from app.domain.policy_rules import (
     ActionAllowlistRule, BasePolicyRule, ContactFrequencyCapRule,
     HardDeclineSafetyRule, HighValueReviewRule, LowConfidenceVetoRule,
     MaxRetriesCapRule, MinRetryIntervalRule, PolicyRuleEvaluationContext,
-    StrategyStageCompatibilityRule, TerminalCaseSafetyRule
+    PromiseToPayProtectionRule, StrategyStageCompatibilityRule, TerminalCaseSafetyRule
 )
 from app.domain.state_machine import RecoveryActionType
 
@@ -53,6 +53,7 @@ class PolicyRuleRegistry:
                 HighValueReviewRule(),
                 LowConfidenceVetoRule(),
                 ContactFrequencyCapRule(),
+                PromiseToPayProtectionRule(),
                 StrategyStageCompatibilityRule(),
                 ActionAllowlistRule(),
                 MinRetryIntervalRule(),
