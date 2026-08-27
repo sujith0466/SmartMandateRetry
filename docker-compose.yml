@@ -42,7 +42,7 @@ services:
       - APP_ENV=${APP_ENV:-development}
       - APP_DEBUG=${APP_DEBUG:-false}
       - APP_SECRET_KEY=${APP_SECRET_KEY:-dev_secret_key_placeholder}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-smartmandate_db}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-smartmandate_db}}
       - REDIS_URL=redis://redis:6379/0
       - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID:-rzp_test_placeholder}
       - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET:-secret_placeholder}
@@ -71,7 +71,7 @@ services:
     command: celery -A app.workers.celery_app worker --loglevel=info
     environment:
       - APP_ENV=${APP_ENV:-development}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-smartmandate_db}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-smartmandate_db}}
       - REDIS_URL=redis://redis:6379/0
       - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID:-rzp_test_placeholder}
       - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET:-secret_placeholder}

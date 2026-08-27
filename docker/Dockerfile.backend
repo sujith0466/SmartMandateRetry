@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir -r requirements/base.txt
 
 # Copy backend application code
 COPY backend/ /app/
+COPY datasets/ /app/datasets/
 
 ENV PYTHONPATH=/app
 EXPOSE 5000

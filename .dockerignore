@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+*.pyc
+__pycache__
+.pytest_cache
+.coverage
+htmlcov
+dist
+build
+node_modules
+frontend/node_modules
+frontend/dist
+.vscode
+.idea
+*.log
+scratch
