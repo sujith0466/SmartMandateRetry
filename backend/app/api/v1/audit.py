@@ -1,7 +1,7 @@
 """Merchant audit events REST API blueprint."""
 
 from flask import Blueprint, g, jsonify, request
-from sqlalchemy import desc
+from sqlalchemy import desc, or_
 
 from app.core.auth import get_uow, require_merchant_auth
 from app.core.sanitizer import sanitize_data
@@ -24,6 +24,7 @@ def list_audit_events():
     case_id = request.args.get("case_id")
     event_type = request.args.get("event_type")
     correlation_id = request.args.get("correlation_id")
+    search = request.args.get("search")
 
     uow = get_uow()
     with uow:
@@ -35,6 +36,17 @@ def list_audit_events():
             query = query.filter(AuditEvent.event_type == event_type)
         if correlation_id:
             query = query.filter(AuditEvent.correlation_id == correlation_id)
+        if search:
+            search_pattern = f"%{search.strip()}%"
+            query = query.filter(
+                or_(
+                    AuditEvent.id.ilike(search_pattern),
+                    AuditEvent.recovery_case_id.ilike(search_pattern),
+                    AuditEvent.correlation_id.ilike(search_pattern),
+                    AuditEvent.event_type.ilike(search_pattern),
+                    AuditEvent.actor.ilike(search_pattern),
+                )
+            )
 
         total = query.count()
         events = query.order_by(desc(AuditEvent.created_at)).offset(offset).limit(limit).all()
@@ -75,6 +87,7 @@ def export_audit_csv():
     merchant_id = g.merchant_id
     case_id = request.args.get("case_id")
     event_type = request.args.get("event_type")
+    search = request.args.get("search")
 
     uow = get_uow()
     with uow:
@@ -83,6 +96,17 @@ def export_audit_csv():
             query = query.filter(AuditEvent.recovery_case_id == case_id)
         if event_type:
             query = query.filter(AuditEvent.event_type == event_type)
+        if search:
+            search_pattern = f"%{search.strip()}%"
+            query = query.filter(
+                or_(
+                    AuditEvent.id.ilike(search_pattern),
+                    AuditEvent.recovery_case_id.ilike(search_pattern),
+                    AuditEvent.correlation_id.ilike(search_pattern),
+                    AuditEvent.event_type.ilike(search_pattern),
+                    AuditEvent.actor.ilike(search_pattern),
+                )
+            )
 
         events = query.order_by(desc(AuditEvent.created_at)).all()
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
@@ -26,16 +26,14 @@ import { useReducedMotion } from '../../motion/useReducedMotion';
 import { staggerContainer, staggerItem } from '../../motion/motionTokens';
 
 const AUDIT_EVENT_TYPES = [
-  'CASE_CREATED',
-  'AI_DECISION_PROPOSED',
-  'POLICY_VALIDATION_PASSED',
-  'POLICY_VALIDATION_VIOLATION',
-  'ACTION_EXECUTED',
-  'RECOVERY_SUCCEEDED',
-  'RECOVERY_FAILED',
-  'STATE_TRANSITION',
-  'OPERATOR_OVERRIDE',
-  'POLICY_UPDATED',
+  'PAYMENT_FAILURE_CLASSIFIED',
+  'AI_DECISION_PRODUCED',
+  'POLICY_DECISION_EVALUATED',
+  'RECOVERY_ACTION_EXECUTED',
+  'PAYMENT_OUTCOME_RECONCILED',
+  'RECOVERY_STATE_TRANSITIONED',
+  'POLICY_CONFIG_UPDATED',
+  'MERCHANT_RECOVERY_DIGEST_GENERATED',
 ];
 
 export const AuditPage: React.FC = () => {
@@ -50,6 +48,8 @@ export const AuditPage: React.FC = () => {
   const [selectedPayload, setSelectedPayload] = useState<any | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -66,11 +66,18 @@ export const AuditPage: React.FC = () => {
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  const loadAudit = async (page: number = 1) => {
+  const loadAudit = async (page: number = 1, currentSearch = searchQuery, currentEventType = selectedEventType) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetchAuditEvents(page, 20, undefined, selectedEventType || undefined);
+      const response = await fetchAuditEvents(
+        page,
+        20,
+        undefined,
+        currentEventType || undefined,
+        undefined,
+        currentSearch.trim() || undefined
+      );
       setEvents(response.data);
       setPagination(response.pagination);
     } catch (err: any) {
@@ -80,14 +87,22 @@ export const AuditPage: React.FC = () => {
     }
   };
 
+  // Debounced search & event type trigger
   useEffect(() => {
-    loadAudit(1);
-  }, [selectedEventType]);
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    debounceTimeoutRef.current = setTimeout(() => {
+      loadAudit(1, searchQuery, selectedEventType);
+    }, 300);
+
+    return () => {
+      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    };
+  }, [searchQuery, selectedEventType]);
 
   const handleExportCsv = async () => {
     try {
       setIsExporting(true);
-      const blob = await exportAuditCsv(undefined, selectedEventType || undefined);
+      const blob = await exportAuditCsv(undefined, selectedEventType || undefined, searchQuery.trim() || undefined);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -104,16 +119,7 @@ export const AuditPage: React.FC = () => {
     }
   };
 
-  const filteredEvents = events.filter((e) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      e.id.toLowerCase().includes(q) ||
-      (e.recovery_case_id && e.recovery_case_id.toLowerCase().includes(q)) ||
-      (e.correlation_id && e.correlation_id.toLowerCase().includes(q)) ||
-      e.event_type.toLowerCase().includes(q)
-    );
-  });
+  const filteredEvents = events;
 
   const handleFilterByCorrelation = (corrId: string) => {
     setSearchQuery(corrId);

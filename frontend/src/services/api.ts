@@ -226,7 +226,8 @@ export async function fetchAuditEvents(
   limit: number = 20,
   caseId?: string,
   eventType?: string,
-  correlationId?: string
+  correlationId?: string,
+  search?: string
 ): Promise<{ data: AuditEventItem[]; pagination: PaginationInfo }> {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -235,14 +236,16 @@ export async function fetchAuditEvents(
   if (caseId) params.append('case_id', caseId);
   if (eventType) params.append('event_type', eventType);
   if (correlationId) params.append('correlation_id', correlationId);
+  if (search) params.append('search', search);
 
   return request(`/audit-events?${params.toString()}`);
 }
 
-export async function exportAuditCsv(caseId?: string, eventType?: string): Promise<Blob> {
+export async function exportAuditCsv(caseId?: string, eventType?: string, search?: string): Promise<Blob> {
   const params = new URLSearchParams();
   if (caseId) params.append('case_id', caseId);
   if (eventType) params.append('event_type', eventType);
+  if (search) params.append('search', search);
 
   const response = await fetch(`${API_BASE}/audit-events/export?${params.toString()}`, {
     headers: getHeaders({ Accept: 'text/csv' }),
