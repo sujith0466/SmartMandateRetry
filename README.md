@@ -10,6 +10,12 @@
 
 ---
 
+## Demo Video
+
+[Watch the 5-Minute Demo Video](https://drive.google.com/file/d/1wpsiNYDunIC4PNB53sW2HcXrESMIu89E/view?usp=sharing)
+
+---
+
 ## 1. The Core Problem: Involuntary Subscription Churn
 
 In India's recurring payments ecosystem (e-mandates on Cards, UPI AutoPay, NetBanking SI), **over 60% of subscriber churn is involuntary** — caused by transient bank outages, temporary insufficient balances, expired cards, or mandate synchronization gaps rather than intentional customer cancellations.
